@@ -1,0 +1,315 @@
+<!DOCTYPE QtCreatorProject>
+<qtcreator>
+ <data>
+  <variable>RunConfiguration0-BaseEnvironmentBase</variable>
+  <value type="int">2</value>
+ </data>
+ <data>
+  <variable>RunConfiguration0-CommandLineArguments</variable>
+  <valuelist type="QVariantList"/>
+ </data>
+ <data>
+  <variable>RunConfiguration0-ProFile</variable>
+  <value type="QString">../../../../../nadnerb/Desktop/Plasma/MoulKI/MoulKI.pro</value>
+ </data>
+ <data>
+  <variable>RunConfiguration0-RunConfiguration.name</variable>
+  <value type="QString">MoulKI</value>
+ </data>
+ <data>
+  <variable>RunConfiguration0-UseDyldImageSuffix</variable>
+  <value type="bool">false</value>
+ </data>
+ <data>
+  <variable>RunConfiguration0-UseTerminal</variable>
+  <value type="bool">false</value>
+ </data>
+ <data>
+  <variable>RunConfiguration0-UserEnvironmentChanges</variable>
+  <valuelist type="QVariantList"/>
+ </data>
+ <data>
+  <variable>RunConfiguration0-UserSetName</variable>
+  <value type="bool">false</value>
+ </data>
+ <data>
+  <variable>RunConfiguration0-UserSetWorkingDirectory</variable>
+  <value type="bool">false</value>
+ </data>
+ <data>
+  <variable>RunConfiguration0-UserWorkingDirectory</variable>
+  <value type="QString"></value>
+ </data>
+ <data>
+  <variable>RunConfiguration0-type</variable>
+  <value type="QString">Qt4ProjectManager.Qt4RunConfiguration</value>
+ </data>
+ <data>
+  <variable>activeRunConfiguration</variable>
+  <value type="int">0</value>
+ </data>
+ <data>
+  <variable>activebuildconfiguration</variable>
+  <value type="QString">Debug</value>
+ </data>
+ <data>
+  <variable>buildConfiguration-Debug</variable>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString">Debug</value>
+   <value key="QtVersionId" type="int">0</value>
+   <value key="ToolChain" type="int">0</value>
+   <value key="addQDumper" type=""></value>
+   <value key="buildConfiguration" type="int">10</value>
+   <value key="buildDirectory" type="QString">/home/nadnerb/Desktop/Plasma/MoulKI</value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>buildConfiguration-Release</variable>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString">Release</value>
+   <value key="QtVersionId" type="int">0</value>
+   <value key="addQDumper" type=""></value>
+   <value key="buildConfiguration" type="int">8</value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>buildconfiguration-Debug-buildstep0</variable>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString">Debug</value>
+   <valuelist key="abstractProcess.Environment" type="QVariantList">
+    <value type="QString">CVS_RSH=ssh</value>
+    <value type="QString">DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-0vhBGZVrW7,guid=8c4a5065e5b55604fb87cd004baa53bb</value>
+    <value type="QString">DESKTOP_SESSION=default</value>
+    <value type="QString">DISPLAY=:20.0</value>
+    <value type="QString">GDMSESSION=default</value>
+    <value type="QString">GDM_XSERVER_LOCATION=flexi</value>
+    <value type="QString">GNOME_DESKTOP_SESSION_ID=Default</value>
+    <value type="QString">GNOME_KEYRING_SOCKET=/tmp/keyring-e1gigU/socket</value>
+    <value type="QString">GTK_RC_FILES=/etc/gtk/gtkrc:/home/allusers/fall09/bdorr/.gtkrc-1.2-gnome2</value>
+    <value type="QString">G_BROKEN_FILENAMES=1</value>
+    <value type="QString">HISTSIZE=1000</value>
+    <value type="QString">HOME=/home/allusers/fall09/bdorr</value>
+    <value type="QString">HOSTNAME=anaconda32.uml.edu</value>
+    <value type="QString">INPUTRC=/etc/inputrc</value>
+    <value type="QString">KDEDIRS=/usr</value>
+    <value type="QString">KDE_IS_PRELINKED=1</value>
+    <value type="QString">LANG=en_US.UTF-8</value>
+    <value type="QString">LD_LIBRARY_PATH=/home/allusers/fall09/bdorr/qtsdk-2010.02/lib/qtcreator:</value>
+    <value type="QString">LESSOPEN=|/usr/bin/lesspipe.sh %s</value>
+    <value type="QString">LOGNAME=bdorr</value>
+    <value type="QString">MAIL=/var/spool/mail/bdorr</value>
+    <value type="QString">PATH=/home/allusers/fall09/bdorr/qtsdk-2010.02/qt/bin:/usr/lib/qt-3.3/bin:/usr/kerberos/bin:/usr/lib/ccache:/usr/local/bin:/usr/bin:/bin:/home/allusers/fall09/bdorr/bin</value>
+    <value type="QString">PWD=/home/allusers/fall09/bdorr</value>
+    <value type="QString">QTDIR=/home/allusers/fall09/bdorr/qtsdk-2010.02/qt</value>
+    <value type="QString">QTINC=/usr/lib/qt-3.3/include</value>
+    <value type="QString">QTLIB=/usr/lib/qt-3.3/lib</value>
+    <value type="QString">SESSION_MANAGER=local/unix:/tmp/.ICE-unix/26978</value>
+    <value type="QString">SHELL=/bin/bash</value>
+    <value type="QString">SHLVL=1</value>
+    <value type="QString">SSH_AGENT_PID=27081</value>
+    <value type="QString">SSH_ASKPASS=/usr/libexec/openssh/gnome-ssh-askpass</value>
+    <value type="QString">SSH_AUTH_SOCK=/tmp/ssh-dzrIL26978/agent.26978</value>
+    <value type="QString">TERM=dumb</value>
+    <value type="QString">USER=bdorr</value>
+    <value type="QString">USERNAME=bdorr</value>
+    <value type="QString">XAUTHORITY=/tmp/.gdmAF2Q9U</value>
+    <value type="QString">XDG_SESSION_COOKIE=e409e0f42d86f0e48b184d0046d58a00-1269453755.765250-1032151966</value>
+   </valuelist>
+   <valuelist key="abstractProcess.arguments" type="QVariantList">
+    <value type="QString">/home/allusers/fall09/bdorr/Desktop/MoulKI/MoulKI.pro</value>
+    <value type="QString">-spec</value>
+    <value type="QString">linux-g++</value>
+    <value type="QString">-r</value>
+    <value type="QString">CONFIG+=debug_and_release</value>
+    <value type="QString">CONFIG+=debug</value>
+   </valuelist>
+   <value key="abstractProcess.command" type="QString">/home/allusers/fall09/bdorr/qtsdk-2010.02/qt/bin/qmake</value>
+   <value key="abstractProcess.enabled" type="bool">false</value>
+   <value key="abstractProcess.workingDirectory" type="QString">/home/allusers/fall09/bdorr/Desktop/MoulKI</value>
+   <value key="buildConfiguration" type=""></value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>buildconfiguration-Debug-buildstep1</variable>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString">Debug</value>
+   <valuelist key="abstractProcess.Environment" type="QVariantList">
+    <value type="QString">CVS_RSH=ssh</value>
+    <value type="QString">DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-0vhBGZVrW7,guid=8c4a5065e5b55604fb87cd004baa53bb</value>
+    <value type="QString">DESKTOP_SESSION=default</value>
+    <value type="QString">DISPLAY=:20.0</value>
+    <value type="QString">GDMSESSION=default</value>
+    <value type="QString">GDM_XSERVER_LOCATION=flexi</value>
+    <value type="QString">GNOME_DESKTOP_SESSION_ID=Default</value>
+    <value type="QString">GNOME_KEYRING_SOCKET=/tmp/keyring-e1gigU/socket</value>
+    <value type="QString">GTK_RC_FILES=/etc/gtk/gtkrc:/home/allusers/fall09/bdorr/.gtkrc-1.2-gnome2</value>
+    <value type="QString">G_BROKEN_FILENAMES=1</value>
+    <value type="QString">HISTSIZE=1000</value>
+    <value type="QString">HOME=/home/allusers/fall09/bdorr</value>
+    <value type="QString">HOSTNAME=anaconda32.uml.edu</value>
+    <value type="QString">INPUTRC=/etc/inputrc</value>
+    <value type="QString">KDEDIRS=/usr</value>
+    <value type="QString">KDE_IS_PRELINKED=1</value>
+    <value type="QString">LANG=en_US.UTF-8</value>
+    <value type="QString">LD_LIBRARY_PATH=/home/allusers/fall09/bdorr/qtsdk-2010.02/lib/qtcreator:</value>
+    <value type="QString">LESSOPEN=|/usr/bin/lesspipe.sh %s</value>
+    <value type="QString">LOGNAME=bdorr</value>
+    <value type="QString">MAIL=/var/spool/mail/bdorr</value>
+    <value type="QString">PATH=/home/allusers/fall09/bdorr/qtsdk-2010.02/qt/bin:/usr/lib/qt-3.3/bin:/usr/kerberos/bin:/usr/lib/ccache:/usr/local/bin:/usr/bin:/bin:/home/allusers/fall09/bdorr/bin</value>
+    <value type="QString">PWD=/home/allusers/fall09/bdorr</value>
+    <value type="QString">QTDIR=/home/allusers/fall09/bdorr/qtsdk-2010.02/qt</value>
+    <value type="QString">QTINC=/usr/lib/qt-3.3/include</value>
+    <value type="QString">QTLIB=/usr/lib/qt-3.3/lib</value>
+    <value type="QString">SESSION_MANAGER=local/unix:/tmp/.ICE-unix/26978</value>
+    <value type="QString">SHELL=/bin/bash</value>
+    <value type="QString">SHLVL=1</value>
+    <value type="QString">SSH_AGENT_PID=27081</value>
+    <value type="QString">SSH_ASKPASS=/usr/libexec/openssh/gnome-ssh-askpass</value>
+    <value type="QString">SSH_AUTH_SOCK=/tmp/ssh-dzrIL26978/agent.26978</value>
+    <value type="QString">TERM=dumb</value>
+    <value type="QString">USER=bdorr</value>
+    <value type="QString">USERNAME=bdorr</value>
+    <value type="QString">XAUTHORITY=/tmp/.gdmAF2Q9U</value>
+    <value type="QString">XDG_SESSION_COOKIE=e409e0f42d86f0e48b184d0046d58a00-1269453755.765250-1032151966</value>
+   </valuelist>
+   <value key="abstractProcess.IgnoreReturnValue" type="bool">false</value>
+   <valuelist key="abstractProcess.arguments" type="QVariantList">
+    <value type="QString">debug</value>
+    <value type="QString">-w</value>
+   </valuelist>
+   <value key="abstractProcess.command" type="QString">/usr/bin/make</value>
+   <value key="abstractProcess.enabled" type="bool">true</value>
+   <value key="abstractProcess.workingDirectory" type="QString">/home/allusers/fall09/bdorr/Desktop/MoulKI</value>
+   <valuelist key="makeargs" type="QVariantList">
+    <value type="QString">debug</value>
+   </valuelist>
+  </valuemap>
+ </data>
+ <data>
+  <variable>buildconfiguration-Debug-cleanstep0</variable>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString">Debug</value>
+   <valuelist key="abstractProcess.Environment" type="QVariantList">
+    <value type="QString">CVS_RSH=ssh</value>
+    <value type="QString">DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-0vhBGZVrW7,guid=8c4a5065e5b55604fb87cd004baa53bb</value>
+    <value type="QString">DESKTOP_SESSION=default</value>
+    <value type="QString">DISPLAY=:20.0</value>
+    <value type="QString">GDMSESSION=default</value>
+    <value type="QString">GDM_XSERVER_LOCATION=flexi</value>
+    <value type="QString">GNOME_DESKTOP_SESSION_ID=Default</value>
+    <value type="QString">GNOME_KEYRING_SOCKET=/tmp/keyring-e1gigU/socket</value>
+    <value type="QString">GTK_RC_FILES=/etc/gtk/gtkrc:/home/allusers/fall09/bdorr/.gtkrc-1.2-gnome2</value>
+    <value type="QString">G_BROKEN_FILENAMES=1</value>
+    <value type="QString">HISTSIZE=1000</value>
+    <value type="QString">HOME=/home/allusers/fall09/bdorr</value>
+    <value type="QString">HOSTNAME=anaconda32.uml.edu</value>
+    <value type="QString">INPUTRC=/etc/inputrc</value>
+    <value type="QString">KDEDIRS=/usr</value>
+    <value type="QString">KDE_IS_PRELINKED=1</value>
+    <value type="QString">LANG=en_US.UTF-8</value>
+    <value type="QString">LD_LIBRARY_PATH=/home/allusers/fall09/bdorr/qtsdk-2010.02/lib/qtcreator:</value>
+    <value type="QString">LESSOPEN=|/usr/bin/lesspipe.sh %s</value>
+    <value type="QString">LOGNAME=bdorr</value>
+    <value type="QString">MAIL=/var/spool/mail/bdorr</value>
+    <value type="QString">PATH=/home/allusers/fall09/bdorr/qtsdk-2010.02/qt/bin:/usr/lib/qt-3.3/bin:/usr/kerberos/bin:/usr/lib/ccache:/usr/local/bin:/usr/bin:/bin:/home/allusers/fall09/bdorr/bin</value>
+    <value type="QString">PWD=/home/allusers/fall09/bdorr</value>
+    <value type="QString">QTDIR=/home/allusers/fall09/bdorr/qtsdk-2010.02/qt</value>
+    <value type="QString">QTINC=/usr/lib/qt-3.3/include</value>
+    <value type="QString">QTLIB=/usr/lib/qt-3.3/lib</value>
+    <value type="QString">SESSION_MANAGER=local/unix:/tmp/.ICE-unix/26978</value>
+    <value type="QString">SHELL=/bin/bash</value>
+    <value type="QString">SHLVL=1</value>
+    <value type="QString">SSH_AGENT_PID=27081</value>
+    <value type="QString">SSH_ASKPASS=/usr/libexec/openssh/gnome-ssh-askpass</value>
+    <value type="QString">SSH_AUTH_SOCK=/tmp/ssh-dzrIL26978/agent.26978</value>
+    <value type="QString">TERM=dumb</value>
+    <value type="QString">USER=bdorr</value>
+    <value type="QString">USERNAME=bdorr</value>
+    <value type="QString">XAUTHORITY=/tmp/.gdmAF2Q9U</value>
+    <value type="QString">XDG_SESSION_COOKIE=e409e0f42d86f0e48b184d0046d58a00-1269453755.765250-1032151966</value>
+   </valuelist>
+   <value key="abstractProcess.IgnoreReturnValue" type="bool">true</value>
+   <valuelist key="abstractProcess.arguments" type="QVariantList">
+    <value type="QString">clean</value>
+    <value type="QString">-w</value>
+   </valuelist>
+   <value key="abstractProcess.command" type="QString">/usr/bin/make</value>
+   <value key="abstractProcess.enabled" type="bool">true</value>
+   <value key="abstractProcess.workingDirectory" type="QString">/home/allusers/fall09/bdorr/Desktop/MoulKI</value>
+   <value key="cleanConfig" type="bool">true</value>
+   <valuelist key="makeargs" type="QVariantList">
+    <value type="QString">clean</value>
+   </valuelist>
+  </valuemap>
+ </data>
+ <data>
+  <variable>buildconfiguration-Release-buildstep0</variable>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString">Release</value>
+   <value key="buildConfiguration" type=""></value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>buildconfiguration-Release-buildstep1</variable>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString">Release</value>
+   <valuelist key="makeargs" type="QVariantList">
+    <value type="QString">release</value>
+   </valuelist>
+  </valuemap>
+ </data>
+ <data>
+  <variable>buildconfiguration-Release-cleanstep0</variable>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString">Release</value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>buildconfigurations</variable>
+  <valuelist type="QVariantList">
+   <value type="QString">Debug</value>
+   <value type="QString">Release</value>
+  </valuelist>
+ </data>
+ <data>
+  <variable>buildstep0</variable>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString"></value>
+   <value key="mkspec" type="QString"></value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>buildstep1</variable>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString"></value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>buildsteps</variable>
+  <valuelist type="QVariantList">
+   <value type="QString">trolltech.qt4projectmanager.qmake</value>
+   <value type="QString">trolltech.qt4projectmanager.make</value>
+  </valuelist>
+ </data>
+ <data>
+  <variable>cleanstep0</variable>
+  <valuemap type="QVariantMap">
+   <value key="ProjectExplorer.BuildConfiguration.DisplayName" type="QString"></value>
+   <value key="clean" type="bool">true</value>
+  </valuemap>
+ </data>
+ <data>
+  <variable>cleansteps</variable>
+  <valuelist type="QVariantList">
+   <value type="QString">trolltech.qt4projectmanager.make</value>
+  </valuelist>
+ </data>
+ <data>
+  <variable>defaultFileEncoding</variable>
+  <value type="QByteArray">System</value>
+ </data>
+ <data>
+  <variable>project</variable>
+  <valuemap type="QVariantMap"/>
+ </data>
+</qtcreator>
