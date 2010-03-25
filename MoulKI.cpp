@@ -203,7 +203,7 @@ void MoulKI::loadNodeImage() {
     hsUint32 len = data.length();
     char* dataPtr = new char[len + 4];
     *(hsUint32*)dataPtr = len;
-    bcopy(data.data(), dataPtr + 4, len);
+    memcpy(data.data(), dataPtr + 4, len);
     plVaultBlob blob;
     blob.setData(len + 4, (const unsigned char*)dataPtr);
     node->setBlob(0, blob);
