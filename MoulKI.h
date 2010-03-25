@@ -42,17 +42,13 @@ public slots:
     void setActive(hsUint32 playerId);
     void addRoot(hsUint32 idx);
     // node editing slots
-    void showNodeData();
-    void editNodeData(QTableWidgetItem* item);
     void saveNodeData();
-    void loadNodeImage();
-    void saveNodeImage();
-    void editNodeTitle(QString);
-    void editNodeText();
+    void nodeDirty(bool);
+    void setShownNode();
     // context menu and associated vault manipulation slots
     void showRefDialog();
-    //void showCreateDialog(); // may just have some templates an menu items
-    void createBlankNode();
+    void showCreateDialog();
+    void showFindDialog();
     void showFetchDialog();
     void sendAdd(hsUint32 parent, hsUint32 child, hsUint32 owner);
     void sendCreate(pnVaultNode& node, hsUint32 parent);

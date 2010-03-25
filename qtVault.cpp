@@ -380,6 +380,8 @@ void qtVaultNode::setFieldFromString(size_t field, plString string) {
             setCreatorIdx(string.toUint(10));
             break;
         case kNodeType:
+            if(string.empty())
+                break;
             for(unsigned int i = 0; i < sizeof(TypeNames) / sizeof(const char*); i++) {
                 if(string.compareTo(TypeNames[i], true) == 0) {
                     setNodeType(i);

@@ -2,6 +2,7 @@
 #include "SetActiveDialog.h"
 #include "FetchDialog.h"
 #include "RefDialog.h"
+#include "CreateDialog.h"
 
 #include "MoulKI.h"
 #include "ui_MoulKI.h"
@@ -15,17 +16,13 @@ MoulKI::MoulKI(QWidget *parent)
     ui->setupUi(this);
     connect(ui->actionLogin, SIGNAL(triggered()), this, SLOT(showLoginDialog()));
     connect(ui->actionSet_Active, SIGNAL(triggered()), this, SLOT(showPlayers()));
+    connect(ui->actionFind_Node, SIGNAL(triggered()), this, SLOT(showFindDialog()));
     connect(ui->actionSubscribe, SIGNAL(triggered()), this, SLOT(showFetchDialog()));
     connect(ui->actionSave_Vault, SIGNAL(triggered()), this, SLOT(writeVault()));
     connect(ui->actionLoad_Vault, SIGNAL(triggered()), this, SLOT(readvault()));
-    connect(ui->vaultTree, SIGNAL(itemSelectionChanged()), this, SLOT(showNodeData()));
-
-    connect(ui->nodeData, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(editNodeData(QTableWidgetItem*)));
+    connect(ui->vaultTree, SIGNAL(itemSelectionChanged()), this, SLOT(setShownNode()));
     connect(ui->applyButton, SIGNAL(clicked()), this, SLOT(saveNodeData()));
-    connect(ui->loadImageButton, SIGNAL(clicked()), this, SLOT(loadNodeImage()));
-    connect(ui->saveImageButton, SIGNAL(clicked()), this, SLOT(saveNodeImage()));
-    connect(ui->textNodeTitle, SIGNAL(textEdited(QString)), this, SLOT(editNodeTitle(QString)));
-    connect(ui->imageNodeTitle, SIGNAL(textEdited(QString)), this, SLOT(editNodeTitle(QString)));
+    connect(ui->nodeEditor, SIGNAL(isDirty(bool)), this, SLOT(nodeDirty(bool)));
 
     connect(&authClient, SIGNAL(sigStatus(plString)), this, SLOT(setStatus(plString)));
     connect(&authClient, SIGNAL(loginSuccessful()), this, SLOT(showPlayers()));
@@ -41,15 +38,11 @@ MoulKI::MoulKI(QWidget *parent)
     QAction* removeRef = new QAction("&Remove", this);
     connect(removeRef, SIGNAL(triggered()), this, SLOT(sendRemove()));
     QAction* createAndRef = new QAction("&Create Node", this);
-    connect(createAndRef, SIGNAL(triggered()), this, SLOT(createBlankNode()));
+    connect(createAndRef, SIGNAL(triggered()), this, SLOT(showCreateDialog()));
     ui->vaultTree->setContextMenuPolicy(Qt::ActionsContextMenu);
     ui->vaultTree->addAction(addRef);
     ui->vaultTree->addAction(removeRef);
     ui->vaultTree->addAction(createAndRef);
-
-    // disable aux tabs
-    ui->nodeDataArea->setTabEnabled(1, false);
-    ui->nodeDataArea->setTabEnabled(2, false);
 }
 
 MoulKI::~MoulKI() {
@@ -101,11 +94,6 @@ void MoulKI::addNode(hsUint32 parent, hsUint32 child) {
     qtVaultNode* parentNode = vault.getNode(parent);
     qtVaultNode* childNode = vault.getNode(child);
     foreach(QTreeWidgetItem* item, parentNode->getItems()) {
-        /*
-        // this is enough for a single vault, but multiple vaults loose duplicate refs
-        QTreeWidgetItem* item = childNode->newItem();
-        parentNode->items[i]->addChild(item);
-        */
         // recursively add children items for vault children that already exist on this vault node
         addItemChild(item, childNode);
     }
@@ -157,134 +145,25 @@ void MoulKI::updateNode(hsUint32 idx) {
         item->setText(0, QString(node->displayName().cstr()));
         // if the node is currently being shown, update the display
         if(item->isSelected()) {
-            showNodeData();
+            ui->nodeEditor->update();
         }
     }
-}
-
-void MoulKI::editNodeData(QTableWidgetItem* item) {
-    qWarning("Node data changed");
-    qtVaultNode* node = ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>();
-    int field = item->row();
-    node->setFieldFromString(field, plString(item->text().toUtf8().data()));
-    showNodeData();
-}
-
-void MoulKI::editNodeTitle(QString title) {
-    /* really need to come up with a better way to do this
-    qtVaultNode* node = ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>();
-    node->setString64(0, plString(title.toUtf8().data()));
-    ui->applyButton->setEnabled(true);
-    showNodeData();
-    */
-}
-
-void MoulKI::editNodeText() {
-    /* really need to come up with a better way to do this
-    qtVaultNode* node = ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>();
-    node->setString64(0, plString(ui->textNodeEdit->document()->toPlainText().toUtf8().data()));
-    ui->applyButton->setEnabled(true);
-    showNodeData();
-    */
-}
-
-void MoulKI::saveNodeImage() {
-    qtVaultNode* node = ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>();
-    node->lockNode();
-    QString fileName = QFileDialog::getSaveFileName(this, "Save Image", node->getString64(0).cstr(), "*.jpg *.jpeg");
-    QFile outFile(fileName);
-    outFile.open(QIODevice::WriteOnly);
-    outFile.write((const char*)node->getBlob(0).getData() + 4, node->getBlob(0).getSize() - 4);
-    outFile.close();
-    node->unlockNode();
-}
-
-void MoulKI::loadNodeImage() {
-    qtVaultNode* node = ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>();
-    node->lockNode();
-    QString fileName = QFileDialog::getOpenFileName(this, "Load Image", "./", "*.jpg *.jpeg");
-    QFile inFile(fileName);
-    inFile.open(QIODevice::ReadOnly);
-    QByteArray data = inFile.readAll();
-    inFile.close();
-    hsUint32 len = data.length();
-    char* dataPtr = new char[len + 4];
-    *(hsUint32*)dataPtr = len;
-    memcpy(data.data(), dataPtr + 4, len);
-    plVaultBlob blob;
-    blob.setData(len + 4, (const unsigned char*)dataPtr);
-    node->setBlob(0, blob);
-    node->unlockNode();
-    delete[] dataPtr;
-    showNodeData();
-}
-
-void MoulKI::showNodeData() {
-    disconnect(ui->nodeData, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(editNodeData(QTableWidgetItem*)));
-    ui->applyButton->setEnabled(false);
-    ui->nodeData->clearContents();
-    if(ui->vaultTree->selectedItems().count() == 1) {
-        qtVaultNode* node = ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>();
-        node->lockNode();
-        ui->nodeData->setEnabled(true);
-        for(int i = 0; i < qtVaultNode::kNumFields; i++) {
-            QTableWidgetItem* fitem = new QTableWidgetItem();
-            fitem->setText(QString(node->fieldName(i).cstr()));
-            fitem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-            QTableWidgetItem* citem = new QTableWidgetItem();
-            citem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
-            citem->setText(QString(node->getFieldAsString(i).cstr()));
-            if(node->hasDirty(i)) {
-                QColor rowColor(200, 127, 127);
-                fitem->setBackground(QBrush(rowColor));
-                citem->setBackground(QBrush(rowColor));
-                ui->applyButton->setEnabled(true);
-            }
-            ui->nodeData->setItem(i, 0, fitem);
-            ui->nodeData->setItem(i, 1, citem);
-        }
-        // set the type-specific content
-        switch(node->getNodeType()) {
-            case 25: // Image
-                {
-                    if(node->getBlob(0).getSize()) {
-                        QImage image = QImage::fromData(node->getBlob(0).getData() + 4, (int)node->getBlob(0).getSize() - 4, "JPEG");
-                        qWarning("Image Size: %u, %u", image.width(), image.height());
-                        ui->imageLabel->setPixmap(QPixmap::fromImage(image));
-                    }else{
-                        qWarning("No Image in Image Node");
-                        ui->imageLabel->setPixmap(QPixmap());
-                    }
-                    ui->imageLabel->setMaximumSize(320, 240);
-                    ui->imageNodeTitle->setText(QString(node->getString64(0).cstr()));
-                    ui->nodeDataArea->setTabEnabled(1, true);
-                    ui->nodeDataArea->setTabEnabled(2, false);
-                }
-                break;
-            case 26: // Text
-                disconnect(ui->textNodeEdit, SIGNAL(textChanged()), this, SLOT(editNodeText()));
-                ui->textNodeEdit->setPlainText(QString(node->getText(0)));
-                ui->textNodeTitle->setText(QString(node->getString64(0)));
-                ui->nodeDataArea->setTabEnabled(1, false);
-                ui->nodeDataArea->setTabEnabled(2, true);
-                connect(ui->textNodeEdit, SIGNAL(textChanged()), this, SLOT(editNodeText()));
-                break;
-            default:
-                ui->nodeDataArea->setTabEnabled(1, false);
-                ui->nodeDataArea->setTabEnabled(2, false);
-                break;
-        }
-        node->unlockNode();
-    }else{
-        ui->nodeData->setEnabled(false);
-    }
-    connect(ui->nodeData, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(editNodeData(QTableWidgetItem*)));
 }
 
 void MoulKI::saveNodeData() {
     ui->applyButton->setEnabled(false);
-    qtVaultNode* node = ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>();
-    authClient.sendVaultNodeSave(node->getNodeIdx(), plUuid(), *node);
+    qtVaultNode* node = ui->nodeEditor->getNode();
+    if(authClient.isConnected()) {
+        authClient.sendVaultNodeSave(node->getNodeIdx(), plUuid(), *node);
+    }
+}
+
+void MoulKI::setShownNode() {
+    ui->nodeEditor->setNode(ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>());
+}
+
+void MoulKI::nodeDirty(bool dirty) {
+    ui->applyButton->setEnabled(dirty);
 }
 
 void MoulKI::showRefDialog() {
@@ -305,17 +184,35 @@ void MoulKI::showFetchDialog() {
     delete dialog;
 }
 
+void MoulKI::showCreateDialog() {
+    if(ui->vaultTree->selectedItems().count() == 1) {
+        hsUint32 parent = ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>()->getNodeIdx();
+        CreateDialog* dialog = new CreateDialog(this);
+        dialog->setParent(parent);
+        connect(dialog, SIGNAL(createSig(pnVaultNode&,hsUint32)), this, SLOT(sendCreate(pnVaultNode&,hsUint32)));
+        dialog->exec();
+        delete dialog;
+    }
+}
+
+void MoulKI::showFindDialog() {
+
+}
+
 void MoulKI::fetchTree(hsUint32 idx) {
     vault.queueRoot(idx);
-    authClient.sendVaultNodeFetch(idx);
+    if(authClient.isConnected())
+        authClient.sendVaultNodeFetch(idx);
 }
 
 void MoulKI::sendAdd(hsUint32 parent, hsUint32 child, hsUint32 owner) {
-    authClient.sendVaultNodeAdd(parent, child, owner);
+    if(authClient.isConnected())
+        authClient.sendVaultNodeAdd(parent, child, owner);
 }
 
 void MoulKI::sendCreate(pnVaultNode& node, hsUint32 parent) {
-    authClient.queueRef(authClient.sendVaultNodeCreate(node), parent);
+    if(authClient.isConnected())
+        authClient.queueRef(authClient.sendVaultNodeCreate(node), parent);
 }
 
 void MoulKI::sendRemove() {
@@ -323,14 +220,6 @@ void MoulKI::sendRemove() {
     qtVaultNode* parent = item->parent()->data(0, Qt::UserRole).value<qtVaultNode*>();
     qtVaultNode* child = item->data(0, Qt::UserRole).value<qtVaultNode*>();
     authClient.sendVaultNodeRemove(parent->getNodeIdx(), child->getNodeIdx());
-}
-
-void MoulKI::createBlankNode() {
-    if(ui->vaultTree->selectedItems().count() == 1) {
-        pnVaultNode node;
-        node.setNodeType(0);
-        sendCreate(node, ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>()->getNodeIdx());
-    }
 }
 
 void MoulKI::writeVault() {
