@@ -37,3 +37,4 @@ FORMS += MoulKI.ui \
     FetchDialog.ui \
     qtNodeEdit.ui \
     CreateDialog.ui
+RESOURCES += Resources.qrc

@@ -1,0 +1,23 @@
+<RCC>
+    <qresource prefix="/">
+        <file alias="Admin">Images/admin.png</file>
+        <file alias="Age">Images/age.png</file>
+        <file alias="AgeInfo">Images/agei.png</file>
+        <file alias="System">Images/bfldr.png</file>
+        <file alias="SDL">Images/data.png</file>
+        <file alias="AgeInfoList">Images/gfldr.png</file>
+        <file alias="Chronicle">Images/gtext.png</file>
+        <file alias="Image">Images/img.png</file>
+        <file alias="AgeLink">Images/link.png</file>
+        <file alias="Marker">Images/mrkr.png</file>
+        <file alias="Player">Images/plr.png</file>
+        <file alias="PlayerInfo">Images/plri.png</file>
+        <file alias="PlayerInfoList">Images/rfldr.png</file>
+        <file>Images/save.png</file>
+        <file>Images/sceneobj.png</file>
+        <file alias="TextNote">Images/text.png</file>
+        <file alias="Invalid">Images/unknown.png</file>
+        <file alias="MarkerList">Images/wfldr.png</file>
+        <file alias="Folder">Images/yfldr.png</file>
+    </qresource>
+</RCC>

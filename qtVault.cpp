@@ -284,6 +284,7 @@ QTreeWidgetItem* qtVaultNode::newItem() {
     QTreeWidgetItem* item = new QTreeWidgetItem();
     plString name = displayName();
     item->setText(0, QString(name.cstr()));
+    item->setIcon(0, QIcon(plString::Format(":/%s", TypeNames[getNodeType()]).cstr()));
     QVariant data;
     data.setValue(this);
     item->setData(0, Qt::UserRole, data);
