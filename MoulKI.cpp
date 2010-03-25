@@ -100,25 +100,28 @@ void MoulKI::addRoot(hsUint32 idx) {
 void MoulKI::addNode(hsUint32 parent, hsUint32 child) {
     qtVaultNode* parentNode = vault.getNode(parent);
     qtVaultNode* childNode = vault.getNode(child);
-    for(int i = 0; i < parentNode->items.count(); i++) {
+    foreach(QTreeWidgetItem* item, parentNode->getItems()) {
         /*
         // this is enough for a single vault, but multiple vaults loose duplicate refs
         QTreeWidgetItem* item = childNode->newItem();
         parentNode->items[i]->addChild(item);
         */
         // recursively add children items for vault children that already exist on this vault node
-        addItemChild(parentNode->items[i], childNode);
+        addItemChild(item, childNode);
     }
 }
 
 void MoulKI::addItemChild(QTreeWidgetItem* item, qtVaultNode* node) {
+    if(!node->tryLock())
+        qWarning("Add Node Failure: Recursive Vault Tree");
     if(!itemHasChild(item, node)) {
         QTreeWidgetItem* newItem = node->newItem();
         item->addChild(newItem);
-        for(int i = 0; i < node->children.count(); i++) {
-            addItemChild(newItem, node->children[i]);
+        foreach(qtVaultNode* child, node->getChildren()) {
+            addItemChild(newItem, child);
         }
     }
+    node->unlockNode();
 }
 
 bool MoulKI::itemHasChild(QTreeWidgetItem* item, qtVaultNode* node) {
@@ -133,9 +136,9 @@ bool MoulKI::itemHasChild(QTreeWidgetItem* item, qtVaultNode* node) {
 void MoulKI::removeNode(hsUint32 parent, hsUint32 child) {
     qtVaultNode* parentNode = vault.getNode(parent);
     qtVaultNode* childNode = vault.getNode(child);
+    parentNode->lockNode();
     QList<QTreeWidgetItem*> removedItems;
-    for(int i = 0; i < childNode->items.count(); i++) {
-        QTreeWidgetItem* childItem = childNode->items[i];
+    foreach(QTreeWidgetItem* childItem, childNode->getItems()) {
         if(childItem->parent()->data(0, Qt::UserRole).value<qtVaultNode*>() == parentNode) {
             childItem->parent()->removeChild(childItem);
             removedItems.append(childItem);
@@ -144,15 +147,16 @@ void MoulKI::removeNode(hsUint32 parent, hsUint32 child) {
     foreach(QTreeWidgetItem* removedItem, removedItems) {
         childNode->removeItem(removedItem);
     }
+    parentNode->unlockNode();
 }
 
 void MoulKI::updateNode(hsUint32 idx) {
     qtVaultNode* node = vault.getNode(idx);
     // update all the items associated with this node
-    for(int i = 0; i < node->items.count(); i++) {
-        node->items[i]->setText(0, QString(node->displayName().cstr()));
+    foreach(QTreeWidgetItem* item, node->getItems()) {
+        item->setText(0, QString(node->displayName().cstr()));
         // if the node is currently being shown, update the display
-        if(node->items[i]->isSelected()) {
+        if(item->isSelected()) {
             showNodeData();
         }
     }
@@ -186,15 +190,18 @@ void MoulKI::editNodeText() {
 
 void MoulKI::saveNodeImage() {
     qtVaultNode* node = ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>();
-    QString fileName = QFileDialog::getSaveFileName(this, "Save Image", "./", "*.jpg *.jpeg");
+    node->lockNode();
+    QString fileName = QFileDialog::getSaveFileName(this, "Save Image", node->getString64(0).cstr(), "*.jpg *.jpeg");
     QFile outFile(fileName);
     outFile.open(QIODevice::WriteOnly);
     outFile.write((const char*)node->getBlob(0).getData() + 4, node->getBlob(0).getSize() - 4);
     outFile.close();
+    node->unlockNode();
 }
 
 void MoulKI::loadNodeImage() {
     qtVaultNode* node = ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>();
+    node->lockNode();
     QString fileName = QFileDialog::getOpenFileName(this, "Load Image", "./", "*.jpg *.jpeg");
     QFile inFile(fileName);
     inFile.open(QIODevice::ReadOnly);
@@ -207,6 +214,7 @@ void MoulKI::loadNodeImage() {
     plVaultBlob blob;
     blob.setData(len + 4, (const unsigned char*)dataPtr);
     node->setBlob(0, blob);
+    node->unlockNode();
     delete[] dataPtr;
     showNodeData();
 }
@@ -217,6 +225,7 @@ void MoulKI::showNodeData() {
     ui->nodeData->clearContents();
     if(ui->vaultTree->selectedItems().count() == 1) {
         qtVaultNode* node = ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>();
+        node->lockNode();
         ui->nodeData->setEnabled(true);
         for(int i = 0; i < qtVaultNode::kNumFields; i++) {
             QTableWidgetItem* fitem = new QTableWidgetItem();
@@ -265,6 +274,7 @@ void MoulKI::showNodeData() {
                 ui->nodeDataArea->setTabEnabled(2, false);
                 break;
         }
+        node->unlockNode();
     }else{
         ui->nodeData->setEnabled(false);
     }

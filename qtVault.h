@@ -3,6 +3,7 @@
 
 #include <QMap>
 #include <QFile>
+#include <QMutex>
 #include <QObject>
 #include <QMetaType>
 #include <QTreeWidgetItem>
@@ -17,20 +18,32 @@ private:
     static const char* FolderTypes[];
     static const char* FieldNames[];
 
+    QList<qtVaultNode*> children;
+    QList<QTreeWidgetItem*> items;
+    QMutex nodeMutex;
+
 public:
     qtVaultNode();
     qtVaultNode(const pnVaultNode& node);
+    qtVaultNode(const qtVaultNode& node);
+    void operator=(const qtVaultNode& node);
+    void copy(const qtVaultNode &init);
 
     plString displayName();
     plString fieldName(size_t field);
     plString getFieldAsString(size_t field);
     void setFieldFromString(size_t field, plString string);
+    const QList<qtVaultNode*> getChildren();
+    bool addChild(qtVaultNode* child);
+    void removeChild(qtVaultNode* child);
 
     QTreeWidgetItem* newItem();
     void removeItem(QTreeWidgetItem* item);
+    const QList<QTreeWidgetItem*> getItems();
 
-    QList<qtVaultNode*> children;
-    QList<QTreeWidgetItem*> items;
+    void lockNode();
+    void unlockNode();
+    bool tryLock();
 };
 Q_DECLARE_METATYPE(qtVaultNode*)
 
@@ -40,7 +53,9 @@ class qtVault : public QObject
 private:
     QMap<hsUint32, qtVaultNode> nodes;
     QList<pnVaultNodeRef> refQueue;
+    QList<pnVaultNodeRef> refList;
     QList<hsUint32> rootQueue;
+    QMutex vaultMutex;
 
 public:
     qtVault();

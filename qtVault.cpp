@@ -109,62 +109,73 @@ qtVault::~qtVault() {
 }
 
 void qtVault::addNode(const pnVaultNode& node) {
+    vaultMutex.lock();
+    bool updated = false;
     if(nodes.contains(node.getNodeIdx())) {
         nodes[node.getNodeIdx()].copy(node);
-        emit updatedNode(node.getNodeIdx());
+        updated = true;
     }else{
         nodes.insert(node.getNodeIdx(), qtVaultNode(node));
     }
-    if(rootQueue.contains(node.getNodeIdx())) {
-        rootQueue.removeAll(node.getNodeIdx());
-        emit gotRootNode(node.getNodeIdx());
-    }
-    // check to see if we can handle some refs
-    // the never delete cached refs method
-    foreach(pnVaultNodeRef ref, refQueue) {
-        if(ref.fChild == node.getNodeIdx() || ref.fParent == node.getNodeIdx()) {
-            addRef(ref);
-        }
-    }
-    /*
     // the clean the cache method
     QList<pnVaultNodeRef> resolvedRefs;
     foreach(pnVaultNodeRef ref, refQueue) {
-        if(addRef(ref)) {
-            resolvedRefs.append(ref);
+        if(ref.fChild == node.getNodeIdx() || ref.fParent == node.getNodeIdx()) {
+            if(addRef(ref)) {
+                resolvedRefs.append(ref);
+            }
         }
     }
     foreach(pnVaultNodeRef ref, resolvedRefs) {
         refQueue.removeAll(ref);
     }
-    */
+    vaultMutex.unlock();
+    // send signals for vault events triggered by this nodeAdd
+    if(updated)
+        emit updatedNode(node.getNodeIdx());
+    if(rootQueue.contains(node.getNodeIdx())) {
+        rootQueue.removeAll(node.getNodeIdx());
+        emit gotRootNode(node.getNodeIdx());
+    }
     if(refQueue.count() == 0)
         emit fetchComplete();
 }
 
 bool qtVault::addRef(const pnVaultNodeRef& ref) {
+    bool locked = vaultMutex.tryLock();
+    if(!refList.contains(ref))
+        refList.append(ref);
     if(nodes.contains(ref.fChild) && nodes.contains(ref.fParent)) {
-        if(!nodes[ref.fParent].children.contains(&nodes[ref.fChild])) {
-            nodes[ref.fParent].children.append(&nodes[ref.fChild]);
+        if(nodes[ref.fParent].addChild(&nodes[ref.fChild])) {
             emit addedNode(ref.fParent, ref.fChild);
         }
+        if(locked)
+            vaultMutex.unlock();
         return true;
     }else if(!refQueue.contains(ref)) {
         refQueue.append(ref);
     }
+    if(locked)
+        vaultMutex.unlock();
     return false;
 }
 
 void qtVault::removeRef(hsUint32 parent, hsUint32 child) {
+    vaultMutex.lock();
+    bool removed = false;
     if(nodes.contains(parent) && nodes.contains(child)) {
-        nodes[parent].children.removeAll(&nodes[child]);
-        emit removedNode(parent, child);
+        removed = true;
+        nodes[parent].removeChild(&nodes[child]);
         // remove pending refs
         pnVaultNodeRef ref;
         ref.fParent = parent;
         ref.fChild = child;
         refQueue.removeAll(ref);
+        refList.removeAll(ref);
     }
+    vaultMutex.unlock();
+    if(removed)
+        emit removedNode(parent, child);
 }
 
 void qtVault::queueRoot(hsUint32 idx) {
@@ -176,8 +187,9 @@ qtVaultNode* qtVault::getNode(hsUint32 idx) {
 }
 
 void qtVault::writeVault(hsFileStream& file) {
-    file.writeInt(refQueue.count());
-    foreach(pnVaultNodeRef ref, refQueue) {
+    vaultMutex.lock();
+    file.writeInt(refList.count());
+    foreach(pnVaultNodeRef ref, refList) {
         file.write(sizeof(ref), &ref);
     }
     file.writeInt(nodes.count());
@@ -191,6 +203,7 @@ void qtVault::writeVault(hsFileStream& file) {
         file.write(size, buffer);
         delete[] buffer;
     }
+    vaultMutex.unlock();
 }
 
 void qtVault::readVault(hsFileStream& file) {
@@ -218,6 +231,20 @@ qtVaultNode::qtVaultNode() {
 }
 
 qtVaultNode::qtVaultNode(const pnVaultNode& node) : pnVaultNode(node) {
+}
+
+qtVaultNode::qtVaultNode(const qtVaultNode &node) {
+    copy(node);
+}
+
+void qtVaultNode::operator =(const qtVaultNode& node) {
+    copy(node);
+}
+
+void qtVaultNode::copy(const qtVaultNode &init) {
+    pnVaultNode::copy(init);
+    children = init.children;
+    items = init.items;
 }
 
 plString qtVaultNode::displayName() {
@@ -410,4 +437,42 @@ void qtVaultNode::setFieldFromString(size_t field, plString string) {
 
 void qtVaultNode::removeItem(QTreeWidgetItem* item) {
     items.removeAll(item);
+}
+
+const QList<QTreeWidgetItem*> qtVaultNode::getItems() {
+    return items;
+}
+
+const QList<qtVaultNode*> qtVaultNode::getChildren() {
+    return children;
+}
+
+bool qtVaultNode::addChild(qtVaultNode *child) {
+    if(children.contains(child)) {
+        return false;
+    }else{
+        lockNode();
+        children.append(child);
+        unlockNode();
+        return true;
+    }
+}
+
+void qtVaultNode::removeChild(qtVaultNode *child) {
+    lockNode();
+    children.removeAll(child);
+    unlockNode();
+}
+
+void qtVaultNode::lockNode() {
+    nodeMutex.lock();
+}
+
+void qtVaultNode::unlockNode() {
+    nodeMutex.unlock();
+}
+
+bool qtVaultNode::tryLock() {
+    return nodeMutex.tryLock();
+    return true;
 }
