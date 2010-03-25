@@ -124,7 +124,7 @@ bool MoulKI::itemHasChild(QTreeWidgetItem* item, qtVaultNode* node) {
 void MoulKI::removeNode(hsUint32 parent, hsUint32 child) {
     qtVaultNode* parentNode = vault.getNode(parent);
     qtVaultNode* childNode = vault.getNode(child);
-    parentNode->lockNode();
+    childNode->lockNode();
     QList<QTreeWidgetItem*> removedItems;
     foreach(QTreeWidgetItem* childItem, childNode->getItems()) {
         if(childItem->parent()->data(0, Qt::UserRole).value<qtVaultNode*>() == parentNode) {
@@ -135,7 +135,7 @@ void MoulKI::removeNode(hsUint32 parent, hsUint32 child) {
     foreach(QTreeWidgetItem* removedItem, removedItems) {
         childNode->removeItem(removedItem);
     }
-    parentNode->unlockNode();
+    childNode->unlockNode();
 }
 
 void MoulKI::updateNode(hsUint32 idx) {

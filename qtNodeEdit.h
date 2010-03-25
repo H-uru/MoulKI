@@ -28,13 +28,17 @@ protected:
 private:
     Ui::qtNodeEdit *ui;
     qtVaultNode* node;
+    bool titleEdited;
+    bool textEdited;
+    QString newTitle;
 
 private slots:
     void dataRowChanged(QTableWidgetItem* item);
-    void editNodeTitle(QString);
+    void editNodeTitle(QString title);
     void editNodeText();
     void loadNodeImage();
     void saveNodeImage();
+    void tabActivated(int tab);
 
 };
 

@@ -15,6 +15,7 @@ qtNodeEdit::qtNodeEdit(QWidget *parent) :
     connect(ui->saveImageButton, SIGNAL(clicked()), this, SLOT(saveNodeImage()));
     connect(ui->textNodeTitle, SIGNAL(textEdited(QString)), this, SLOT(editNodeTitle(QString)));
     connect(ui->imageNodeTitle, SIGNAL(textEdited(QString)), this, SLOT(editNodeTitle(QString)));
+    connect(ui->nodeDataArea, SIGNAL(currentChanged(int)), this, SLOT(tabActivated(int)));
 
     // disable aux tabs
     ui->nodeDataArea->setTabEnabled(1, false);
@@ -39,6 +40,8 @@ void qtNodeEdit::changeEvent(QEvent *e)
 }
 
 void qtNodeEdit::setNode(qtVaultNode *pn) {
+    textEdited = false;
+    titleEdited = false;
     node = pn;
     update();
 }
@@ -51,21 +54,23 @@ void qtNodeEdit::dataRowChanged(QTableWidgetItem* item) {
 }
 
 void qtNodeEdit::editNodeTitle(QString title) {
-    /* really need to come up with a better way to do this
-    qtVaultNode* node = ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>();
-    node->setString64(0, plString(title.toUtf8().data()));
-    ui->applyButton->setEnabled(true);
-    showNodeData();
-    */
+    newTitle = title;
+    titleEdited = true;
 }
 
 void qtNodeEdit::editNodeText() {
-    /* really need to come up with a better way to do this
-    qtVaultNode* node = ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>();
-    node->setString64(0, plString(ui->textNodeEdit->document()->toPlainText().toUtf8().data()));
-    ui->applyButton->setEnabled(true);
-    showNodeData();
-    */
+    textEdited = true;
+}
+
+void qtNodeEdit::tabActivated(int tab) {
+    if(titleEdited)
+        node->setString64(0, plString(newTitle.toUtf8().data()));
+    if(textEdited)
+        node->setText(0, plString(ui->textNodeEdit->document()->toPlainText().toUtf8().data()));
+    if(titleEdited || textEdited)
+        update();
+    titleEdited = false;
+    textEdited = false;
 }
 
 void qtNodeEdit::saveNodeImage() {
