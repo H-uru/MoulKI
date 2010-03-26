@@ -16,12 +16,14 @@ public:
     ~CreateNodeDialog();
 
     void setParent(hsUint32 idx);
+    void setActFind();
 
 public slots:
     void sendCreate();
 
 signals:
     void createSig(pnVaultNode& node, hsUint32 parent);
+    void findSig(pnVaultNode& node);
 
 protected:
     void changeEvent(QEvent *e);
@@ -30,6 +32,7 @@ private:
     Ui::CreateNodeDialog *ui;
     qtVaultNode node;
     hsUint32 parentIdx;
+    int act;
 };
 
 #endif // CREATEDIALOG_H

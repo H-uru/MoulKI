@@ -16,19 +16,21 @@ public:
     explicit SetActiveDialog(QWidget *parent = 0);
     virtual ~SetActiveDialog();
     void setPlayers(QList<authPlayer> plyrs);
+    void setFoundNodes(QList<hsUint32> nodes);
 
 protected:
     virtual void changeEvent(QEvent *e);
 
 private:
     Ui::SetActiveDialog *m_ui;
-    QList<authPlayer> players;
 
 private slots:
     void setActive();
+    void sendFetches();
 
 signals:
     void setActive(hsUint32 player);
+    void fetchFound(hsUint32 idx);
 };
 
 #endif // SETACTIVEDIALOG_H

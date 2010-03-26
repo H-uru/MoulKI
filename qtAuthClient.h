@@ -66,7 +66,7 @@ public:
 
 signals:
     void sigStatus(plString msg);
-    void foundNodes(size_t count, QList<hsUint32> nodes);
+    void foundNodes(int count, QList<hsUint32> nodes);
     void loginSuccessful();
 };
 

@@ -31,10 +31,19 @@ void CreateNodeDialog::changeEvent(QEvent *e)
     }
 }
 
+void CreateNodeDialog::setActFind() {
+    setWindowTitle("Find Node");
+    act = 1;
+}
+
 void CreateNodeDialog::setParent(hsUint32 idx) {
     parentIdx = idx;
+    act = 0;
 }
 
 void CreateNodeDialog::sendCreate() {
-    emit createSig(node, parentIdx);
+    if(act)
+        emit findSig(node);
+    else
+        emit createSig(node, parentIdx);
 }

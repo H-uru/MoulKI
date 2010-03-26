@@ -1,5 +1,7 @@
 #include "qtGameClient.h"
 
-qtGameClient::qtGameClient()
-{
+qtGameClient::qtGameClient(QObject* parent) : QObject(parent) {
+}
+
+qtGameClient::~qtGameClient() {
 }

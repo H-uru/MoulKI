@@ -52,10 +52,14 @@ public slots:
     void showFetchDialog();
     void sendAdd(hsUint32 parent, hsUint32 child, hsUint32 owner);
     void sendCreate(pnVaultNode& node, hsUint32 parent);
+    void sendFind(pnVaultNode& node);
+    void showFoundDialog(int count, QList<hsUint32> nodes);
     void fetchTree(hsUint32 idx);
     void sendRemove();
     void writeVault();
     void readvault();
+    // gameserver events
+    void joinAge();
 
 public:
     plResManager resMgr;

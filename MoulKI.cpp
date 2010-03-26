@@ -26,6 +26,7 @@ MoulKI::MoulKI(QWidget *parent)
 
     connect(&authClient, SIGNAL(sigStatus(plString)), this, SLOT(setStatus(plString)));
     connect(&authClient, SIGNAL(loginSuccessful()), this, SLOT(showPlayers()));
+    connect(&authClient, SIGNAL(foundNodes(int,QList<hsUint32>)), this, SLOT(showFoundDialog(int,QList<hsUint32>)));
 
     connect(&vault, SIGNAL(addedNode(hsUint32, hsUint32)), this, SLOT(addNode(hsUint32,hsUint32)));
     connect(&vault, SIGNAL(removedNode(hsUint32, hsUint32)), this, SLOT(removeNode(hsUint32,hsUint32)));
@@ -209,7 +210,19 @@ void MoulKI::showCreateDialog() {
 }
 
 void MoulKI::showFindDialog() {
+    CreateNodeDialog* dialog = new CreateNodeDialog(this);
+    dialog->setActFind();
+    connect(dialog, SIGNAL(findSig(pnVaultNode&)), this, SLOT(sendFind(pnVaultNode&)));
+    dialog->exec();
+    delete dialog;
+}
 
+void MoulKI::showFoundDialog(int count, QList<hsUint32> nodes) {
+    SetActiveDialog* dialog = new SetActiveDialog(this);
+    dialog->setFoundNodes(nodes);
+    connect(dialog, SIGNAL(fetchFound(hsUint32)), this, SLOT(fetchTree(hsUint32)));
+    dialog->exec();
+    delete dialog;
 }
 
 void MoulKI::fetchTree(hsUint32 idx) {
@@ -226,6 +239,15 @@ void MoulKI::sendAdd(hsUint32 parent, hsUint32 child, hsUint32 owner) {
 void MoulKI::sendCreate(pnVaultNode& node, hsUint32 parent) {
     if(authClient.isConnected())
         authClient.queueRef(authClient.sendVaultNodeCreate(node), parent);
+}
+
+void MoulKI::sendFind(pnVaultNode& node) {
+    if(authClient.isConnected())
+        authClient.sendVaultNodeFind(node);
+}
+
+void MoulKI::joinAge() {
+
 }
 
 void MoulKI::sendRemove() {
