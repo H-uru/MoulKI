@@ -268,11 +268,36 @@ plString qtVaultNode::displayName() {
     return plString(TypeNames[getNodeType()]);
 }
 
+QIcon qtVaultNode::getIcon() {
+    QImage iconImage = QImage(plString::Format(":/%s", TypeNames[getNodeType()]).cstr());
+    bool shift = false;
+    if(getNodeType() == 23 && getInt32(k_1) == 1) { // PlayerInfo
+        shift = true;
+    }else if(getNodeType() == 2) { // Player
+        foreach(qtVaultNode* child, getChildren()) {
+            if(child->getNodeType() == 23 && child->getInt32(k_1) == 1) {
+                shift = true;
+                break;
+            }
+        }
+    }
+    if(shift) {
+        // manipulate it to make it green
+        for(int i = 0; i < iconImage.colorCount(); i++) {
+            if(iconImage.color(i) == 0xFFFF0000)
+                iconImage.setColor(i, 0xFF00FF00);
+            if(iconImage.color(i) == 0xFF800000)
+                iconImage.setColor(i, 0xFF008000);
+        }
+    }
+    return QIcon(QPixmap::fromImage(iconImage));
+}
+
 QTreeWidgetItem* qtVaultNode::newItem() {
     QTreeWidgetItem* item = new QTreeWidgetItem();
     plString name = displayName();
     item->setText(0, QString(name.cstr()));
-    item->setIcon(0, QIcon(plString::Format(":/%s", TypeNames[getNodeType()]).cstr()));
+    item->setIcon(0, getIcon());
     QVariant data;
     data.setValue(this);
     item->setData(0, Qt::UserRole, data);
@@ -313,7 +338,7 @@ plString qtVaultNode::getFieldAsString(size_t field) {
         case kUint32_2:
         case kUint32_3:
         case kUint32_4:
-            return plString::Format("%u", getInt32(field - kUint32_1));
+            return plString::Format("%u", getUint32(field - kUint32_1));
         case kUuid_1:
         case kUuid_2:
         case kUuid_3:

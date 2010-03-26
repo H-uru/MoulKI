@@ -157,6 +157,9 @@ void MoulKI::updateNode(hsUint32 idx) {
     // update all the items associated with this node
     foreach(QTreeWidgetItem* item, node->getItems()) {
         item->setText(0, QString(node->displayName().cstr()));
+        item->setIcon(0, node->getIcon());
+        if(node->getNodeType() == 23) // PlayerInfo
+            updateNode(node->getCreatorIdx());
         // if the node is currently being shown, update the display
         if(item->isSelected()) {
             ui->nodeEditor->update();

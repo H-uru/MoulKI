@@ -32,6 +32,7 @@ public:
     plString displayName();
     plString fieldName(size_t field);
     plString getFieldAsString(size_t field);
+    QIcon getIcon();
     void setFieldFromString(size_t field, plString string);
     const QList<qtVaultNode*> getChildren();
     bool addChild(qtVaultNode* child);
