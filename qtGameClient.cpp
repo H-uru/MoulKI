@@ -14,7 +14,8 @@ void qtGameClient::onPropagateMessage(plCreatable *msg) {
     hsRAMStream S(pvLive);
     pfPrcHelper prc(&S);
     msg->prcWrite(&prc);
-    char data[S.size()];
+    char* data = new char[S.size()];
     S.copyTo(data, S.size());
     emit receivedGameMsg(QString(data));
+    delete[] data;
 }
