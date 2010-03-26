@@ -269,7 +269,6 @@ plString qtVaultNode::displayName() {
 }
 
 QIcon qtVaultNode::getIcon() {
-    QImage iconImage = QImage(plString::Format(":/%s", TypeNames[getNodeType()]).cstr());
     bool shift = false;
     if(getNodeType() == 23 && getInt32(k_1) == 1) { // PlayerInfo
         shift = true;
@@ -281,14 +280,20 @@ QIcon qtVaultNode::getIcon() {
             }
         }
     }
+    QImage iconImage;
+
     if(shift) {
-        // manipulate it to make it green
-        for(int i = 0; i < iconImage.colorCount(); i++) {
+        iconImage = QImage(plString::Format(":/%s_on", TypeNames[getNodeType()]).cstr());
+        /* manipulate it to make it green
+        for(int i = 0; i < iconImage.numColors(); i++) {
             if(iconImage.color(i) == 0xFFFF0000)
                 iconImage.setColor(i, 0xFF00FF00);
             if(iconImage.color(i) == 0xFF800000)
                 iconImage.setColor(i, 0xFF008000);
         }
+        */
+    }else{
+        iconImage = QImage(plString::Format(":/%s", TypeNames[getNodeType()]).cstr());
     }
     return QIcon(QPixmap::fromImage(iconImage));
 }
@@ -413,7 +418,7 @@ void qtVaultNode::setFieldFromString(size_t field, plString string) {
         case kUint32_2:
         case kUint32_3:
         case kUint32_4:
-            setUInt32(field - kUint32_1, string.toUint(10));
+            setUint32(field - kUint32_1, string.toUint(10));
             break;
         case kUuid_1:
         case kUuid_2:

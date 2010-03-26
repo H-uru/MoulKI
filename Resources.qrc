@@ -19,5 +19,7 @@
         <file alias="Invalid">Images/unknown.png</file>
         <file alias="MarkerList">Images/wfldr.png</file>
         <file alias="Folder">Images/yfldr.png</file>
+        <file alias="PlayerInfo_on">Images/plri_on.png</file>
+        <file alias="Player_on">Images/plr_on.png</file>
     </qresource>
 </RCC>
