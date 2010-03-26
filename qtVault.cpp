@@ -419,7 +419,14 @@ void qtVaultNode::setFieldFromString(size_t field, plString string) {
         case kUuid_2:
         case kUuid_3:
         case kUuid_4:
-            setUuid(field - kUuid_1, plUuid(string.cstr()));
+            {
+                try {
+                    plUuid uuid(string.cstr());
+                    setUuid(field - kUuid_1, uuid);
+                } catch (hsException e) {
+                    qWarning("qtVaultNode::setFieldFromString(): Bad Uuid String (%s)", e.what());
+                }
+            }
             break;
         case kString64_1:
         case kString64_2:

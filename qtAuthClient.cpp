@@ -14,6 +14,7 @@ qtAuthClient::~qtAuthClient() {
 }
 
 void qtAuthClient::startLogin(QString user, QString pass) {
+    players.clear();
     // apparently HSPlasma still doesn't lowercase the username
     this->user = plString(user.toLower().toAscii().constData());
     this->pass = plString(pass.toAscii().constData());

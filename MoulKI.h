@@ -44,6 +44,7 @@ public slots:
     void addRoot(hsUint32 idx);
     // node editing slots
     void saveNodeData();
+    void revertNode();
     void nodeDirty(bool);
     void setShownNode();
     // context menu and associated vault manipulation slots

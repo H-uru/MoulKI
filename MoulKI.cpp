@@ -22,6 +22,7 @@ MoulKI::MoulKI(QWidget *parent)
     connect(ui->actionLoad_Vault, SIGNAL(triggered()), this, SLOT(readvault()));
     connect(ui->vaultTree, SIGNAL(itemSelectionChanged()), this, SLOT(setShownNode()));
     connect(ui->applyButton, SIGNAL(clicked()), this, SLOT(saveNodeData()));
+    connect(ui->revertButton, SIGNAL(clicked()), this, SLOT(revertNode()));
     connect(ui->nodeEditor, SIGNAL(isDirty(bool)), this, SLOT(nodeDirty(bool)));
 
     connect(&authClient, SIGNAL(sigStatus(plString)), this, SLOT(setStatus(plString)));
@@ -175,12 +176,21 @@ void MoulKI::saveNodeData() {
     }
 }
 
+void MoulKI::revertNode() {
+    ui->revertButton->setEnabled(false);
+    qtVaultNode* node = ui->nodeEditor->getNode();
+    if(authClient.isConnected()) {
+        authClient.sendVaultNodeFetch(node->getNodeIdx());
+    }
+}
+
 void MoulKI::setShownNode() {
     ui->nodeEditor->setNode(ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>());
 }
 
 void MoulKI::nodeDirty(bool dirty) {
     ui->applyButton->setEnabled(dirty);
+    ui->revertButton->setEnabled(dirty);
 }
 
 void MoulKI::showRefDialog() {
