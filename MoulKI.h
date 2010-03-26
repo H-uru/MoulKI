@@ -30,6 +30,7 @@ private:
 
     void addItemChild(QTreeWidgetItem* item, qtVaultNode* node);
     bool itemHasChild(QTreeWidgetItem* item, qtVaultNode* node);
+    void removeTreeNodes(QTreeWidgetItem* item, qtVaultNode* node);
 
 public slots:
     void showLoginDialog();

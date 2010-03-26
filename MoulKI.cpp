@@ -255,9 +255,22 @@ void MoulKI::joinAge() {
 
 void MoulKI::sendRemove() {
     QTreeWidgetItem* item = ui->vaultTree->selectedItems()[0];
-    qtVaultNode* parent = item->parent()->data(0, Qt::UserRole).value<qtVaultNode*>();
     qtVaultNode* child = item->data(0, Qt::UserRole).value<qtVaultNode*>();
-    authClient.sendVaultNodeRemove(parent->getNodeIdx(), child->getNodeIdx());
+    if(item->parent()) {
+        qtVaultNode* parent = item->parent()->data(0, Qt::UserRole).value<qtVaultNode*>();
+        authClient.sendVaultNodeRemove(parent->getNodeIdx(), child->getNodeIdx());
+    }else{
+        // if there's no parent node, then it's a treeview root, so let's clean up
+        removeTreeNodes(item, child);
+        delete ui->vaultTree->takeTopLevelItem(ui->vaultTree->indexOfTopLevelItem(item));
+    }
+}
+
+void MoulKI::removeTreeNodes(QTreeWidgetItem* item, qtVaultNode* node) {
+    for(int i = 0; i < item->childCount(); i++) {
+        removeTreeNodes(item->child(i), item->child(i)->data(0, Qt::UserRole).value<qtVaultNode*>());
+    }
+    node->removeItem(item);
 }
 
 void MoulKI::writeVault() {
