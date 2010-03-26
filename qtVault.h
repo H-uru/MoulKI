@@ -61,7 +61,7 @@ public:
     qtVault();
     ~qtVault();
     void addNode(const pnVaultNode& node);
-    bool addRef(const pnVaultNodeRef& ref);
+    void addRef(const pnVaultNodeRef& ref);
     void removeRef(hsUint32 parent, hsUint32 child);
     void queueRoot(hsUint32 idx);
     qtVaultNode* getNode(hsUint32 idx);

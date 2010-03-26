@@ -85,6 +85,14 @@ void MoulKI::addRoot(hsUint32 idx) {
     QTreeWidgetItem* item = node->newItem();
     ui->vaultTree->addTopLevelItem(item);
     ui->vaultTree->expandItem(item);
+    node->lockNode();
+    foreach(qtVaultNode* childNode, node->getChildren()) {
+        // root nodes may already have child refs
+        // duplicate refs will not emit signals when added, so we need to add
+        // preexisting children now
+        addItemChild(item, childNode);
+    }
+    node->unlockNode();
     if(authClient.isConnected()) {
         authClient.sendVaultFetchNodeRefs(node->getNodeIdx());
     }
@@ -93,6 +101,8 @@ void MoulKI::addRoot(hsUint32 idx) {
 void MoulKI::addNode(hsUint32 parent, hsUint32 child) {
     qtVaultNode* parentNode = vault.getNode(parent);
     qtVaultNode* childNode = vault.getNode(child);
+    // a new ref has been added, find all the parent items, and add the new child to all of them
+    // if the child has existing children, they will be recursively added
     foreach(QTreeWidgetItem* item, parentNode->getItems()) {
         // recursively add children items for vault children that already exist on this vault node
         addItemChild(item, childNode);
@@ -100,12 +110,15 @@ void MoulKI::addNode(hsUint32 parent, hsUint32 child) {
 }
 
 void MoulKI::addItemChild(QTreeWidgetItem* item, qtVaultNode* node) {
+    // this creates a child item from node and adds it to the given item.
+    // nodes in the subtree are locked to prevent children from being added
     if(!node->tryLock())
         qWarning("Add Node Failure: Recursive Vault Tree");
     if(!itemHasChild(item, node)) {
         QTreeWidgetItem* newItem = node->newItem();
         item->addChild(newItem);
         foreach(qtVaultNode* child, node->getChildren()) {
+            // items thus added also need to have their subchildren added
             addItemChild(newItem, child);
         }
     }

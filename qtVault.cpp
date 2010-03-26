@@ -109,62 +109,55 @@ qtVault::~qtVault() {
 }
 
 void qtVault::addNode(const pnVaultNode& node) {
+    // vault is locked during node adds, to prevent writing processes from
+    // accessing a node while it is being copied and reffed
     vaultMutex.lock();
-    bool updated = false;
     if(nodes.contains(node.getNodeIdx())) {
-        nodes[node.getNodeIdx()].copy(node);
-        updated = true;
+        // only copy the node data
+        nodes[node.getNodeIdx()].pnVaultNode::copy(node);
+        emit updatedNode(node.getNodeIdx());
     }else{
         nodes.insert(node.getNodeIdx(), qtVaultNode(node));
     }
-    // the clean the cache method
-    QList<pnVaultNodeRef> resolvedRefs;
+    // check to see if there are any queued refs referencing the newly added node
     foreach(pnVaultNodeRef ref, refQueue) {
         if(ref.fChild == node.getNodeIdx() || ref.fParent == node.getNodeIdx()) {
-            if(addRef(ref)) {
-                resolvedRefs.append(ref);
-            }
+            // if a ref is found, re-add it, this will resolve it, it possible
+            // if not, when the other node arrives, the ref will be resolved
+            addRef(ref);
         }
-    }
-    foreach(pnVaultNodeRef ref, resolvedRefs) {
-        refQueue.removeAll(ref);
     }
     vaultMutex.unlock();
     // send signals for vault events triggered by this nodeAdd
-    if(updated)
-        emit updatedNode(node.getNodeIdx());
     if(rootQueue.contains(node.getNodeIdx())) {
         rootQueue.removeAll(node.getNodeIdx());
         emit gotRootNode(node.getNodeIdx());
-    }
-    if(refQueue.count() == 0)
+    }else if(refQueue.count() == 0) {
+        // if we just got a root, then the tree fetch just started :P
+        qWarning("Tree fetch complete");
         emit fetchComplete();
+    }
 }
 
-bool qtVault::addRef(const pnVaultNodeRef& ref) {
-    bool locked = vaultMutex.tryLock();
+void qtVault::addRef(const pnVaultNodeRef& ref) {
     if(!refList.contains(ref))
+        // add the ref to the permanent list if it's not already there
         refList.append(ref);
     if(nodes.contains(ref.fChild) && nodes.contains(ref.fParent)) {
+        // if we have both the parent and child, the ref is resolved, and can be dequeued
         if(nodes[ref.fParent].addChild(&nodes[ref.fChild])) {
+            // we only emit the addedNode signal if the ref was not already resolved
             emit addedNode(ref.fParent, ref.fChild);
         }
-        if(locked)
-            vaultMutex.unlock();
-        return true;
+        refQueue.removeAll(ref);
     }else if(!refQueue.contains(ref)) {
+        // if the ref was not resolved and it's not queued already, it should be queued
         refQueue.append(ref);
     }
-    if(locked)
-        vaultMutex.unlock();
-    return false;
 }
 
 void qtVault::removeRef(hsUint32 parent, hsUint32 child) {
-    vaultMutex.lock();
-    bool removed = false;
     if(nodes.contains(parent) && nodes.contains(child)) {
-        removed = true;
         nodes[parent].removeChild(&nodes[child]);
         // remove pending refs
         pnVaultNodeRef ref;
@@ -172,10 +165,8 @@ void qtVault::removeRef(hsUint32 parent, hsUint32 child) {
         ref.fChild = child;
         refQueue.removeAll(ref);
         refList.removeAll(ref);
-    }
-    vaultMutex.unlock();
-    if(removed)
         emit removedNode(parent, child);
+    }
 }
 
 void qtVault::queueRoot(hsUint32 idx) {
@@ -197,7 +188,6 @@ void qtVault::writeVault(hsFileStream& file) {
         node.allDirty();
         size_t size = node.bufferSize();
         hsUbyte* buffer = new hsUbyte[size];
-        qWarning("Writing Node (%u) %s size: %u", node.getNodeIdx(), node.displayName().cstr(), size);
         file.writeInt(size);
         node.write(buffer, size);
         file.write(size, buffer);
@@ -211,7 +201,6 @@ void qtVault::readVault(hsFileStream& file) {
     for(hsUint32 i = 0; i < refCount; i++) {
         pnVaultNodeRef ref;
         file.read(sizeof(ref), &ref);
-        qWarning("Read Ref: {%u -> %u}", ref.fParent, ref.fChild);
         addRef(ref);
     }
     hsUint32 nodeCount = file.readInt();
@@ -221,7 +210,6 @@ void qtVault::readVault(hsFileStream& file) {
         hsUbyte* buffer = new hsUbyte[size];
         file.read(size, buffer);
         node.read((const hsUbyte*)buffer, size);
-        qWarning("Read Node (%u) %s size: %u", node.getNodeIdx(), qtVaultNode(node).displayName().cstr(), size);
         addNode(node);
         delete[] buffer;
     }
@@ -454,6 +442,8 @@ bool qtVaultNode::addChild(qtVaultNode *child) {
     if(children.contains(child)) {
         return false;
     }else{
+        // the idea here is that additions to the child list will block
+        // if the list is currently being read by the GUI thread
         lockNode();
         children.append(child);
         unlockNode();
@@ -462,9 +452,7 @@ bool qtVaultNode::addChild(qtVaultNode *child) {
 }
 
 void qtVaultNode::removeChild(qtVaultNode *child) {
-    lockNode();
     children.removeAll(child);
-    unlockNode();
 }
 
 void qtVaultNode::lockNode() {
