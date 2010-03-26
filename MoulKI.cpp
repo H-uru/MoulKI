@@ -2,7 +2,7 @@
 #include "SetActiveDialog.h"
 #include "FetchDialog.h"
 #include "RefDialog.h"
-#include "CreateDialog.h"
+#include "CreateNodeDialog.h"
 
 #include "MoulKI.h"
 #include "ui_MoulKI.h"
@@ -200,7 +200,7 @@ void MoulKI::showFetchDialog() {
 void MoulKI::showCreateDialog() {
     if(ui->vaultTree->selectedItems().count() == 1) {
         hsUint32 parent = ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>()->getNodeIdx();
-        CreateDialog* dialog = new CreateDialog(this);
+        CreateNodeDialog* dialog = new CreateNodeDialog(this);
         dialog->setParent(parent);
         connect(dialog, SIGNAL(createSig(pnVaultNode&,hsUint32)), this, SLOT(sendCreate(pnVaultNode&,hsUint32)));
         dialog->exec();

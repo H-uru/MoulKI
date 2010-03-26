@@ -1,11 +1,11 @@
-#include "CreateDialog.h"
-#include "ui_CreateDialog.h"
+#include "CreateNodeDialog.h"
+#include "ui_CreateNodeDialog.h"
 
 #include <QPushButton>
 
-CreateDialog::CreateDialog(QWidget *parent) :
+CreateNodeDialog::CreateNodeDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::CreateDialog)
+    ui(new Ui::CreateNodeDialog)
 {
     ui->setupUi(this);
     ui->nodeEditor->setNode(&node);
@@ -14,12 +14,12 @@ CreateDialog::CreateDialog(QWidget *parent) :
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
 }
 
-CreateDialog::~CreateDialog()
+CreateNodeDialog::~CreateNodeDialog()
 {
     delete ui;
 }
 
-void CreateDialog::changeEvent(QEvent *e)
+void CreateNodeDialog::changeEvent(QEvent *e)
 {
     QDialog::changeEvent(e);
     switch (e->type()) {
@@ -31,10 +31,10 @@ void CreateDialog::changeEvent(QEvent *e)
     }
 }
 
-void CreateDialog::setParent(hsUint32 idx) {
+void CreateNodeDialog::setParent(hsUint32 idx) {
     parentIdx = idx;
 }
 
-void CreateDialog::sendCreate() {
+void CreateNodeDialog::sendCreate() {
     emit createSig(node, parentIdx);
 }

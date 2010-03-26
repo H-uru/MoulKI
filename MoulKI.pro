@@ -19,7 +19,7 @@ SOURCES += main.cpp \
     RefDialog.cpp \
     FetchDialog.cpp \
     qtNodeEdit.cpp \
-    CreateDialog.cpp
+    CreateNodeDialog.cpp
 HEADERS += MoulKI.h \
     qtAuthClient.h \
     qtGameClient.h \
@@ -29,12 +29,12 @@ HEADERS += MoulKI.h \
     RefDialog.h \
     FetchDialog.h \
     qtNodeEdit.h \
-    CreateDialog.h
+    CreateNodeDialog.h
 FORMS += MoulKI.ui \
     LoginDialog.ui \
     SetActiveDialog.ui \
     RefDialog.ui \
     FetchDialog.ui \
     qtNodeEdit.ui \
-    CreateDialog.ui
+    CreateNodeDialog.ui
 RESOURCES += Resources.qrc

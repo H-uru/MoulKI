@@ -1,19 +1,19 @@
-#ifndef CREATEDIALOG_H
-#define CREATEDIALOG_H
+#ifndef CREATENODEDIALOG_H
+#define CREATENODEDIALOG_H
 
 #include <QDialog>
 
 #include "qtVault.h"
 
 namespace Ui {
-    class CreateDialog;
+    class CreateNodeDialog;
 }
 
-class CreateDialog : public QDialog {
+class CreateNodeDialog : public QDialog {
     Q_OBJECT
 public:
-    CreateDialog(QWidget *parent = 0);
-    ~CreateDialog();
+    CreateNodeDialog(QWidget *parent = 0);
+    ~CreateNodeDialog();
 
     void setParent(hsUint32 idx);
 
@@ -27,7 +27,7 @@ protected:
     void changeEvent(QEvent *e);
 
 private:
-    Ui::CreateDialog *ui;
+    Ui::CreateNodeDialog *ui;
     qtVaultNode node;
     hsUint32 parentIdx;
 };
