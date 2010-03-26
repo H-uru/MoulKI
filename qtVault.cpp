@@ -366,12 +366,16 @@ plString qtVaultNode::getFieldAsString(size_t field) {
         case kBlob_2:
             {
                 plVaultBlob blob = getBlob(field - kBlob_1);
-                if(blob.getSize() > 180)
-                    return plString("<Blob Data>");
-                return plString((const char*)blob.getData());
+                const hsUbyte* data = blob.getData();
+                size_t len = blob.getSize();
+                for(hsUint32 i = 0; i < len; i++) {
+                    if(data[i] < 32 || data[i] > 126) // Ascii range
+                        return plString("[Binary Data]");
+                }
+                return plString((const char*)data, len);
             }
         default:
-            return plString("Bad Field Id (%u)", field);
+            return plString::Format("Bad Field Id (%u)", field);
     }
 }
 

@@ -7,6 +7,9 @@
 #include "qtGameClient.h"
 #include "qtVault.h"
 
+#include "keys.cpp"
+static const plUuid s_moulUuid("ea489821-6c35-4bd0-9dae-bb17c585e680");
+
 class QTableWidgetItem;
 
 namespace Ui
@@ -62,6 +65,7 @@ public slots:
     void readvault();
     // gameserver events
     void joinAge();
+    void addChatLine(QString line);
 
 public:
     plResManager resMgr;

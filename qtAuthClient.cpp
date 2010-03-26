@@ -1,9 +1,6 @@
 #include "MoulKI.h"
 #include "qtAuthClient.h"
 
-#include "keys.cpp"
-static const plUuid s_moulUuid("ea489821-6c35-4bd0-9dae-bb17c585e680");
-
 qtAuthClient::qtAuthClient(MoulKI* ki) : QObject(ki), parent(ki) {
     setKeys(KEY_Auth_X, KEY_Auth_N);
     setClientInfo(871, 50, 1, s_moulUuid);
@@ -167,4 +164,8 @@ void qtAuthClient::onVaultRemoveNodeReply(hsUint32 transId, ENetError result) {
     }else{
         setStatus(plString::Format("Remove Node Failure: (%s)", GetNetErrorString(result)));
     }
+}
+
+void qtAuthClient::onAgeReply(hsUint32 transId, ENetError result, hsUint32 mcpId, const plUuid &ageInstanceId, hsUint32 ageVaultId, hsUint32 gameServerAddress) {
+
 }

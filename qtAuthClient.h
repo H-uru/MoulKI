@@ -46,6 +46,7 @@ public:
     void onClientRegisterReply(hsUint32 serverChallenge);
     void onAcctLoginReply(hsUint32 transId, ENetError result, const plUuid& acctUuid, hsUint32 acctFlags, hsUint32 billingType, const hsUint32* encryptKey);
     void onAcctPlayerInfo(hsUint32 transId, hsUint32 playerId, const plString &playerName, const plString& avatarModel, hsUint32 explorer);
+    void onAgeReply(hsUint32 transId, ENetError result, hsUint32 mcpId, const plUuid &ageInstanceId, hsUint32 ageVaultId, hsUint32 gameServerAddress);
 
     void onVaultNodeRefsFetched(hsUint32 transId, ENetError result, size_t count, const pnVaultNodeRef* refs);
     void onVaultNodeFetched(hsUint32 transId, ENetError result, const pnVaultNode& node);

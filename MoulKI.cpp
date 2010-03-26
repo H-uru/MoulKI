@@ -29,6 +29,8 @@ MoulKI::MoulKI(QWidget *parent)
     connect(&authClient, SIGNAL(loginSuccessful()), this, SLOT(showPlayers()));
     connect(&authClient, SIGNAL(foundNodes(int,QList<hsUint32>)), this, SLOT(showFoundDialog(int,QList<hsUint32>)));
 
+    connect(&gameClient, SIGNAL(receivedGameMsg(QString)), this, SLOT(addChatLine(QString)));
+
     connect(&vault, SIGNAL(addedNode(hsUint32, hsUint32)), this, SLOT(addNode(hsUint32,hsUint32)));
     connect(&vault, SIGNAL(removedNode(hsUint32, hsUint32)), this, SLOT(removeNode(hsUint32,hsUint32)));
     connect(&vault, SIGNAL(gotRootNode(hsUint32)), this, SLOT(addRoot(hsUint32)));
@@ -260,7 +262,18 @@ void MoulKI::sendFind(pnVaultNode& node) {
 }
 
 void MoulKI::joinAge() {
-
+    // this should really grab all the ageinfos and pop up the listbox dialog
+    plUuid uuid;
+    foreach(qtVaultNode* folder, vault.getNode(activePlayer)->getChildren()) {
+        if(folder->getNodeType() == plVault::kNodeAgeInfoList && folder->getInt32(0) == plVault::kAgesIOwnFolder) {
+            foreach(qtVaultNode* ageLink, folder->getChildren()) {
+                if(ageLink->getChildren()[0]->getString64(1) == "Personal") {
+                    uuid = ageLink->getChildren()[0]->getUuid(0);
+                }
+            }
+        }
+    }
+    authClient.sendAgeRequest("Personal", uuid);
 }
 
 void MoulKI::sendRemove() {
@@ -312,4 +325,8 @@ void MoulKI::readvault() {
         vault.readVault(file);
         file.close();
     }
+}
+
+void MoulKI::addChatLine(QString line) {
+    ui->chatPane->insertPlainText(line);
 }

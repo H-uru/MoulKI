@@ -10,6 +10,11 @@ class qtGameClient : public QObject, public pnGameClient
 public:
     qtGameClient(QObject* parent = 0);
     ~qtGameClient();
+
+    void onPropagateMessage(plCreatable *msg);
+
+signals:
+    void receivedGameMsg(QString);
 };
 
 #endif // QTGAMECLIENT_H
