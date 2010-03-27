@@ -2,7 +2,6 @@
 #define MOULKI_H
 
 #include <QtGui/QMainWindow>
-#include <ResManager/plResManager.h>
 #include "qtAuthClient.h"
 #include "qtGameClient.h"
 #include "qtVault.h"
@@ -25,6 +24,9 @@ public:
     MoulKI(QWidget *parent = 0);
     ~MoulKI();
 
+    qtVault vault;
+    hsUint32 activePlayer;
+
 private:
     Ui::MoulKIClass *ui;
 
@@ -34,6 +36,7 @@ private:
     void addItemChild(QTreeWidgetItem* item, qtVaultNode* node);
     bool itemHasChild(QTreeWidgetItem* item, qtVaultNode* node);
     void removeTreeNodes(QTreeWidgetItem* item, qtVaultNode* node);
+    void addContextMenuToItem(QTreeWidgetItem* item);
 
 public slots:
     void showLoginDialog();
@@ -59,6 +62,8 @@ public slots:
     void sendCreate(pnVaultNode& node, hsUint32 parent);
     void sendFind(pnVaultNode& node);
     void showFoundDialog(int count, QList<hsUint32> nodes);
+    void showItemContextMenu(QPoint pos);
+    void subscribe();
     void fetchTree(hsUint32 idx);
     void sendRemove();
     void writeVault();
@@ -66,11 +71,6 @@ public slots:
     // gameserver events
     void joinAge();
     void addChatLine(QString line);
-
-public:
-    plResManager resMgr;
-    qtVault vault;
-    hsUint32 activePlayer;
 };
 
 #endif // MOULKI_H

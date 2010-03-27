@@ -24,6 +24,7 @@ MoulKI::MoulKI(QWidget *parent)
     connect(ui->applyButton, SIGNAL(clicked()), this, SLOT(saveNodeData()));
     connect(ui->revertButton, SIGNAL(clicked()), this, SLOT(revertNode()));
     connect(ui->nodeEditor, SIGNAL(isDirty(bool)), this, SLOT(nodeDirty(bool)));
+    connect(ui->vaultTree, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showItemContextMenu(QPoint)));
 
     connect(&authClient, SIGNAL(sigStatus(plString)), this, SLOT(setStatus(plString)));
     connect(&authClient, SIGNAL(loginSuccessful()), this, SLOT(showPlayers()));
@@ -36,17 +37,7 @@ MoulKI::MoulKI(QWidget *parent)
     connect(&vault, SIGNAL(gotRootNode(hsUint32)), this, SLOT(addRoot(hsUint32)));
     connect(&vault, SIGNAL(updatedNode(hsUint32)), this, SLOT(updateNode(hsUint32)));
 
-    // create the treeview context menu
-    QAction* addRef = new QAction("&Add Child", this);
-    connect(addRef, SIGNAL(triggered()), this, SLOT(showRefDialog()));
-    QAction* removeRef = new QAction("&Remove", this);
-    connect(removeRef, SIGNAL(triggered()), this, SLOT(sendRemove()));
-    QAction* createAndRef = new QAction("&Create Node", this);
-    connect(createAndRef, SIGNAL(triggered()), this, SLOT(showCreateDialog()));
-    ui->vaultTree->setContextMenuPolicy(Qt::ActionsContextMenu);
-    ui->vaultTree->addAction(addRef);
-    ui->vaultTree->addAction(removeRef);
-    ui->vaultTree->addAction(createAndRef);
+    ui->vaultTree->setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
 MoulKI::~MoulKI() {
@@ -82,6 +73,30 @@ void MoulKI::setActive(hsUint32 playerId) {
     authClient.sendVaultNodeFetch(playerId);
     authClient.sendAcctSetPlayerRequest(playerId);
     activePlayer = playerId;
+}
+
+void MoulKI::showItemContextMenu(QPoint pos) {
+    // create the treeview context menu
+    QTreeWidgetItem* item = ui->vaultTree->itemAt(pos);
+    if(!item)
+        return;
+    qtVaultNode* node = item->data(0, Qt::UserRole).value<qtVaultNode*>();
+    QMenu* menu = new QMenu(this);
+    QAction* addRef = new QAction("&Add Child", menu);
+    connect(addRef, SIGNAL(triggered()), this, SLOT(showRefDialog()));
+    QAction* removeRef = new QAction("&Remove", menu);
+    connect(removeRef, SIGNAL(triggered()), this, SLOT(sendRemove()));
+    QAction* createAndRef = new QAction("&Create Node", menu);
+    connect(createAndRef, SIGNAL(triggered()), this, SLOT(showCreateDialog()));
+    menu->addAction(addRef);
+    menu->addAction(removeRef);
+    menu->addAction(createAndRef);
+    if(node->getNodeType() == plVault::kNodePlayerInfo || node->getNodeType() == plVault::kNodeAgeInfo) {
+        QAction* subscribe = new QAction("&Subscribe", menu);
+        connect(subscribe, SIGNAL(triggered()), this, SLOT(subscribe()));
+        menu->addAction(subscribe);
+    }
+    menu->popup(ui->vaultTree->mapToGlobal(pos), addRef);
 }
 
 void MoulKI::addRoot(hsUint32 idx) {
@@ -188,6 +203,12 @@ void MoulKI::revertNode() {
 
 void MoulKI::setShownNode() {
     ui->nodeEditor->setNode(ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>());
+}
+
+void MoulKI::subscribe() {
+    QTreeWidgetItem* item = ui->vaultTree->selectedItems()[0];
+    qtVaultNode* child = item->data(0, Qt::UserRole).value<qtVaultNode*>();
+    fetchTree(child->getCreatorIdx());
 }
 
 void MoulKI::nodeDirty(bool dirty) {
