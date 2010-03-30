@@ -3,7 +3,7 @@
 
 qtAuthClient::qtAuthClient(MoulKI* ki) : QObject(ki), parent(ki) {
     setKeys(KEY_Auth_X, KEY_Auth_N);
-    setClientInfo(871, 50, 1, s_moulUuid);
+    setClientInfo(887, 50, 1, s_moulUuid);
     qRegisterMetaType<plString>("plString");
 }
 
@@ -16,7 +16,7 @@ void qtAuthClient::startLogin(QString user, QString pass) {
     this->user = plString(user.toLower().toAscii().constData());
     this->pass = plString(pass.toAscii().constData());
     setStatus("Connecting...");
-    if(pnAuthClient::connect("174.129.10.249") != kNetSuccess) {
+    if(pnAuthClient::connect("184.73.198.22") != kNetSuccess) {
         setStatus("Error Connecting To Server");
         return;
     }
