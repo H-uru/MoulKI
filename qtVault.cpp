@@ -260,6 +260,12 @@ plString qtVaultNode::displayName() {
                 return plString(FolderTypes[getInt32(k_1)]);
             break;
         case 33: // AgeInfo
+            if (hasField(kString64_4) && hasField(kString64_3)) {
+                return getString64(k_4) + " " + getString64(k_3);
+            } else if (hasField(kString64_3)) {
+                return getString64(k_3);
+            }
+            break;
         case 35: // MarkerList
             if(hasField(kText_1))
                 return getText(k_1);
