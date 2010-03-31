@@ -17,6 +17,7 @@ public:
     virtual ~SetActiveDialog();
     void setPlayers(QList<authPlayer> plyrs);
     void setFoundNodes(QList<hsUint32> nodes);
+    void setAgeNodes(QList<qtVaultNode*> nodes);
 
 protected:
     virtual void changeEvent(QEvent *e);
@@ -27,10 +28,12 @@ private:
 private slots:
     void setActive();
     void sendFetches();
+    void joinAge();
 
 signals:
     void setActive(hsUint32 player);
     void fetchFound(hsUint32 idx);
+    void joinAge(plString name, plUuid uuid);
 };
 
 #endif // SETACTIVEDIALOG_H

@@ -19,7 +19,8 @@ MoulKI::MoulKI(QWidget *parent)
     connect(ui->actionFind_Node, SIGNAL(triggered()), this, SLOT(showFindDialog()));
     connect(ui->actionSubscribe, SIGNAL(triggered()), this, SLOT(showFetchDialog()));
     connect(ui->actionSave_Vault, SIGNAL(triggered()), this, SLOT(writeVault()));
-    connect(ui->actionLoad_Vault, SIGNAL(triggered()), this, SLOT(readvault()));
+    connect(ui->actionLoad_Vault, SIGNAL(triggered()), this, SLOT(readVault()));
+    connect(ui->actionJoin_Age, SIGNAL(triggered()), this, SLOT(showJoinAgeDialog()));
     connect(ui->vaultTree, SIGNAL(itemSelectionChanged()), this, SLOT(setShownNode()));
     connect(ui->applyButton, SIGNAL(clicked()), this, SLOT(saveNodeData()));
     connect(ui->revertButton, SIGNAL(clicked()), this, SLOT(revertNode()));
@@ -29,6 +30,7 @@ MoulKI::MoulKI(QWidget *parent)
     connect(&authClient, SIGNAL(sigStatus(plString)), this, SLOT(setStatus(plString)));
     connect(&authClient, SIGNAL(loginSuccessful()), this, SLOT(showPlayers()));
     connect(&authClient, SIGNAL(foundNodes(int,QList<hsUint32>)), this, SLOT(showFoundDialog(int,QList<hsUint32>)));
+    connect(&authClient, SIGNAL(gotAge(hsUint32,plUuid,hsUint32,hsUint32)), this, SLOT(startGameServer(hsUint32,plUuid,hsUint32,hsUint32)));
 
     connect(&gameClient, SIGNAL(receivedGameMsg(QString)), this, SLOT(addChatLine(QString)));
 
@@ -282,19 +284,32 @@ void MoulKI::sendFind(pnVaultNode& node) {
         authClient.sendVaultNodeFind(node);
 }
 
-void MoulKI::joinAge() {
+void MoulKI::showJoinAgeDialog() {
     // this should really grab all the ageinfos and pop up the listbox dialog
-    plUuid uuid;
+    QList<qtVaultNode*> ages;
     foreach(qtVaultNode* folder, vault.getNode(activePlayer)->getChildren()) {
         if(folder->getNodeType() == plVault::kNodeAgeInfoList && folder->getInt32(0) == plVault::kAgesIOwnFolder) {
             foreach(qtVaultNode* ageLink, folder->getChildren()) {
-                if(ageLink->getChildren()[0]->getString64(1) == "Personal") {
-                    uuid = ageLink->getChildren()[0]->getUuid(0);
-                }
+                ages.append(ageLink->getChildren()[0]); // ageLinks should only have one child
             }
         }
     }
-    authClient.sendAgeRequest("Personal", uuid);
+    SetActiveDialog* dialog = new SetActiveDialog(this);
+    connect(dialog, SIGNAL(joinAge(plString,plUuid)), this, SLOT(joinAge(plString,plUuid)));
+    dialog->setAgeNodes(ages);
+    dialog->exec();
+    delete dialog;
+}
+
+void MoulKI::joinAge(plString name, plUuid uuid) {
+    authClient.sendAgeRequest(name, uuid);
+}
+
+void MoulKI::startGameServer(hsUint32 serverAddr, plUuid ageId, hsUint32 mcpId, hsUint32 ageVaultId) {
+    fetchTree(ageVaultId); // fetch the age Vault tree, because the client does, and we will get updates
+    qtVaultNode* player = vault.getNode(activePlayer);
+    gameClient.setJoinInfo(player->getUuid(0), ageId);
+    gameClient.joinAge(serverAddr, activePlayer, mcpId); // for some reason, pnGameClient::connect hangs forever
 }
 
 void MoulKI::sendRemove() {
@@ -332,7 +347,7 @@ void MoulKI::writeVault() {
     }
 }
 
-void MoulKI::readvault() {
+void MoulKI::readVault() {
     QString fileName = QFileDialog::getOpenFileName(this, "Load Vault", "./", "*.vault");
     if(!fileName.isEmpty()) {
         hsFileStream file(pvLive);

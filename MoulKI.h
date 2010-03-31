@@ -67,9 +67,11 @@ public slots:
     void fetchTree(hsUint32 idx);
     void sendRemove();
     void writeVault();
-    void readvault();
+    void readVault();
     // gameserver events
-    void joinAge();
+    void showJoinAgeDialog();
+    void joinAge(plString name, plUuid uuid);
+    void startGameServer(hsUint32 serverAddr, plUuid ageId, hsUint32 mcpId, hsUint32 ageVaultId);
     void addChatLine(QString line);
 };
 

@@ -69,6 +69,7 @@ signals:
     void sigStatus(plString msg);
     void foundNodes(int count, QList<hsUint32> nodes);
     void loginSuccessful();
+    void gotAge(hsUint32 gameServerAddr, plUuid ageId, hsUint32 mcpId, hsUint32 vaultId);
 };
 
 #endif // QTAUTHCLIENT_H

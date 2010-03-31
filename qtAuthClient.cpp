@@ -167,5 +167,10 @@ void qtAuthClient::onVaultRemoveNodeReply(hsUint32 transId, ENetError result) {
 }
 
 void qtAuthClient::onAgeReply(hsUint32 transId, ENetError result, hsUint32 mcpId, const plUuid &ageInstanceId, hsUint32 ageVaultId, hsUint32 gameServerAddress) {
-
+    if(result == kNetSuccess) {
+        setStatus("Age Request Successful");
+        emit gotAge(gameServerAddress, ageInstanceId, mcpId, ageVaultId);
+    }else{
+        setStatus(plString::Format("Age Request Failed: (%s)", GetNetErrorString(result)));
+    }
 }

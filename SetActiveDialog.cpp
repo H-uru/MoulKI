@@ -55,6 +55,26 @@ void SetActiveDialog::setFoundNodes(QList<hsUint32> nodes) {
     connect(this, SIGNAL(accepted()), this, SLOT(sendFetches()));
 }
 
+void SetActiveDialog::setAgeNodes(QList<qtVaultNode *>nodes) {
+    foreach(qtVaultNode* node, nodes) {
+        QListWidgetItem* item = new QListWidgetItem();
+        QVariant data;
+        data.setValue(node);
+        item->setData(Qt::UserRole, data);
+        item->setText(QString((node->getString64(3) + " " + node->getString64(2)).cstr()));
+        m_ui->playerList->addItem(item);
+    }
+    setWindowTitle("Select Age to Join");
+    connect(this, SIGNAL(accepted()), this, SLOT(joinAge()));
+}
+
+void SetActiveDialog::joinAge() {
+    if(m_ui->playerList->selectedItems().count() == 1) {
+        qtVaultNode* age = m_ui->playerList->selectedItems()[0]->data(Qt::UserRole).value<qtVaultNode*>();
+        emit joinAge(age->getString64(1), age->getUuid(0));
+    }
+}
+
 void SetActiveDialog::setActive() {
     if(m_ui->playerList->selectedItems().count() == 1)
         emit setActive(m_ui->playerList->selectedItems()[0]->data(Qt::UserRole).value<authPlayer>().ID);
