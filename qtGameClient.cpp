@@ -40,52 +40,52 @@ void qtGameClient::joinAge(hsUint32 serverAddr, hsUint32 playerId, hsUint32 mcpI
 void qtGameClient::onJoinAgeReply(hsUint32 transId, ENetError result) {
     if(result == kNetSuccess) {
         qWarning("Joined Age");
-        plUoid clientMgr;
-        clientMgr.setName("kNetClientMgr_KEY");
-        clientMgr.setID(0);
-        clientMgr.setType(0x0052); //plNetClientMger
+        plKeyData* clientMgr = new plKeyData();
+        clientMgr->setName("kNetClientMgr_KEY");
+        clientMgr->setID(0);
+        clientMgr->setType(0x0052); //plNetClientMger
         plLocation clientMgrLoc(pvLive);
         clientMgrLoc.setVirtual();
         clientMgrLoc.setFlags(0x0000);
-        clientMgr.setLocation(clientMgrLoc);
-        plUoid playerKey;
+        clientMgr->setLocation(clientMgrLoc);
+        plKeyData* playerKey = new plKeyData();
         if(true) {
-            playerKey.setName("Male");
-            playerKey.setID(78);
+            playerKey->setName("Male");
+            playerKey->setID(78);
             plLocation playerKeyLoc(pvLive);
             playerKeyLoc.setPageNum(1);
             playerKeyLoc.setSeqPrefix(-6);
             playerKeyLoc.setFlags(0x0004);
-            //playerKey.setLocation(playerKey);
+            playerKey->setLocation(playerKeyLoc);
         }
-        playerKey.setType(0x0001); //plSceneObject
-        playerKey.setCloneIDs(2, fPlayerId); //not sure what the 2 signifies
-        plUoid avMgr;
-        avMgr.setName("kAvatarMgr_KEY");
+        playerKey->setType(0x0001); //plSceneObject
+        playerKey->setCloneIDs(2, fPlayerId); //not sure what the 2 signifies
+        plKeyData* avMgr = new plKeyData();
+        avMgr->setName("kAvatarMgr_KEY");
         plLocation avMgrLoc(pvLive);
         avMgrLoc.setVirtual();
         avMgrLoc.setFlags(0x0000);
-        avMgr.setLocation(avMgrLoc);
-        avMgr.setType(0x00F4); //plAvatarMgr
-        avMgr.setID(0);
-        plLoadAvatarMsg loadAvMsg;
-        //loadAvMsg.addReceiver(clientMgr);
-        loadAvMsg.setBCastFlags(0x00000840);
-        //loadAvMsg.setCloneKey(playerKey);
-        //loadAvMsg.setRequestorKey(avMgr);
-        loadAvMsg.setOriginatingPlayerID(fPlayerId);
-        loadAvMsg.setUserData(0);
-        loadAvMsg.setValidMsg(1);
-        loadAvMsg.setIsLoading(1);
-        loadAvMsg.setIsPlayer(1);
+        avMgr->setLocation(avMgrLoc);
+        avMgr->setType(0x00F4); //plAvatarMgr
+        avMgr->setID(0);
+        plLoadAvatarMsg* loadAvMsg = new plLoadAvatarMsg();
+        loadAvMsg->addReceiver(plKey(clientMgr));
+        loadAvMsg->setBCastFlags(0x00000840);
+        loadAvMsg->setCloneKey(plKey(playerKey));
+        loadAvMsg->setRequestorKey(plKey(avMgr));
+        loadAvMsg->setOriginatingPlayerID(fPlayerId);
+        loadAvMsg->setUserData(0);
+        loadAvMsg->setValidMsg(1);
+        loadAvMsg->setIsLoading(1);
+        loadAvMsg->setIsPlayer(1);
         plNetMsgLoadClone loadClone;
         loadClone.setPlayerID(fPlayerId);
-        loadClone.setMessage(&loadAvMsg);
+        loadClone.setMessage(loadAvMsg);
         loadClone.setIsPlayer(1);
         loadClone.setIsLoading(1);
         loadClone.setIsInitialState(0);
         plNetMsgObjectHelper helper;
-        helper.setUoid(playerKey);
+        helper.setUoid(playerKey->getUoid());
         loadClone.setObject(helper);
         propagateMessage(&loadClone);
     }else{
