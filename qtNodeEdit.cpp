@@ -130,7 +130,7 @@ void qtNodeEdit::update() {
         }
         // set the type-specific content
         switch(node->getNodeType()) {
-            case 25: // Image
+            case plVault::kNodeImage:
                 {
                     if(node->getBlob(0).getSize()) {
                         QImage image = QImage::fromData(node->getBlob(0).getData() + 4, (int)node->getBlob(0).getSize() - 4, "JPEG");
@@ -146,7 +146,7 @@ void qtNodeEdit::update() {
                     ui->nodeDataArea->setTabEnabled(2, false);
                 }
                 break;
-            case 26: // Text
+            case plVault::kNodeTextNote:
                 disconnect(ui->textNodeEdit, SIGNAL(textChanged()), this, SLOT(editNodeText()));
                 ui->textNodeEdit->setPlainText(QString(node->getText(0)));
                 ui->textNodeTitle->setText(QString(node->getString64(0)));

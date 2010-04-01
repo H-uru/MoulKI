@@ -10,6 +10,9 @@ LoginDialog::LoginDialog(QWidget *parent) :
     connect(this, SIGNAL(accepted()), this, SLOT(sendLogin()));
     m_ui->userBox->setText(settings.value("Username", "").toString());
     m_ui->passBox->setText(settings.value("Password", "").toString());
+    if(settings.contains("Password")) {
+        m_ui->rememberLoginBox->setChecked(true);
+    }
 }
 
 LoginDialog::~LoginDialog()
@@ -32,6 +35,9 @@ void LoginDialog::sendLogin() {
     if(m_ui->rememberLoginBox->checkState()) {
         settings.setValue("Username", m_ui->userBox->text());
         settings.setValue("Password", m_ui->passBox->text());
+    }else{
+        settings.remove("Username");
+        settings.remove("Password");
     }
     emit login(m_ui->userBox->text(), m_ui->passBox->text());
 }

@@ -1,13 +1,14 @@
 #include "MoulKI.h"
 #include "qtGameClient.h"
 #include <core/Stream/hsRAMStream.h>
+#include <core/PRP/NetMessage/plNetMsgLoadClone.h>
 
 Q_DECLARE_METATYPE(plUuid);
 
 qtGameClient::qtGameClient(QObject* parent) : QObject(parent) {
     qRegisterMetaType<plUuid>();
     setKeys(KEY_Game_X, KEY_Game_N);
-    setClientInfo(871, 50, 1, s_moulUuid);
+    setClientInfo(BUILD_NUMBER, 50, 1, s_moulUuid);
 }
 
 qtGameClient::~qtGameClient() {
@@ -17,10 +18,10 @@ void qtGameClient::joinAge(hsUint32 serverAddr, hsUint32 playerId, hsUint32 mcpI
     // I've seen a function that does this somewhere in zrax's code..
     // would be nice if I could find it, so I wouldn't have to roll my own here :P
     plString serverString = plString::Format("%u.%u.%u.%u",
-                                             (serverAddr & 0x000000FF) >> 0,
-                                             (serverAddr & 0x0000FF00) >> 8,
+                                             (serverAddr & 0xFF000000) >> 24,
                                              (serverAddr & 0x00FF0000) >> 16,
-                                             (serverAddr & 0xFF000000) >> 24
+                                             (serverAddr & 0x0000FF00) >> 8,
+                                             (serverAddr & 0x000000FF) >> 0
                                              );
     qWarning("Joining age server at: %s", serverString.cstr());
     hsUint32 result;
@@ -30,7 +31,19 @@ void qtGameClient::joinAge(hsUint32 serverAddr, hsUint32 playerId, hsUint32 mcpI
     }else{
         qWarning("Successfully connected to Game Server");
     }
+    fMcpId = mcpId;
+    fPlayerId = playerId;
     sendJoinAgeRequest(mcpId, fAccountId, playerId);
+}
+
+void qtGameClient::onJoinAgeReply(hsUint32 transId, ENetError result) {
+    if(result == kNetSuccess) {
+        qWarning("Joined Age");
+        //plNetMsgLoadClone loadClone;
+        //propagateMessage(&loadClone);
+    }else{
+        qWarning("Join Age Failed (%s)", GetNetErrorString(result));
+    }
 }
 
 void qtGameClient::onPropagateMessage(plCreatable *msg) {

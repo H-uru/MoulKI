@@ -3,7 +3,7 @@
 
 qtAuthClient::qtAuthClient(MoulKI* ki) : QObject(ki), parent(ki) {
     setKeys(KEY_Auth_X, KEY_Auth_N);
-    setClientInfo(887, 50, 1, s_moulUuid);
+    setClientInfo(BUILD_NUMBER, 50, 1, s_moulUuid);
     qRegisterMetaType<plString>("plString");
 }
 

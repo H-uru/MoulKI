@@ -112,10 +112,12 @@ void qtVault::addNode(const pnVaultNode& node) {
     // vault is locked during node adds, to prevent writing processes from
     // accessing a node while it is being copied and reffed
     vaultMutex.lock();
+    bool isUpdate = false;
     if(nodes.contains(node.getNodeIdx())) {
         // only copy the node data
         nodes[node.getNodeIdx()].pnVaultNode::copy(node);
         emit updatedNode(node.getNodeIdx());
+        isUpdate = true;
     }else{
         nodes.insert(node.getNodeIdx(), qtVaultNode(node));
     }
@@ -132,7 +134,7 @@ void qtVault::addNode(const pnVaultNode& node) {
     if(rootQueue.contains(node.getNodeIdx())) {
         rootQueue.removeAll(node.getNodeIdx());
         emit gotRootNode(node.getNodeIdx());
-    }else if(refQueue.count() == 0) {
+    }else if(refQueue.count() == 0 && !isUpdate) {
         // if we just got a root, then the tree fetch just started :P
         qWarning("Tree fetch complete");
         emit fetchComplete();
