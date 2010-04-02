@@ -7,6 +7,7 @@
 #include "qtVault.h"
 
 #define BUILD_NUMBER 887
+#define MOUL_HOST "184.73.198.22"
 #include "keys.cpp"
 static const plUuid s_moulUuid("ea489821-6c35-4bd0-9dae-bb17c585e680");
 
@@ -27,6 +28,7 @@ public:
 
     qtVault vault;
     hsUint32 activePlayer;
+    plString currentAgeName;
 
 private:
     Ui::MoulKIClass *ui;
@@ -74,6 +76,7 @@ public slots:
     void joinAge(plString name, plUuid uuid);
     void startGameServer(hsUint32 serverAddr, plUuid ageId, hsUint32 mcpId, hsUint32 ageVaultId);
     void addChatLine(QString line);
+    void setOnline(hsUint32 playerId, plString ageFilename);
 };
 
 #endif // MOULKI_H

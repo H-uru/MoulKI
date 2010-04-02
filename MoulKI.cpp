@@ -33,6 +33,7 @@ MoulKI::MoulKI(QWidget *parent)
     connect(&authClient, SIGNAL(gotAge(hsUint32,plUuid,hsUint32,hsUint32)), this, SLOT(startGameServer(hsUint32,plUuid,hsUint32,hsUint32)));
 
     connect(&gameClient, SIGNAL(receivedGameMsg(QString)), this, SLOT(addChatLine(QString)));
+    connect(&gameClient, SIGNAL(setMeOnline(hsUint32,plString)), this, SLOT(setOnline(hsUint32,plString)));
 
     connect(&vault, SIGNAL(addedNode(hsUint32, hsUint32)), this, SLOT(addNode(hsUint32,hsUint32)));
     connect(&vault, SIGNAL(removedNode(hsUint32, hsUint32)), this, SLOT(removeNode(hsUint32,hsUint32)));
@@ -302,14 +303,27 @@ void MoulKI::showJoinAgeDialog() {
 }
 
 void MoulKI::joinAge(plString name, plUuid uuid) {
+    currentAgeName = name;
     authClient.sendAgeRequest(name, uuid);
+}
+
+void MoulKI::setOnline(hsUint32 playerId, plString ageFilename) {
+    qtVaultNode* playerNode = vault.getNode(playerId);
+    foreach(qtVaultNode* node, playerNode->getChildren()) {
+        if(node->getNodeType() == plVault::kPlayerInfoNode) {
+            node->setInt32(0, 1);
+            node->setString64(0, ageFilename);
+            authClient.sendVaultNodeSave(node->getNodeIdx(), plUuid(), *node);
+            break;
+        }
+    }
 }
 
 void MoulKI::startGameServer(hsUint32 serverAddr, plUuid ageId, hsUint32 mcpId, hsUint32 ageVaultId) {
     fetchTree(ageVaultId); // fetch the age Vault tree, because the client does, and we will get updates
     qtVaultNode* player = vault.getNode(activePlayer);
     gameClient.setJoinInfo(player->getUuid(0), ageId);
-    gameClient.joinAge(serverAddr, activePlayer, mcpId); // for some reason, pnGameClient::connect hangs forever
+    gameClient.joinAge(serverAddr, activePlayer, mcpId, currentAgeName);
 }
 
 void MoulKI::sendRemove() {

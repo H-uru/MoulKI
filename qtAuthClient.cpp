@@ -16,7 +16,7 @@ void qtAuthClient::startLogin(QString user, QString pass) {
     this->user = plString(user.toLower().toAscii().constData());
     this->pass = plString(pass.toAscii().constData());
     setStatus("Connecting...");
-    if(pnAuthClient::connect("184.73.198.22") != kNetSuccess) {
+    if(pnAuthClient::connect(MOUL_HOST) != kNetSuccess) {
         setStatus("Error Connecting To Server");
         return;
     }
