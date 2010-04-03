@@ -76,7 +76,7 @@ void qtGameClient::onJoinAgeReply(hsUint32 transId, ENetError result) {
         loadAvMsg->addReceiver(plKey(clientMgr));
         loadAvMsg->setBCastFlags(0x00000840);
         loadAvMsg->setCloneKey(plKey(playerKey));
-        loadAvMsg->setRequestorKey(plKey(avMgr));
+        loadAvMsg->setRequestor(plKey(avMgr));
         loadAvMsg->setOriginatingPlayerID(fPlayerId);
         loadAvMsg->setUserData(0);
         loadAvMsg->setValidMsg(1);
@@ -91,9 +91,7 @@ void qtGameClient::onJoinAgeReply(hsUint32 transId, ENetError result) {
         loadClone.setIsLoading(1);
         loadClone.setIsInitialState(0);
         loadClone.setCompressionType(0);
-        plNetMsgObjectHelper helper;
-        helper.setUoid(playerKey->getUoid());
-        loadClone.setObject(helper);
+        loadClone.getObject().setUoid(playerKey->getUoid());
         propagateMessage(&loadClone);
         qWarning("Sent LoadClone");
     }else{
