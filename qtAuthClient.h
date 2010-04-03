@@ -7,8 +7,6 @@
 
 #include "qtVault.h"
 
-Q_DECLARE_METATYPE(plString)
-
 class MoulKI;
 
 struct authPlayer {

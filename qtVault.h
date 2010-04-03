@@ -9,8 +9,6 @@
 #include <QTreeWidgetItem>
 #include <net/auth/pnVaultNode.h>
 
-Q_DECLARE_METATYPE(hsUint32)
-
 class qtVaultNode : public pnVaultNode
 {
 private:

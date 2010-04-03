@@ -33,8 +33,8 @@ public:
 private:
     Ui::MoulKIClass *ui;
 
-    qtAuthClient authClient;
-    qtGameClient gameClient;
+    qtAuthClient* authClient;
+    qtGameClient* gameClient;
 
     void addItemChild(QTreeWidgetItem* item, qtVaultNode* node);
     bool itemHasChild(QTreeWidgetItem* item, qtVaultNode* node);

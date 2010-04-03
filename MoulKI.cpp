@@ -10,10 +10,19 @@
 #include <QLabel>
 #include <QFileDialog>
 
+Q_DECLARE_METATYPE(plUuid)
+Q_DECLARE_METATYPE(plString)
+Q_DECLARE_METATYPE(hsUint32)
+
 MoulKI::MoulKI(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MoulKIClass), authClient(this)
+    : QMainWindow(parent), ui(new Ui::MoulKIClass), gameClient(NULL)
 {
     ui->setupUi(this);
+
+    qRegisterMetaType<plUuid>("plUuid");
+    qRegisterMetaType<plString>("plString");
+    qRegisterMetaType<hsUint32>("hsUint32");
+
     connect(ui->actionLogin, SIGNAL(triggered()), this, SLOT(showLoginDialog()));
     connect(ui->actionSet_Active, SIGNAL(triggered()), this, SLOT(showPlayers()));
     connect(ui->actionFind_Node, SIGNAL(triggered()), this, SLOT(showFindDialog()));
@@ -27,13 +36,11 @@ MoulKI::MoulKI(QWidget *parent)
     connect(ui->nodeEditor, SIGNAL(isDirty(bool)), this, SLOT(nodeDirty(bool)));
     connect(ui->vaultTree, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showItemContextMenu(QPoint)));
 
-    connect(&authClient, SIGNAL(sigStatus(plString)), this, SLOT(setStatus(plString)));
-    connect(&authClient, SIGNAL(loginSuccessful()), this, SLOT(showPlayers()));
-    connect(&authClient, SIGNAL(foundNodes(int,QList<hsUint32>)), this, SLOT(showFoundDialog(int,QList<hsUint32>)));
-    connect(&authClient, SIGNAL(gotAge(hsUint32,plUuid,hsUint32,hsUint32)), this, SLOT(startGameServer(hsUint32,plUuid,hsUint32,hsUint32)));
-
-    connect(&gameClient, SIGNAL(receivedGameMsg(QString)), this, SLOT(addChatLine(QString)));
-    connect(&gameClient, SIGNAL(setMeOnline(hsUint32,plString)), this, SLOT(setOnline(hsUint32,plString)));
+    authClient = new qtAuthClient(this);
+    connect(authClient, SIGNAL(sigStatus(plString)), this, SLOT(setStatus(plString)));
+    connect(authClient, SIGNAL(loginSuccessful()), this, SLOT(showPlayers()));
+    connect(authClient, SIGNAL(foundNodes(int,QList<hsUint32>)), this, SLOT(showFoundDialog(int,QList<hsUint32>)));
+    connect(authClient, SIGNAL(gotAge(hsUint32,plUuid,hsUint32,hsUint32)), this, SLOT(startGameServer(hsUint32,plUuid,hsUint32,hsUint32)));
 
     connect(&vault, SIGNAL(addedNode(hsUint32, hsUint32)), this, SLOT(addNode(hsUint32,hsUint32)));
     connect(&vault, SIGNAL(removedNode(hsUint32, hsUint32)), this, SLOT(removeNode(hsUint32,hsUint32)));
@@ -55,7 +62,7 @@ void MoulKI::showLoginDialog() {
 }
 
 void MoulKI::login(QString user, QString pass) {
-    authClient.startLogin(user, pass);
+    authClient->startLogin(user, pass);
 }
 
 void MoulKI::setStatus(plString msg) {
@@ -65,7 +72,7 @@ void MoulKI::setStatus(plString msg) {
 void MoulKI::showPlayers() {
     // show a player list dialog
     SetActiveDialog* dialog = new SetActiveDialog(this);
-    dialog->setPlayers(authClient.players);
+    dialog->setPlayers(authClient->players);
     connect(dialog, SIGNAL(setActive(hsUint32)), this, SLOT(setActive(hsUint32)));
     dialog->exec();
     delete dialog;
@@ -73,8 +80,8 @@ void MoulKI::showPlayers() {
 
 void MoulKI::setActive(hsUint32 playerId) {
     vault.queueRoot(playerId);
-    authClient.sendVaultNodeFetch(playerId);
-    authClient.sendAcctSetPlayerRequest(playerId);
+    authClient->sendVaultNodeFetch(playerId);
+    authClient->sendAcctSetPlayerRequest(playerId);
     activePlayer = playerId;
 }
 
@@ -115,8 +122,8 @@ void MoulKI::addRoot(hsUint32 idx) {
         addItemChild(item, childNode);
     }
     node->unlockNode();
-    if(authClient.isConnected()) {
-        authClient.sendVaultFetchNodeRefs(node->getNodeIdx());
+    if(authClient->isConnected()) {
+        authClient->sendVaultFetchNodeRefs(node->getNodeIdx());
     }
 }
 
@@ -179,8 +186,8 @@ void MoulKI::updateNode(hsUint32 idx) {
     foreach(QTreeWidgetItem* item, node->getItems()) {
         item->setText(0, QString(node->displayName().cstr()));
         item->setIcon(0, node->getIcon());
-        if(node->getNodeType() == 23) // PlayerInfo
-            updateNode(node->getCreatorIdx());
+        if(node->getNodeType() == plVault::kNodePlayerInfo)
+            updateNode(node->getUint32(0));
         // if the node is currently being shown, update the display
         if(item->isSelected()) {
             ui->nodeEditor->update();
@@ -191,16 +198,16 @@ void MoulKI::updateNode(hsUint32 idx) {
 void MoulKI::saveNodeData() {
     ui->applyButton->setEnabled(false);
     qtVaultNode* node = ui->nodeEditor->getNode();
-    if(authClient.isConnected()) {
-        authClient.sendVaultNodeSave(node->getNodeIdx(), plUuid(), *node);
+    if(authClient->isConnected()) {
+        authClient->sendVaultNodeSave(node->getNodeIdx(), plUuid(), *node);
     }
 }
 
 void MoulKI::revertNode() {
     ui->revertButton->setEnabled(false);
     qtVaultNode* node = ui->nodeEditor->getNode();
-    if(authClient.isConnected()) {
-        authClient.sendVaultNodeFetch(node->getNodeIdx());
+    if(authClient->isConnected()) {
+        authClient->sendVaultNodeFetch(node->getNodeIdx());
     }
 }
 
@@ -266,23 +273,23 @@ void MoulKI::showFoundDialog(int count, QList<hsUint32> nodes) {
 
 void MoulKI::fetchTree(hsUint32 idx) {
     vault.queueRoot(idx);
-    if(authClient.isConnected())
-        authClient.sendVaultNodeFetch(idx);
+    if(authClient->isConnected())
+        authClient->sendVaultNodeFetch(idx);
 }
 
 void MoulKI::sendAdd(hsUint32 parent, hsUint32 child, hsUint32 owner) {
-    if(authClient.isConnected())
-        authClient.sendVaultNodeAdd(parent, child, owner);
+    if(authClient->isConnected())
+        authClient->sendVaultNodeAdd(parent, child, owner);
 }
 
 void MoulKI::sendCreate(pnVaultNode& node, hsUint32 parent) {
-    if(authClient.isConnected())
-        authClient.queueRef(authClient.sendVaultNodeCreate(node), parent);
+    if(authClient->isConnected())
+        authClient->queueRef(authClient->sendVaultNodeCreate(node), parent);
 }
 
 void MoulKI::sendFind(pnVaultNode& node) {
-    if(authClient.isConnected())
-        authClient.sendVaultNodeFind(node);
+    if(authClient->isConnected())
+        authClient->sendVaultNodeFind(node);
 }
 
 void MoulKI::showJoinAgeDialog() {
@@ -304,16 +311,16 @@ void MoulKI::showJoinAgeDialog() {
 
 void MoulKI::joinAge(plString name, plUuid uuid) {
     currentAgeName = name;
-    authClient.sendAgeRequest(name, uuid);
+    authClient->sendAgeRequest(name, uuid);
 }
 
 void MoulKI::setOnline(hsUint32 playerId, plString ageFilename) {
     qtVaultNode* playerNode = vault.getNode(playerId);
     foreach(qtVaultNode* node, playerNode->getChildren()) {
-        if(node->getNodeType() == plVault::kPlayerInfoNode) {
+        if(node->getNodeType() == plVault::kNodePlayerInfo) {
             node->setInt32(0, 1);
             node->setString64(0, ageFilename);
-            authClient.sendVaultNodeSave(node->getNodeIdx(), plUuid(), *node);
+            authClient->sendVaultNodeSave(node->getNodeIdx(), plUuid(), *node);
             break;
         }
     }
@@ -322,8 +329,13 @@ void MoulKI::setOnline(hsUint32 playerId, plString ageFilename) {
 void MoulKI::startGameServer(hsUint32 serverAddr, plUuid ageId, hsUint32 mcpId, hsUint32 ageVaultId) {
     fetchTree(ageVaultId); // fetch the age Vault tree, because the client does, and we will get updates
     qtVaultNode* player = vault.getNode(activePlayer);
-    gameClient.setJoinInfo(player->getUuid(0), ageId);
-    gameClient.joinAge(serverAddr, activePlayer, mcpId, currentAgeName);
+    if(gameClient != NULL)
+        delete gameClient;
+    gameClient = new qtGameClient(this);
+    connect(gameClient, SIGNAL(receivedGameMsg(QString)), this, SLOT(addChatLine(QString)));
+    connect(gameClient, SIGNAL(setMeOnline(hsUint32,plString)), this, SLOT(setOnline(hsUint32,plString)));
+    gameClient->setJoinInfo(player->getUuid(0), ageId);
+    gameClient->joinAge(serverAddr, activePlayer, mcpId, currentAgeName);
 }
 
 void MoulKI::sendRemove() {
@@ -331,7 +343,7 @@ void MoulKI::sendRemove() {
     qtVaultNode* child = item->data(0, Qt::UserRole).value<qtVaultNode*>();
     if(item->parent()) {
         qtVaultNode* parent = item->parent()->data(0, Qt::UserRole).value<qtVaultNode*>();
-        authClient.sendVaultNodeRemove(parent->getNodeIdx(), child->getNodeIdx());
+        authClient->sendVaultNodeRemove(parent->getNodeIdx(), child->getNodeIdx());
     }else{
         // if there's no parent node, then it's a treeview root, so let's clean up
         removeTreeNodes(item, child);

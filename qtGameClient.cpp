@@ -5,10 +5,7 @@
 #include <core/PRP/Message/plLoadAvatarMsg.h>
 #include <core/PRP/Message/pfKIMsg.h>
 
-Q_DECLARE_METATYPE(plUuid);
-
 qtGameClient::qtGameClient(QObject* parent) : QObject(parent) {
-    qRegisterMetaType<plUuid>();
     setKeys(KEY_Game_X, KEY_Game_N);
     setClientInfo(BUILD_NUMBER, 50, 1, s_moulUuid);
     fResMgr = plResManager(pvLive);
@@ -105,20 +102,26 @@ void qtGameClient::onPropagateMessage(plCreatable *msg) {
     msg->prcWrite(&prc);
     char* data = new char[S.size()];
     S.copyTo(data, S.size());
-    //qWarning(QString(QByteArray(data, S.size())).toAscii().data());
+    qWarning(QString(QByteArray(data, S.size())).toAscii().data());
     delete[] data;
     if(msg->ClassIndex() == kNetMsgGameMessageDirected) {
         plMessage* gameMsg = ((plNetMsgGameMessageDirected*)msg)->getMessage();
         if(gameMsg->ClassIndex() == kKIMsg) {
             pfKIMsg* kiMsg = (pfKIMsg*)gameMsg;
-            plString user = kiMsg->getUser();
-            plWString message = kiMsg->getString();
-            if(kiMsg->getFlags() & 0x10) // action
-                emit receivedGameMsg(QString::fromWCharArray(message.cstr(), message.len() * 2).toAscii() + "\n");
-            else if(kiMsg->getFlags() & 0x01) // private message
-                emit receivedGameMsg("From " + QString(user.cstr()) + ": " + QString::fromWCharArray(message.cstr(), message.len() * 2).toAscii() + "\n");
-            else // anything else
-                emit receivedGameMsg(QString(user.cstr()) + ": " + QString::fromWCharArray(message.cstr(), message.len() * 2).toAscii() + "\n");
+            QString user = QString(kiMsg->getUser().cstr());
+            QString message = QString::fromWCharArray(kiMsg->getString().cstr(), kiMsg->getString().len());
+            if(kiMsg->getFlags() & pfKIMsg::kStatusMsg) { // 0x10 (/me action)
+                emit receivedGameMsg(message + "\n");
+            }else if(kiMsg->getFlags() & pfKIMsg::kPrivateMsg) {
+                if(kiMsg->getFlags() & pfKIMsg::kUNUSED1) { // sender is out-of-age
+                    int splitIndex = message.indexOf(">>");
+                    emit receivedGameMsg("From " + user + " in " + message.mid(2, splitIndex - 2) + ": " + message.mid(splitIndex + 2) + "\n");
+                }else{
+                    emit receivedGameMsg("From " + user + ": " + message + "\n");
+                }
+            }else{ // anything else
+                emit receivedGameMsg(user + ": " + message + "\n");
+            }
         }
     }
 }

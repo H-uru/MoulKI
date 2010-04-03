@@ -102,7 +102,6 @@ const char* qtVaultNode::FieldNames[] = {
 };
 
 qtVault::qtVault() {
-    qRegisterMetaType<hsUint32>("hsUint32");
 }
 
 qtVault::~qtVault() {

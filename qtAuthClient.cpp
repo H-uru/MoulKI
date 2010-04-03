@@ -4,7 +4,6 @@
 qtAuthClient::qtAuthClient(MoulKI* ki) : QObject(ki), parent(ki) {
     setKeys(KEY_Auth_X, KEY_Auth_N);
     setClientInfo(BUILD_NUMBER, 50, 1, s_moulUuid);
-    qRegisterMetaType<plString>("plString");
 }
 
 qtAuthClient::~qtAuthClient() {
@@ -83,10 +82,12 @@ void qtAuthClient::onVaultNodeAdded(hsUint32 parent, hsUint32 child, hsUint32 ow
     if(!fetchQueue.contains(parent)) {
         fetchQueue.append(parent);
         sendVaultNodeFetch(parent);
+        sendVaultFetchNodeRefs(parent);
     }
     if(!fetchQueue.contains(child)) {
         fetchQueue.append(child);
         sendVaultNodeFetch(child);
+        sendVaultFetchNodeRefs(child);
     }
 }
 
