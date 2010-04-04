@@ -136,8 +136,8 @@ void qtGameClient::onPropagateMessage(plCreatable *msg) {
     }else if(msg->ClassIndex() == kNetMsgMembersList) {
         fAgePlayers.clear();
         plNetMsgMembersList* membersList = (plNetMsgMembersList*)msg;
-        for(int i = 0; i < membersList->getNumMembers(); i++) {
-            const plNetMsgMemberInfoHelper* info = &membersList->getMember(i);
+        for(int i = 0; i < membersList->getMembers().getSize(); i++) {
+            const plNetMsgMemberInfoHelper* info = &membersList->getMembers()[i];
             const plClientGuid* guid = &info->getClientGuid();
             qWarning("Age Player: %s", guid->getPlayerName().cstr());
             fAgePlayers.append(guid->getPlayerID());
