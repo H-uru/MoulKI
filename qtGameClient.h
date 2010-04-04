@@ -4,24 +4,28 @@
 #include <QObject>
 #include <net/game/pnGameClient.h>
 
+class qtVaultNode;
+
 class qtGameClient : public QObject, public pnGameClient
 {
     Q_OBJECT
 private:
     hsUint32 fMcpId;
-    hsUint32 fPlayerId;
     plString fAgeFilename;
+    hsTArray<unsigned int> fAgePlayers;
+    qtVaultNode* fPlayerNode;
 
 public:
     qtGameClient(QObject* parent = 0);
     ~qtGameClient();
 
-    void joinAge(hsUint32 serverAddr, hsUint32 playerId, hsUint32 mcpId, plString ageFilename);
+    void setPlayer(qtVaultNode* player);
+    void joinAge(hsUint32 serverAddr, hsUint32 mcpId, plString ageFilename);
     void onPropagateMessage(plCreatable *msg);
     void onJoinAgeReply(hsUint32 transId, ENetError result);
 
 public slots:
-    void sendChat(plString);
+    void sendAgeChat(plString message);
 
 signals:
     void receivedGameMsg(QString);

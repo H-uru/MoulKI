@@ -77,6 +77,7 @@ public slots:
     void startGameServer(hsUint32 serverAddr, plUuid ageId, hsUint32 mcpId, hsUint32 ageVaultId);
     void addChatLine(QString line);
     void setOnline(hsUint32 playerId, plString ageFilename);
+    void sendGameChat();
 };
 
 #endif // MOULKI_H

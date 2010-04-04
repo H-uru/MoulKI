@@ -2,10 +2,11 @@
 #include "qtGameClient.h"
 #include <core/Stream/hsRAMStream.h>
 #include <core/PRP/NetMessage/plNetMsgLoadClone.h>
+#include <core/PRP/NetMessage/plNetMsgMembersList.h>
 #include <core/PRP/Message/plLoadAvatarMsg.h>
 #include <core/PRP/Message/pfKIMsg.h>
 
-qtGameClient::qtGameClient(QObject* parent) : QObject(parent) {
+qtGameClient::qtGameClient(QObject* parent) : QObject(parent), fPlayerNode(NULL) {
     setKeys(KEY_Game_X, KEY_Game_N);
     setClientInfo(BUILD_NUMBER, 50, 1, s_moulUuid);
     fResMgr = plResManager(pvLive);
@@ -14,7 +15,11 @@ qtGameClient::qtGameClient(QObject* parent) : QObject(parent) {
 qtGameClient::~qtGameClient() {
 }
 
-void qtGameClient::joinAge(hsUint32 serverAddr, hsUint32 playerId, hsUint32 mcpId, plString ageFilename) {
+void qtGameClient::setPlayer(qtVaultNode* player) {
+    fPlayerNode = player;
+}
+
+void qtGameClient::joinAge(hsUint32 serverAddr, hsUint32 mcpId, plString ageFilename) {
     // I've seen a function that does this somewhere in zrax's code..
     // would be nice if I could find it, so I wouldn't have to roll my own here :P
     plString serverString = plString::Format("%u.%u.%u.%u",
@@ -32,14 +37,13 @@ void qtGameClient::joinAge(hsUint32 serverAddr, hsUint32 playerId, hsUint32 mcpI
         qWarning("Successfully connected to Game Server");
     }
     fMcpId = mcpId;
-    fPlayerId = playerId;
     fAgeFilename = ageFilename;
-    sendJoinAgeRequest(mcpId, fAccountId, playerId);
+    sendJoinAgeRequest(mcpId, fAccountId, fPlayerNode->getNodeIdx());
 }
 
 void qtGameClient::onJoinAgeReply(hsUint32 transId, ENetError result) {
     if(result == kNetSuccess) {
-        emit setMeOnline(fPlayerId, fAgeFilename);
+        emit setMeOnline(fPlayerNode->getNodeIdx(), fAgeFilename);
         qWarning("Successfuly Joined Age");
         plKeyData* clientMgr = new plKeyData();
         clientMgr->setName("kNetClientMgr_KEY");
@@ -60,7 +64,7 @@ void qtGameClient::onJoinAgeReply(hsUint32 transId, ENetError result) {
             playerKey->setLocation(playerKeyLoc);
         }
         playerKey->setType(0x0001); //plSceneObject
-        playerKey->setCloneIDs(2, fPlayerId); //not sure what the 2 signifies
+        playerKey->setCloneIDs(2, fPlayerNode->getNodeIdx()); //not sure what the 2 signifies
         plKeyData* avMgr = new plKeyData();
         avMgr->setName("kAvatarMgr_KEY");
         plLocation avMgrLoc(pvLive);
@@ -74,7 +78,7 @@ void qtGameClient::onJoinAgeReply(hsUint32 transId, ENetError result) {
         loadAvMsg->setBCastFlags(0x00000840);
         loadAvMsg->setCloneKey(plKey(playerKey));
         loadAvMsg->setRequestor(plKey(avMgr));
-        loadAvMsg->setOriginatingPlayerID(fPlayerId);
+        loadAvMsg->setOriginatingPlayerID(fPlayerNode->getNodeIdx());
         loadAvMsg->setUserData(0);
         loadAvMsg->setValidMsg(1);
         loadAvMsg->setIsLoading(1);
@@ -82,7 +86,7 @@ void qtGameClient::onJoinAgeReply(hsUint32 transId, ENetError result) {
         plNetMsgLoadClone loadClone;
         loadClone.setFlags(0x00041001);
         loadClone.setTimeSent(plUnifiedTime::GetCurrentTime());
-        loadClone.setPlayerID(fPlayerId);
+        loadClone.setPlayerID(fPlayerNode->getNodeIdx());
         loadClone.setMessage(loadAvMsg);
         loadClone.setIsPlayer(1);
         loadClone.setIsLoading(1);
@@ -91,6 +95,12 @@ void qtGameClient::onJoinAgeReply(hsUint32 transId, ENetError result) {
         loadClone.getObject().setUoid(playerKey->getUoid());
         propagateMessage(&loadClone);
         qWarning("Sent LoadClone");
+        plNetMsgMembersListReq listReq;
+        listReq.setFlags(0x00061001);
+        listReq.setTimeSent(plUnifiedTime::GetCurrentTime());
+        listReq.setPlayerID(fPlayerNode->getNodeIdx());
+        propagateMessage(&listReq);
+        qWarning("Sent Members Request");
     }else{
         qWarning("Join Age Failed (%s)", GetNetErrorString(result));
     }
@@ -102,14 +112,14 @@ void qtGameClient::onPropagateMessage(plCreatable *msg) {
     msg->prcWrite(&prc);
     char* data = new char[S.size()];
     S.copyTo(data, S.size());
-    qWarning(QString(QByteArray(data, S.size())).toAscii().data());
+    //qWarning(QString(QByteArray(data, S.size())).toAscii().data());
     delete[] data;
     if(msg->ClassIndex() == kNetMsgGameMessageDirected) {
         plMessage* gameMsg = ((plNetMsgGameMessageDirected*)msg)->getMessage();
         if(gameMsg->ClassIndex() == kKIMsg) {
             pfKIMsg* kiMsg = (pfKIMsg*)gameMsg;
             QString user = QString(kiMsg->getUser().cstr());
-            QString message = QString::fromWCharArray(kiMsg->getString().cstr(), kiMsg->getString().len());
+            QString message = QString(hsWStringToString(kiMsg->getString()).cstr());
             if(kiMsg->getFlags() & pfKIMsg::kStatusMsg) { // 0x10 (/me action)
                 emit receivedGameMsg(message + "\n");
             }else if(kiMsg->getFlags() & pfKIMsg::kPrivateMsg) {
@@ -123,10 +133,39 @@ void qtGameClient::onPropagateMessage(plCreatable *msg) {
                 emit receivedGameMsg(user + ": " + message + "\n");
             }
         }
+    }else if(msg->ClassIndex() == kNetMsgMembersList) {
+        fAgePlayers.clear();
+        plNetMsgMembersList* membersList = (plNetMsgMembersList*)msg;
+        for(int i = 0; i < membersList->getNumMembers(); i++) {
+            const plNetMsgMemberInfoHelper* info = &membersList->getMember(i);
+            const plClientGuid* guid = &info->getClientGuid();
+            qWarning("Age Player: %s", guid->getPlayerName().cstr());
+            fAgePlayers.append(guid->getPlayerID());
+        }
     }
 }
 
-void qtGameClient::sendChat(plString message) {
+void qtGameClient::sendAgeChat(plString message) {
     plNetMsgGameMessageDirected gameMsg;
-    pfKIMsg kiMsg;
+    pfKIMsg* kiMsg = new pfKIMsg();
+    gameMsg.setFlags(0x00049001);
+    gameMsg.setTimeSent(plUnifiedTime::GetCurrentTime());
+    gameMsg.setPlayerID(fPlayerNode->getNodeIdx());
+    gameMsg.setReceivers(fAgePlayers);
+    kiMsg->setBCastFlags(0x00000248);
+    kiMsg->setCommand(0);
+    kiMsg->setPlayerID(fPlayerNode->getNodeIdx());
+    kiMsg->setUser(fPlayerNode->getIString64(0));
+    kiMsg->setString(hsStringToWString(message));
+    gameMsg.setMessage(kiMsg);
+    propagateMessage(&gameMsg);
+    qWarning("Sent Chat: %s", message.cstr());
+    // debug
+    hsRAMStream S(pvLive);
+    pfPrcHelper prc(&S);
+    gameMsg.prcWrite(&prc);
+    char* data = new char[S.size()];
+    S.copyTo(data, S.size());
+    qWarning(QString(QByteArray(data, S.size())).toAscii().data());
+    delete[] data;
 }

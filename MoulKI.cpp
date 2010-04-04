@@ -35,6 +35,7 @@ MoulKI::MoulKI(QWidget *parent)
     connect(ui->revertButton, SIGNAL(clicked()), this, SLOT(revertNode()));
     connect(ui->nodeEditor, SIGNAL(isDirty(bool)), this, SLOT(nodeDirty(bool)));
     connect(ui->vaultTree, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showItemContextMenu(QPoint)));
+    connect(ui->chatEntry, SIGNAL(returnPressed()), this, SLOT(sendGameChat()));
 
     authClient = new qtAuthClient(this);
     connect(authClient, SIGNAL(sigStatus(plString)), this, SLOT(setStatus(plString)));
@@ -334,8 +335,9 @@ void MoulKI::startGameServer(hsUint32 serverAddr, plUuid ageId, hsUint32 mcpId, 
     gameClient = new qtGameClient(this);
     connect(gameClient, SIGNAL(receivedGameMsg(QString)), this, SLOT(addChatLine(QString)));
     connect(gameClient, SIGNAL(setMeOnline(hsUint32,plString)), this, SLOT(setOnline(hsUint32,plString)));
+    gameClient->setPlayer(player);
     gameClient->setJoinInfo(player->getUuid(0), ageId);
-    gameClient->joinAge(serverAddr, activePlayer, mcpId, currentAgeName);
+    gameClient->joinAge(serverAddr, mcpId, currentAgeName);
 }
 
 void MoulKI::sendRemove() {
@@ -391,4 +393,11 @@ void MoulKI::readVault() {
 
 void MoulKI::addChatLine(QString line) {
     ui->chatPane->insertPlainText(line);
+}
+
+void MoulKI::sendGameChat() {
+    const char* line = ui->chatEntry->text().toAscii().data();
+    gameClient->sendAgeChat(plString(line));
+    addChatLine(plString::Format("%s: %s\n", vault.getNode(activePlayer)->getIString64(0).cstr(), line).cstr());
+    ui->chatEntry->clear();
 }
