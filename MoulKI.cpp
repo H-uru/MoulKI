@@ -47,8 +47,23 @@ MoulKI::MoulKI(QWidget *parent)
     connect(&vault, SIGNAL(removedNode(hsUint32, hsUint32)), this, SLOT(removeNode(hsUint32,hsUint32)));
     connect(&vault, SIGNAL(gotRootNode(hsUint32)), this, SLOT(addRoot(hsUint32)));
     connect(&vault, SIGNAL(updatedNode(hsUint32)), this, SLOT(updateNode(hsUint32)));
+    connect(&vault, SIGNAL(fetchComplete()), this, SLOT(checkCurrentAge()));
 
     ui->vaultTree->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    // set up the player list
+    agePlayersItem = new QTreeWidgetItem(ui->playersTree);
+    agePlayersItem->setText(0, "AGE PLAYERS");
+    ui->playersTree->insertTopLevelItem(0, agePlayersItem);
+    agePlayersItem->setExpanded(true);
+    buddiesItem = new QTreeWidgetItem(ui->playersTree);
+    buddiesItem->setText(0, "BUDDIES");
+    buddiesItem->setExpanded(true);
+    ui->playersTree->insertTopLevelItem(0, buddiesItem);
+    neighborsItem = new QTreeWidgetItem(ui->playersTree);
+    neighborsItem->setText(0, "NEIGHBORS");
+    ui->playersTree->insertTopLevelItem(0, neighborsItem);
+    neighborsItem->setExpanded(true);
 }
 
 MoulKI::~MoulKI() {
@@ -80,10 +95,25 @@ void MoulKI::showPlayers() {
 }
 
 void MoulKI::setActive(hsUint32 playerId) {
+    activePlayer = playerId;
+    buddyListFolder = 0;
+    buddyInfoIds.clear();
+    clearBuddyList();
+    // pre-fetch buddy data if it already exists
+    if(vault.hasNode(playerId)) {
+        qtVaultNode* playerChild = vault.getNode(playerId)->getBuddiesFolder();
+        if(playerChild != NULL) {
+            buddyListFolder = playerChild->getNodeIdx();
+            foreach(qtVaultNode* buddyInfo, playerChild->getChildren()) {
+                buddyInfoIds.append(buddyInfo->getNodeIdx());
+                addRemoveBuddyItem(buddyInfo);
+            }
+        }
+    }
+    // return to normally scheduled operations
     vault.queueRoot(playerId);
     authClient->sendVaultNodeFetch(playerId);
     authClient->sendAcctSetPlayerRequest(playerId);
-    activePlayer = playerId;
 }
 
 void MoulKI::showItemContextMenu(QPoint pos) {
@@ -103,9 +133,15 @@ void MoulKI::showItemContextMenu(QPoint pos) {
     menu->addAction(removeRef);
     menu->addAction(createAndRef);
     if(node->getNodeType() == plVault::kNodePlayerInfo || node->getNodeType() == plVault::kNodeAgeInfo) {
+        menu->addSeparator();
         QAction* subscribe = new QAction("&Subscribe", menu);
         connect(subscribe, SIGNAL(triggered()), this, SLOT(subscribe()));
         menu->addAction(subscribe);
+    }
+    if(node->getNodeType() == plVault::kNodeAgeInfo || (node->getNodeType() == plVault::kNodePlayerInfo && node->getInt32(0) == 1)) {
+        QAction* join = new QAction("&Join", menu);
+        connect(join, SIGNAL(triggered()), this, SLOT(joinSelectedAge()));
+        menu->addAction(join);
     }
     menu->popup(ui->vaultTree->mapToGlobal(pos), addRef);
 }
@@ -136,6 +172,13 @@ void MoulKI::addNode(hsUint32 parent, hsUint32 child) {
     foreach(QTreeWidgetItem* item, parentNode->getItems()) {
         // recursively add children items for vault children that already exist on this vault node
         addItemChild(item, childNode);
+    }
+    // Now we hook this to handle buddy and Neighborhood owner releated stuff
+    if(parent == activePlayer && childNode->getNodeType() == plVault::kNodePlayerInfoList && childNode->getInt32(0) == plVault::kBuddyListFolder) {
+        buddyListFolder = child;
+    }else if(parent == buddyListFolder) {
+        buddyInfoIds.append(child);
+        addRemoveBuddyItem(childNode);
     }
 }
 
@@ -179,6 +222,11 @@ void MoulKI::removeNode(hsUint32 parent, hsUint32 child) {
         childNode->removeItem(removedItem);
     }
     childNode->unlockNode();
+    // now we hook this for buddy updates
+    if(buddyInfoIds.contains(child)) {
+        buddyInfoIds.removeAll(child);
+        addRemoveBuddyItem(childNode, 1);
+    }
 }
 
 void MoulKI::updateNode(hsUint32 idx) {
@@ -193,6 +241,10 @@ void MoulKI::updateNode(hsUint32 idx) {
         if(item->isSelected()) {
             ui->nodeEditor->update();
         }
+    }
+    // now we hook this for buddy updates
+    if(buddyInfoIds.contains(idx)) {
+        addRemoveBuddyItem(node);
     }
 }
 
@@ -315,6 +367,17 @@ void MoulKI::joinAge(plString name, plUuid uuid) {
     authClient->sendAgeRequest(name, uuid);
 }
 
+void MoulKI::joinSelectedAge() {
+    if(ui->vaultTree->selectedItems().count() == 1) {
+        qtVaultNode* node = ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>();
+        if(node->getNodeType() == plVault::kNodeAgeInfo) {
+            authClient->sendAgeRequest(node->getString64(1), node->getUuid(0));
+        }else if(node->getNodeType() == plVault::kNodePlayerInfo && !node->getUuid(0).isNull()) {
+            authClient->sendAgeRequest(node->getString64(0), node->getUuid(0));
+        }
+    }
+}
+
 void MoulKI::setOnline(hsUint32 playerId, plString ageFilename) {
     qtVaultNode* playerNode = vault.getNode(playerId);
     foreach(qtVaultNode* node, playerNode->getChildren()) {
@@ -328,6 +391,7 @@ void MoulKI::setOnline(hsUint32 playerId, plString ageFilename) {
 }
 
 void MoulKI::startGameServer(hsUint32 serverAddr, plUuid ageId, hsUint32 mcpId, hsUint32 ageVaultId) {
+    currentAgeId = ageVaultId;
     fetchTree(ageVaultId); // fetch the age Vault tree, because the client does, and we will get updates
     qtVaultNode* player = vault.getNode(activePlayer);
     if(gameClient != NULL)
@@ -335,9 +399,27 @@ void MoulKI::startGameServer(hsUint32 serverAddr, plUuid ageId, hsUint32 mcpId, 
     gameClient = new qtGameClient(this);
     connect(gameClient, SIGNAL(receivedGameMsg(QString)), this, SLOT(addChatLine(QString)));
     connect(gameClient, SIGNAL(setMeOnline(hsUint32,plString)), this, SLOT(setOnline(hsUint32,plString)));
+    connect(gameClient, SIGNAL(clearAgeList()), this, SLOT(clearAgeList()));
+    connect(gameClient, SIGNAL(addAgePlayer(hsUint32,plString)), this, SLOT(addAgePlayer(hsUint32,plString)));
+    connect(gameClient, SIGNAL(removeAgePlayer(hsUint32,plString)), this, SLOT(removeAgePlayer(hsUint32,plString)));
     gameClient->setPlayer(player);
+    if(vault.hasNode(ageVaultId)) { // this will only be true if we've already been to the age this session
+        qtVaultNode* info = vault.getNode(ageVaultId)->getAgeInfoNode();
+        if(info != NULL) {
+            gameClient->setAgeInfo(info);
+        }
+    }
     gameClient->setJoinInfo(player->getUuid(0), ageId);
     gameClient->joinAge(serverAddr, mcpId, currentAgeName);
+}
+
+void MoulKI::checkCurrentAge() {
+    if(vault.hasNode(currentAgeId)) {
+        qtVaultNode* info = vault.getNode(currentAgeId)->getAgeInfoNode();
+        if(info != NULL && gameClient != NULL) {
+            gameClient->setAgeInfo(info);
+        }
+    }
 }
 
 void MoulKI::sendRemove() {
@@ -392,12 +474,82 @@ void MoulKI::readVault() {
 }
 
 void MoulKI::addChatLine(QString line) {
-    ui->chatPane->insertPlainText(line);
+    QTextCursor cursor = ui->chatPane->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    cursor.insertText(line);
 }
 
 void MoulKI::sendGameChat() {
-    const char* line = ui->chatEntry->text().toAscii().data();
-    gameClient->sendAgeChat(plString(line));
-    addChatLine(plString::Format("%s: %s\n", vault.getNode(activePlayer)->getIString64(0).cstr(), line).cstr());
+    if(gameClient == NULL)
+        return;
+    plString line = plString(ui->chatEntry->text().toAscii().data());
+    if(ui->playersTree->selectedItems().count() == 1) {
+        QTreeWidgetItem* item = ui->playersTree->selectedItems()[0];
+        QVariant userData = item->data(0, Qt::UserRole);
+        if(userData.canConvert<hsUint32>()) {
+            gameClient->sendPrivate(line, userData.value<hsUint32>());
+            addChatLine(plString::Format("To %s: %s\n", item->text(0).toAscii().data(), line.cstr()).cstr());
+        }else{
+            gameClient->sendAgeChat(line);
+            addChatLine(plString::Format("%s: %s\n", vault.getNode(activePlayer)->getIString64(0).cstr(), line.cstr()).cstr());
+        }
+    }else{
+        gameClient->sendAgeChat(line);
+        addChatLine(plString::Format("%s: %s\n", vault.getNode(activePlayer)->getIString64(0).cstr(), line.cstr()).cstr());
+    }
     ui->chatEntry->clear();
+}
+
+void MoulKI::addAgePlayer(hsUint32 playerId, plString playerName) {
+    QTreeWidgetItem* item = new QTreeWidgetItem();
+    item->setText(0, QString(playerName.cstr()));
+    item->setData(0, Qt::UserRole, QVariant(playerId));
+    agePlayersItem->addChild(item);
+}
+
+void MoulKI::removeAgePlayer(hsUint32 playerId, plString playerName) {
+    for(int i = 0; i < agePlayersItem->childCount(); i++) {
+        if(agePlayersItem->child(i)->data(0, Qt::UserRole).value<hsUint32>() == playerId) {
+            agePlayersItem->removeChild(agePlayersItem->child(i));
+        }
+    }
+}
+
+void MoulKI::clearAgeList() {
+    while(agePlayersItem->childCount() > 0) {
+        agePlayersItem->removeChild(agePlayersItem->child(0));
+    }
+}
+
+void MoulKI::clearBuddyList() {
+    while(buddiesItem->childCount() > 0) {
+        buddiesItem->removeChild(buddiesItem->child(0));
+    }
+}
+
+void MoulKI::addRemoveBuddyItem(qtVaultNode* infoNode, bool remove) {
+    if(infoNode->getInt32(0) == 0 || remove) {
+        for(int i = 0; i < buddiesItem->childCount(); i++) {
+            if(buddiesItem->child(i)->data(0, Qt::UserRole).value<hsUint32>() == infoNode->getUint32(0)) {
+                buddiesItem->removeChild(buddiesItem->child(i));
+                break;
+            }
+        }
+    }else{
+        if(!buddyTreeContains(infoNode->getUint32(0))) {
+            QTreeWidgetItem* item = new QTreeWidgetItem();
+            item->setText(0, infoNode->getIString64(0).cstr());
+            item->setData(0, Qt::UserRole, QVariant(infoNode->getUint32(0)));
+            buddiesItem->addChild(item);
+        }
+    }
+}
+
+bool MoulKI::buddyTreeContains(hsUint32 playerId) {
+    for(int i = 0; i < buddiesItem->childCount(); i++) {
+        if(buddiesItem->child(i)->data(0, Qt::UserRole).value<hsUint32>() == playerId) {
+            return true;
+        }
+    }
+    return false;
 }

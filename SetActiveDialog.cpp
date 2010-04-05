@@ -61,7 +61,7 @@ void SetActiveDialog::setAgeNodes(QList<qtVaultNode *>nodes) {
         QVariant data;
         data.setValue(node);
         item->setData(Qt::UserRole, data);
-        item->setText(QString((node->getString64(3) + " " + node->getString64(2)).cstr()));
+        item->setText(QString(node->displayName().cstr()));
         m_ui->playerList->addItem(item);
     }
     setWindowTitle("Select Age to Join");

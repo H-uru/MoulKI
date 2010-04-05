@@ -28,7 +28,10 @@ public:
 
     qtVault vault;
     hsUint32 activePlayer;
+    hsUint32 buddyListFolder;
+    QList<hsUint32> buddyInfoIds;
     plString currentAgeName;
+    hsUint32 currentAgeId;
 
 private:
     Ui::MoulKIClass *ui;
@@ -40,6 +43,10 @@ private:
     bool itemHasChild(QTreeWidgetItem* item, qtVaultNode* node);
     void removeTreeNodes(QTreeWidgetItem* item, qtVaultNode* node);
     void addContextMenuToItem(QTreeWidgetItem* item);
+
+    QTreeWidgetItem* agePlayersItem;
+    QTreeWidgetItem* buddiesItem;
+    QTreeWidgetItem* neighborsItem;
 
 public slots:
     void showLoginDialog();
@@ -74,10 +81,18 @@ public slots:
     // gameserver events
     void showJoinAgeDialog();
     void joinAge(plString name, plUuid uuid);
+    void joinSelectedAge();
     void startGameServer(hsUint32 serverAddr, plUuid ageId, hsUint32 mcpId, hsUint32 ageVaultId);
     void addChatLine(QString line);
     void setOnline(hsUint32 playerId, plString ageFilename);
     void sendGameChat();
+    void addAgePlayer(hsUint32, plString);
+    void removeAgePlayer(hsUint32, plString);
+    void clearAgeList();
+    void clearBuddyList();
+    void addRemoveBuddyItem(qtVaultNode* infoNode, bool remove=0);
+    void checkCurrentAge();
+    bool buddyTreeContains(hsUint32 playerId);
 };
 
 #endif // MOULKI_H

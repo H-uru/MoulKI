@@ -178,6 +178,10 @@ qtVaultNode* qtVault::getNode(hsUint32 idx) {
     return &nodes[idx];
 }
 
+bool qtVault::hasNode(hsUint32 idx) {
+    return nodes.keys().contains(idx);
+}
+
 void qtVault::writeVault(hsFileStream& file) {
     vaultMutex.lock();
     file.writeInt(refList.count());
@@ -222,7 +226,7 @@ qtVaultNode::qtVaultNode() {
 qtVaultNode::qtVaultNode(const pnVaultNode& node) : pnVaultNode(node) {
 }
 
-qtVaultNode::qtVaultNode(const qtVaultNode &node) {
+qtVaultNode::qtVaultNode(const qtVaultNode &node) : pnVaultNode() {
     copy(node);
 }
 
@@ -515,3 +519,28 @@ bool qtVaultNode::tryLock() {
     return nodeMutex.tryLock();
     return true;
 }
+
+
+qtVaultNode* qtVaultNode::getBuddiesFolder() {
+    if(getNodeType() != plVault::kNodePlayer)
+        return NULL;
+    foreach(qtVaultNode* child, getChildren()) {
+        if(child->getNodeType() == plVault::kNodePlayerInfoList && child->getInt32(k_1) == plVault::kBuddyListFolder) {
+            return child;
+        }
+    }
+    return NULL;
+}
+
+qtVaultNode* qtVaultNode::getAgeInfoNode() {
+    if(getNodeType() != plVault::kNodeAge)
+        return NULL;
+    foreach(qtVaultNode* child, getChildren()) {
+        if(child->getNodeType() == plVault::kNodeAgeInfo) {
+            return child;
+        }
+    }
+    return NULL;
+}
+
+//qtVaultNode* qtVaultNode::getNeighborsFolder();

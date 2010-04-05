@@ -36,6 +36,11 @@ public:
     bool addChild(qtVaultNode* child);
     void removeChild(qtVaultNode* child);
 
+    // special search functions
+    qtVaultNode* getBuddiesFolder();
+    qtVaultNode* getNeighborsFolder();
+    qtVaultNode* getAgeInfoNode();
+
     QTreeWidgetItem* newItem();
     void removeItem(QTreeWidgetItem* item);
     const QList<QTreeWidgetItem*> getItems();
@@ -64,6 +69,7 @@ public:
     void removeRef(hsUint32 parent, hsUint32 child);
     void queueRoot(hsUint32 idx);
     qtVaultNode* getNode(hsUint32 idx);
+    bool hasNode(hsUint32 idx);
 
     void writeVault(hsFileStream& file);
     void readVault(hsFileStream& file);
