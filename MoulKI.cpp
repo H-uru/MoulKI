@@ -64,6 +64,11 @@ MoulKI::MoulKI(QWidget *parent)
     neighborsItem->setText(0, "NEIGHBORS");
     ui->playersTree->insertTopLevelItem(0, neighborsItem);
     neighborsItem->setExpanded(true);
+
+    QList<int> chatSizes;
+    chatSizes.append(350);
+    chatSizes.append(100);
+    ui->chatSplitter->setSizes(chatSizes);
 }
 
 MoulKI::~MoulKI() {

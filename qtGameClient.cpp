@@ -156,13 +156,13 @@ void qtGameClient::onPropagateMessage(plCreatable *msg) {
             // add member
             qWarning("Added Player: %s", guid->getPlayerName().cstr());
             fAgePlayers.append(guid->getPlayerID());
-            emit receivedGameMsg(plString::Format("* %s joined the age", guid->getPlayerName().cstr()).cstr());
+            emit receivedGameMsg(plString::Format("* %s joined the age\n", guid->getPlayerName().cstr()).cstr());
             emit addAgePlayer(guid->getPlayerID(), guid->getPlayerName());
         }else{
             // remove member
             qWarning("Removed Player: %s", guid->getPlayerName().cstr());
             fAgePlayers.remove(fAgePlayers.find(guid->getPlayerID()));
-            emit receivedGameMsg(plString::Format("* %s left the age", guid->getPlayerName().cstr()).cstr());
+            emit receivedGameMsg("* Someone left the age\n");
             emit removeAgePlayer(guid->getPlayerID(), guid->getPlayerName());
         }
     }
