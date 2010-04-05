@@ -92,7 +92,7 @@ void qtGameClient::onJoinAgeReply(hsUint32 transId, ENetError result) {
         loadClone.setIsLoading(1);
         loadClone.setIsInitialState(0);
         loadClone.setCompressionType(0);
-        loadClone.getObject().setUoid(playerKey->getUoid());
+        loadClone.setObject(playerKey->getUoid());
         propagateMessage(&loadClone);
         qWarning("Sent LoadClone");
         plNetMsgMembersListReq listReq;
@@ -112,7 +112,7 @@ void qtGameClient::onPropagateMessage(plCreatable *msg) {
     msg->prcWrite(&prc);
     char* data = new char[S.size()];
     S.copyTo(data, S.size());
-    //qWarning(QString(QByteArray(data, S.size())).toAscii().data());
+    qWarning(QString(QByteArray(data, S.size())).toAscii().data());
     delete[] data;
     if(msg->ClassIndex() == kNetMsgGameMessageDirected) {
         plMessage* gameMsg = ((plNetMsgGameMessageDirected*)msg)->getMessage();
@@ -142,6 +142,19 @@ void qtGameClient::onPropagateMessage(plCreatable *msg) {
             qWarning("Age Player: %s", guid->getPlayerName().cstr());
             fAgePlayers.append(guid->getPlayerID());
         }
+    }else if(msg->ClassIndex() == kNetMsgMemberUpdate) {
+        plNetMsgMemberUpdate* memberUpdate = (plNetMsgMemberUpdate*)msg;
+        const plNetMsgMemberInfoHelper* info = &memberUpdate->getMember();
+        const plClientGuid* guid = &info->getClientGuid();
+        if(memberUpdate->getAddMember()) {
+            // add member
+            qWarning("Added Player: %s", guid->getPlayerName().cstr());
+            fAgePlayers.append(guid->getPlayerID());
+        }else{
+            // remove member
+            qWarning("Removed Player: %s", guid->getPlayerName().cstr());
+            fAgePlayers.remove(guid->getPlayerID());
+        }
     }
 }
 
@@ -161,11 +174,11 @@ void qtGameClient::sendAgeChat(plString message) {
     propagateMessage(&gameMsg);
     qWarning("Sent Chat: %s", message.cstr());
     // debug
-    hsRAMStream S(pvLive);
+    /*hsRAMStream S(pvLive);
     pfPrcHelper prc(&S);
     gameMsg.prcWrite(&prc);
     char* data = new char[S.size()];
     S.copyTo(data, S.size());
     qWarning(QString(QByteArray(data, S.size())).toAscii().data());
-    delete[] data;
+    delete[] data;*/
 }
