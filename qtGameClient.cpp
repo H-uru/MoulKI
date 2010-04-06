@@ -21,9 +21,10 @@ void qtGameClient::setPlayer(qtVaultNode* player) {
 
 void qtGameClient::setAgeInfo(qtVaultNode* ageInfo) {
     fAgeInfoNode = ageInfo;
+    emit setMeOnline(fPlayerNode->getNodeIdx(), fAgeInfoNode->getString64(1), fAgeInfoNode->getUuid(0));
 }
 
-void qtGameClient::joinAge(hsUint32 serverAddr, hsUint32 mcpId, plString ageFilename) {
+void qtGameClient::joinAge(hsUint32 serverAddr, hsUint32 mcpId) {
     // I've seen a function that does this somewhere in zrax's code..
     // would be nice if I could find it, so I wouldn't have to roll my own here :P
     plString serverString = plString::Format("%u.%u.%u.%u",
@@ -41,13 +42,11 @@ void qtGameClient::joinAge(hsUint32 serverAddr, hsUint32 mcpId, plString ageFile
         qWarning("Successfully connected to Game Server");
     }
     fMcpId = mcpId;
-    fAgeFilename = ageFilename;
     sendJoinAgeRequest(mcpId, fAccountId, fPlayerNode->getNodeIdx());
 }
 
 void qtGameClient::onJoinAgeReply(hsUint32 transId, ENetError result) {
     if(result == kNetSuccess) {
-        emit setMeOnline(fPlayerNode->getNodeIdx(), fAgeFilename);
         qWarning("Successfuly Joined Age");
         plKeyData* clientMgr = new plKeyData();
         clientMgr->setName("kNetClientMgr_KEY");
@@ -215,12 +214,30 @@ void qtGameClient::sendPrivate(plString message, hsUint32 target) {
     gameMsg.setMessage(kiMsg);
     propagateMessage(&gameMsg);
     qWarning("Sent Private Chat to %u: %s", target, message.cstr());
-    // debug
-    /*hsRAMStream S(pvLive);
-    pfPrcHelper prc(&S);
-    gameMsg.prcWrite(&prc);
-    char* data = new char[S.size()];
-    S.copyTo(data, S.size());
-    qWarning(QString(QByteArray(data, S.size())).toAscii().data());
-    delete[] data;*/
+}
+
+void qtGameClient::sendBuddyBroadcast(plString message, QList<hsUint32> buddies) {
+    hsTArray<hsUint32> targets;
+    foreach(hsUint32 target, buddies) {
+        targets.append(target);
+    }
+    plNetMsgGameMessageDirected gameMsg;
+    pfKIMsg* kiMsg = new pfKIMsg();
+    gameMsg.setFlags(0x00049001);
+    gameMsg.setTimeSent(plUnifiedTime::GetCurrentTime());
+    gameMsg.setPlayerID(fPlayerNode->getNodeIdx());
+    gameMsg.setReceivers(targets);
+    kiMsg->setBCastFlags(0x00004248);
+    kiMsg->setCommand(0);
+    kiMsg->setFlags(8);
+    kiMsg->setPlayerID(fPlayerNode->getNodeIdx());
+    kiMsg->setUser(fPlayerNode->getIString64(0));
+    if(fAgeInfoNode != NULL) {
+        kiMsg->setString(hsStringToWString(plString::Format("<<%s>>%s", fAgeInfoNode->displayName().cstr(), message.cstr())));
+    }else{
+        kiMsg->setString(hsStringToWString(plString::Format("<<%s>>%s", "???", message.cstr())));
+    }
+    gameMsg.setMessage(kiMsg);
+    propagateMessage(&gameMsg);
+    qWarning("Sent Buddy Chat: %s", message.cstr());
 }

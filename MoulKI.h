@@ -84,7 +84,7 @@ public slots:
     void joinSelectedAge();
     void startGameServer(hsUint32 serverAddr, plUuid ageId, hsUint32 mcpId, hsUint32 ageVaultId);
     void addChatLine(QString line);
-    void setOnline(hsUint32 playerId, plString ageFilename);
+    void setOnline(hsUint32 playerId, plString ageFilename, plUuid ageUuid);
     void sendGameChat();
     void addAgePlayer(hsUint32, plString);
     void removeAgePlayer(hsUint32, plString);

@@ -383,11 +383,12 @@ void MoulKI::joinSelectedAge() {
     }
 }
 
-void MoulKI::setOnline(hsUint32 playerId, plString ageFilename) {
+void MoulKI::setOnline(hsUint32 playerId, plString ageFilename, plUuid ageUuid) {
     qtVaultNode* playerNode = vault.getNode(playerId);
     foreach(qtVaultNode* node, playerNode->getChildren()) {
         if(node->getNodeType() == plVault::kNodePlayerInfo) {
             node->setInt32(0, 1);
+            node->setUuid(0, ageUuid);
             node->setString64(0, ageFilename);
             authClient->sendVaultNodeSave(node->getNodeIdx(), plUuid(), *node);
             break;
@@ -403,7 +404,7 @@ void MoulKI::startGameServer(hsUint32 serverAddr, plUuid ageId, hsUint32 mcpId, 
         delete gameClient;
     gameClient = new qtGameClient(this);
     connect(gameClient, SIGNAL(receivedGameMsg(QString)), this, SLOT(addChatLine(QString)));
-    connect(gameClient, SIGNAL(setMeOnline(hsUint32,plString)), this, SLOT(setOnline(hsUint32,plString)));
+    connect(gameClient, SIGNAL(setMeOnline(hsUint32,plString,plUuid)), this, SLOT(setOnline(hsUint32,plString,plUuid)));
     connect(gameClient, SIGNAL(clearAgeList()), this, SLOT(clearAgeList()));
     connect(gameClient, SIGNAL(addAgePlayer(hsUint32,plString)), this, SLOT(addAgePlayer(hsUint32,plString)));
     connect(gameClient, SIGNAL(removeAgePlayer(hsUint32,plString)), this, SLOT(removeAgePlayer(hsUint32,plString)));
@@ -415,7 +416,7 @@ void MoulKI::startGameServer(hsUint32 serverAddr, plUuid ageId, hsUint32 mcpId, 
         }
     }
     gameClient->setJoinInfo(player->getUuid(0), ageId);
-    gameClient->joinAge(serverAddr, mcpId, currentAgeName);
+    gameClient->joinAge(serverAddr, mcpId);
 }
 
 void MoulKI::checkCurrentAge() {
@@ -494,6 +495,13 @@ void MoulKI::sendGameChat() {
         if(userData.canConvert<hsUint32>()) {
             gameClient->sendPrivate(line, userData.value<hsUint32>());
             addChatLine(plString::Format("To %s: %s\n", item->text(0).toAscii().data(), line.cstr()).cstr());
+        }else if(item->text(0) == "BUDDIES") {
+            QList<hsUint32> buddies;
+            for(int i = 0; i < item->childCount(); i++) {
+                    buddies.append(item->child(i)->data(0, Qt::UserRole).value<hsUint32>());
+            }
+            gameClient->sendBuddyBroadcast(line, buddies);
+            addChatLine(plString::Format("To BUDDIES: %s\n", line.cstr()).cstr());
         }else{
             gameClient->sendAgeChat(line);
             addChatLine(plString::Format("%s: %s\n", vault.getNode(activePlayer)->getIString64(0).cstr(), line.cstr()).cstr());
