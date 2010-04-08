@@ -28,8 +28,12 @@ public:
 
     qtVault vault;
     hsUint32 activePlayer;
+
     hsUint32 buddyListFolder;
     QList<hsUint32> buddyInfoIds;
+    hsUint32 neighborListFolder;
+    QList<hsUint32> neighborInfoIds;
+
     plString currentAgeName;
     hsUint32 currentAgeId;
 
@@ -86,13 +90,14 @@ public slots:
     void addChatLine(QString line);
     void setOnline(hsUint32 playerId, plString ageFilename, plUuid ageUuid);
     void sendGameChat();
+    void checkCurrentAge();
+    // target manipulation
     void addAgePlayer(hsUint32, plString);
     void removeAgePlayer(hsUint32, plString);
     void clearAgeList();
-    void clearBuddyList();
-    void addRemoveBuddyItem(qtVaultNode* infoNode, bool remove=0);
-    void checkCurrentAge();
-    bool buddyTreeContains(hsUint32 playerId);
+    void clearChatTargetList(QTreeWidgetItem* item);
+    void addRemoveChatTargetItem(QTreeWidgetItem* item, qtVaultNode* infoNode, bool remove=0);
+    bool itemTreeContains(QTreeWidgetItem* item, hsUint32 playerId);
 };
 
 #endif // MOULKI_H

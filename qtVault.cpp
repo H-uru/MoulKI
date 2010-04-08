@@ -543,4 +543,22 @@ qtVaultNode* qtVaultNode::getAgeInfoNode() {
     return NULL;
 }
 
-//qtVaultNode* qtVaultNode::getNeighborsFolder();
+qtVaultNode* qtVaultNode::getNeighborsFolder() {
+    if(getNodeType() != plVault::kNodePlayer)
+        return NULL;
+    foreach(qtVaultNode* child, getChildren()) {
+        if(child->getNodeType() == plVault::kNodeAgeInfoList && child->getInt32(k_1) == plVault::kAgesIOwnFolder) {
+            foreach(qtVaultNode* ageLink, child->getChildren()) {
+                if(ageLink->getChildren().count() == 1 && ageLink->getChildren()[0]->getString64(k_2) == "Neighborhood") {
+                    foreach(qtVaultNode* ageContents, ageLink->getChildren()[0]->getChildren()) {
+                        if(ageContents->getNodeType() == plVault::kNodePlayerInfoList && ageContents->getInt32(k_1) == plVault::kAgeOwnersFolder) {
+                            return ageContents;
+                        }
+                    }
+                }
+            }
+            break;
+        }
+    }
+    return NULL;
+}

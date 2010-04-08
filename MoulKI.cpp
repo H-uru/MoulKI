@@ -103,15 +103,26 @@ void MoulKI::setActive(hsUint32 playerId) {
     activePlayer = playerId;
     buddyListFolder = 0;
     buddyInfoIds.clear();
-    clearBuddyList();
+    neighborListFolder = 0;
+    neighborInfoIds.clear();
+    clearChatTargetList(buddiesItem);
+    clearChatTargetList(neighborsItem);
     // pre-fetch buddy data if it already exists
     if(vault.hasNode(playerId)) {
-        qtVaultNode* playerChild = vault.getNode(playerId)->getBuddiesFolder();
-        if(playerChild != NULL) {
-            buddyListFolder = playerChild->getNodeIdx();
-            foreach(qtVaultNode* buddyInfo, playerChild->getChildren()) {
+        qtVaultNode* buddiesFolderNode = vault.getNode(playerId)->getBuddiesFolder();
+        if(buddiesFolderNode != NULL) {
+            buddyListFolder = buddiesFolderNode->getNodeIdx();
+            foreach(qtVaultNode* buddyInfo, buddiesFolderNode->getChildren()) {
                 buddyInfoIds.append(buddyInfo->getNodeIdx());
-                addRemoveBuddyItem(buddyInfo);
+                addRemoveChatTargetItem(buddiesItem, buddyInfo);
+            }
+        }
+        qtVaultNode* neighborsFolderNode = vault.getNode(playerId)->getNeighborsFolder();
+        if(neighborsFolderNode != NULL) {
+            neighborListFolder = neighborsFolderNode->getNodeIdx();
+            foreach(qtVaultNode* neighborInfo, neighborsFolderNode->getChildren()) {
+                neighborInfoIds.append(neighborInfo->getNodeIdx());
+                addRemoveChatTargetItem(neighborsItem, neighborInfo);
             }
         }
     }
@@ -172,18 +183,33 @@ void MoulKI::addRoot(hsUint32 idx) {
 void MoulKI::addNode(hsUint32 parent, hsUint32 child) {
     qtVaultNode* parentNode = vault.getNode(parent);
     qtVaultNode* childNode = vault.getNode(child);
+    // Now we hook this to handle buddy and Neighborhood owner releated stuff
+    if(vault.hasNode(activePlayer)) {
+        if(buddyListFolder == 0) {
+            qtVaultNode* buddyListNode = vault.getNode(activePlayer)->getBuddiesFolder();
+            if(buddyListNode != NULL) {
+                buddyListFolder = buddyListNode->getNodeIdx();
+            }
+        }
+        if(neighborListFolder == 0) {
+            qtVaultNode* neighborListNode = vault.getNode(activePlayer)->getNeighborsFolder();
+            if(neighborListNode != NULL) {
+                neighborListFolder = neighborListNode->getNodeIdx();
+            }
+        }
+    }
+    if(parent == buddyListFolder) {
+        buddyInfoIds.append(child);
+        addRemoveChatTargetItem(buddiesItem, childNode);
+    }else if(parent == neighborListFolder) {
+        neighborInfoIds.append(child);
+        addRemoveChatTargetItem(neighborsItem, childNode);
+    }
     // a new ref has been added, find all the parent items, and add the new child to all of them
     // if the child has existing children, they will be recursively added
     foreach(QTreeWidgetItem* item, parentNode->getItems()) {
         // recursively add children items for vault children that already exist on this vault node
         addItemChild(item, childNode);
-    }
-    // Now we hook this to handle buddy and Neighborhood owner releated stuff
-    if(parent == activePlayer && childNode->getNodeType() == plVault::kNodePlayerInfoList && childNode->getInt32(0) == plVault::kBuddyListFolder) {
-        buddyListFolder = child;
-    }else if(parent == buddyListFolder) {
-        buddyInfoIds.append(child);
-        addRemoveBuddyItem(childNode);
     }
 }
 
@@ -230,7 +256,11 @@ void MoulKI::removeNode(hsUint32 parent, hsUint32 child) {
     // now we hook this for buddy updates
     if(buddyInfoIds.contains(child)) {
         buddyInfoIds.removeAll(child);
-        addRemoveBuddyItem(childNode, 1);
+        addRemoveChatTargetItem(buddiesItem, childNode, 1);
+    }
+    if(neighborInfoIds.contains(child)) {
+        neighborInfoIds.removeAll(child);
+        addRemoveChatTargetItem(neighborsItem, childNode, 1);
     }
 }
 
@@ -249,7 +279,10 @@ void MoulKI::updateNode(hsUint32 idx) {
     }
     // now we hook this for buddy updates
     if(buddyInfoIds.contains(idx)) {
-        addRemoveBuddyItem(node);
+        addRemoveChatTargetItem(buddiesItem, node);
+    }
+    if(neighborInfoIds.contains(idx)) {
+        addRemoveChatTargetItem(neighborsItem, node);
     }
 }
 
@@ -276,7 +309,7 @@ void MoulKI::setShownNode() {
 void MoulKI::subscribe() {
     QTreeWidgetItem* item = ui->vaultTree->selectedItems()[0];
     qtVaultNode* child = item->data(0, Qt::UserRole).value<qtVaultNode*>();
-    fetchTree(child->getCreatorIdx());
+    fetchTree(child->getUint32(0));
 }
 
 void MoulKI::nodeDirty(bool dirty) {
@@ -495,13 +528,13 @@ void MoulKI::sendGameChat() {
         if(userData.canConvert<hsUint32>()) {
             gameClient->sendPrivate(line, userData.value<hsUint32>());
             addChatLine(plString::Format("To %s: %s\n", item->text(0).toAscii().data(), line.cstr()).cstr());
-        }else if(item->text(0) == "BUDDIES") {
-            QList<hsUint32> buddies;
+        }else if(item->text(0) == "BUDDIES" || item->text(0) == "NEIGHBORS") {
+            QList<hsUint32> targets;
             for(int i = 0; i < item->childCount(); i++) {
-                    buddies.append(item->child(i)->data(0, Qt::UserRole).value<hsUint32>());
+                    targets.append(item->child(i)->data(0, Qt::UserRole).value<hsUint32>());
             }
-            gameClient->sendBuddyBroadcast(line, buddies);
-            addChatLine(plString::Format("To BUDDIES: %s\n", line.cstr()).cstr());
+            gameClient->sendBroadcast(line, targets, item->text(0) == "BUDDIES");
+            addChatLine(plString::Format("To %s: %s\n", item->text(0).toAscii().data(), line.cstr()).cstr());
         }else{
             gameClient->sendAgeChat(line);
             addChatLine(plString::Format("%s: %s\n", vault.getNode(activePlayer)->getIString64(0).cstr(), line.cstr()).cstr());
@@ -534,33 +567,33 @@ void MoulKI::clearAgeList() {
     }
 }
 
-void MoulKI::clearBuddyList() {
-    while(buddiesItem->childCount() > 0) {
-        buddiesItem->removeChild(buddiesItem->child(0));
+void MoulKI::clearChatTargetList(QTreeWidgetItem* item) {
+    while(item->childCount() > 0) {
+        item->removeChild(item->child(0));
     }
 }
 
-void MoulKI::addRemoveBuddyItem(qtVaultNode* infoNode, bool remove) {
+void MoulKI::addRemoveChatTargetItem(QTreeWidgetItem* item, qtVaultNode* infoNode, bool remove) {
     if(infoNode->getInt32(0) == 0 || remove) {
-        for(int i = 0; i < buddiesItem->childCount(); i++) {
-            if(buddiesItem->child(i)->data(0, Qt::UserRole).value<hsUint32>() == infoNode->getUint32(0)) {
-                buddiesItem->removeChild(buddiesItem->child(i));
+        for(int i = 0; i < item->childCount(); i++) {
+            if(item->child(i)->data(0, Qt::UserRole).value<hsUint32>() == infoNode->getUint32(0)) {
+                item->removeChild(item->child(i));
                 break;
             }
         }
     }else{
-        if(!buddyTreeContains(infoNode->getUint32(0))) {
-            QTreeWidgetItem* item = new QTreeWidgetItem();
-            item->setText(0, infoNode->getIString64(0).cstr());
-            item->setData(0, Qt::UserRole, QVariant(infoNode->getUint32(0)));
-            buddiesItem->addChild(item);
+        if(!itemTreeContains(item, infoNode->getUint32(0))) {
+            QTreeWidgetItem* newItem = new QTreeWidgetItem();
+            newItem->setText(0, infoNode->getIString64(0).cstr());
+            newItem->setData(0, Qt::UserRole, QVariant(infoNode->getUint32(0)));
+            item->addChild(newItem);
         }
     }
 }
 
-bool MoulKI::buddyTreeContains(hsUint32 playerId) {
-    for(int i = 0; i < buddiesItem->childCount(); i++) {
-        if(buddiesItem->child(i)->data(0, Qt::UserRole).value<hsUint32>() == playerId) {
+bool MoulKI::itemTreeContains(QTreeWidgetItem* item, hsUint32 playerId) {
+    for(int i = 0; i < item->childCount(); i++) {
+        if(item->child(i)->data(0, Qt::UserRole).value<hsUint32>() == playerId) {
             return true;
         }
     }

@@ -27,7 +27,7 @@ public:
 
 public slots:
     void sendAgeChat(plString message);
-    void sendBuddyBroadcast(plString message, QList<hsUint32> buddies);
+    void sendBroadcast(plString message, QList<hsUint32> targets, int type);
     void sendPrivate(plString message, hsUint32 target);
 
 signals:
