@@ -47,6 +47,7 @@ private:
     bool itemHasChild(QTreeWidgetItem* item, qtVaultNode* node);
     void removeTreeNodes(QTreeWidgetItem* item, qtVaultNode* node);
     void addContextMenuToItem(QTreeWidgetItem* item);
+    void closeEvent(QCloseEvent* event);
 
     QTreeWidgetItem* agePlayersItem;
     QTreeWidgetItem* buddiesItem;
@@ -82,6 +83,7 @@ public slots:
     void sendRemove();
     void writeVault();
     void readVault();
+    void logoutActivePlayer();
     // gameserver events
     void showJoinAgeDialog();
     void joinAge(plString name, plUuid uuid);

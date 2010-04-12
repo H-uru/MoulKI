@@ -408,7 +408,12 @@ void qtVaultNode::setFieldFromString(size_t field, plString string) {
             setCreateAgeUuid(plUuid(string.cstr()));
             break;
         case kCreatorUuid:
-            setCreatorUuid(plUuid(string.cstr()));
+            try {
+                plUuid uuid(string.cstr());
+                setCreatorUuid(uuid);
+            } catch (hsException e) {
+                qWarning("qtVaultNode::setFieldFromString(): Bad Uuid String (%s)", e.what());
+            }
             break;
         case kCreatorIdx:
             setCreatorIdx(string.toUint(10));
@@ -439,13 +444,11 @@ void qtVaultNode::setFieldFromString(size_t field, plString string) {
         case kUuid_2:
         case kUuid_3:
         case kUuid_4:
-            {
-                try {
-                    plUuid uuid(string.cstr());
-                    setUuid(field - kUuid_1, uuid);
-                } catch (hsException e) {
-                    qWarning("qtVaultNode::setFieldFromString(): Bad Uuid String (%s)", e.what());
-                }
+            try {
+                plUuid uuid(string.cstr());
+                setUuid(field - kUuid_1, uuid);
+            } catch (hsException e) {
+                qWarning("qtVaultNode::setFieldFromString(): Bad Uuid String (%s)", e.what());
             }
             break;
         case kString64_1:

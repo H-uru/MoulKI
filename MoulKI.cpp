@@ -75,6 +75,26 @@ MoulKI::~MoulKI() {
     delete ui;
 }
 
+void MoulKI::closeEvent(QCloseEvent* event) {
+    // log the player out when the window is closed
+    if(gameClient != NULL) {
+        logoutActivePlayer();
+    }
+}
+
+void MoulKI::logoutActivePlayer() {
+    foreach(qtVaultNode* child, vault.getNode(activePlayer)->getChildren()) {
+        if(child->getNodeType() == plVault::kNodePlayerInfo) {
+            child->setInt32(0, 0);
+            child->setUuid(0, plUuid());
+            child->setString64(0, plString());
+            if(authClient->isConnected()) {
+                authClient->sendVaultNodeSave(child->getNodeIdx(), plUuid(), *child);
+            }
+        }
+    }
+}
+
 void MoulKI::showLoginDialog() {
     LoginDialog* dialog = new LoginDialog(this);
     connect(dialog, SIGNAL(login(QString,QString)), this, SLOT(login(QString,QString)));
@@ -100,6 +120,9 @@ void MoulKI::showPlayers() {
 }
 
 void MoulKI::setActive(hsUint32 playerId) {
+    if(gameClient != NULL) {
+        logoutActivePlayer();
+    }
     activePlayer = playerId;
     buddyListFolder = 0;
     buddyInfoIds.clear();
