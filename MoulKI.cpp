@@ -8,6 +8,7 @@
 #include "ui_MoulKI.h"
 
 #include <QLabel>
+#include <QScrollBar>
 #include <QFileDialog>
 
 Q_DECLARE_METATYPE(plUuid)
@@ -537,8 +538,14 @@ void MoulKI::readVault() {
 
 void MoulKI::addChatLine(QString line) {
     QTextCursor cursor = ui->chatPane->textCursor();
+    bool doScroll = false;
+    QScrollBar* scroll = ui->chatPane->verticalScrollBar();
+    if(scroll != NULL && scroll->value() == scroll->maximum())
+        doScroll = true;
     cursor.movePosition(QTextCursor::End);
     cursor.insertText(line);
+    if(doScroll)
+        scroll->setValue(scroll->maximum());
 }
 
 void MoulKI::sendGameChat() {

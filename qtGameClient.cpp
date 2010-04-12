@@ -113,9 +113,10 @@ void qtGameClient::onPropagateMessage(plCreatable *msg) {
     hsRAMStream S(pvLive);
     pfPrcHelper prc(&S);
     msg->prcWrite(&prc);
-    char* data = new char[S.size()];
+    char* data = new char[S.size() + 1];
     S.copyTo(data, S.size());
-    qWarning(QString(QByteArray(data, S.size())).toAscii().data());
+    data[S.size()] = 0;
+    qWarning("%s", data);
     delete[] data;
     if(msg->ClassIndex() == kNetMsgGameMessageDirected) {
         plMessage* gameMsg = ((plNetMsgGameMessageDirected*)msg)->getMessage();
