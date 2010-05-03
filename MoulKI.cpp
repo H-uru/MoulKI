@@ -18,6 +18,7 @@ Q_DECLARE_METATYPE(hsUint32)
 MoulKI::MoulKI(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MoulKIClass), gameClient(NULL)
 {
+    resmgr = new plResManager(pvLive);
     ui->setupUi(this);
 
     qRegisterMetaType<plUuid>("plUuid");

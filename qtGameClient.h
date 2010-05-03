@@ -5,6 +5,7 @@
 #include <net/game/pnGameClient.h>
 
 class qtVaultNode;
+class MoulKI;
 
 class qtGameClient : public QObject, public pnGameClient
 {
@@ -16,7 +17,7 @@ private:
     qtVaultNode* fAgeInfoNode;
 
 public:
-    qtGameClient(QObject* parent = 0);
+    qtGameClient(MoulKI* ki = 0);
     ~qtGameClient();
 
     void setPlayer(qtVaultNode* player);

@@ -42,6 +42,7 @@ private:
 
     qtAuthClient* authClient;
     qtGameClient* gameClient;
+    plResManager* resmgr;
 
     void addItemChild(QTreeWidgetItem* item, qtVaultNode* node);
     bool itemHasChild(QTreeWidgetItem* item, qtVaultNode* node);
@@ -52,6 +53,9 @@ private:
     QTreeWidgetItem* agePlayersItem;
     QTreeWidgetItem* buddiesItem;
     QTreeWidgetItem* neighborsItem;
+
+public:
+    plResManager* getResManager() const { return resmgr; }
 
 public slots:
     void showLoginDialog();

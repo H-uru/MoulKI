@@ -1,7 +1,8 @@
 #include "MoulKI.h"
 #include "qtAuthClient.h"
 
-qtAuthClient::qtAuthClient(MoulKI* ki) : QObject(ki), parent(ki) {
+qtAuthClient::qtAuthClient(MoulKI* ki) : pnAuthClient(ki->getResManager()),
+        QObject(ki), parent(ki) {
     setKeys(KEY_Auth_X, KEY_Auth_N);
     setClientInfo(BUILD_NUMBER, 50, 1, s_moulUuid);
 }
