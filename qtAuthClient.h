@@ -1,7 +1,7 @@
 #ifndef QTAUTHCLIENT_H
 #define QTAUTHCLIENT_H
 
-#include <net/auth/pnAuthClient.h>
+#include <auth/pnAuthClient.h>
 #include <QObject>
 #include <QList>
 

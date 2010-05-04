@@ -7,7 +7,7 @@
 #include <QObject>
 #include <QMetaType>
 #include <QTreeWidgetItem>
-#include <net/auth/pnVaultNode.h>
+#include <auth/pnVaultNode.h>
 
 class qtVaultNode : public pnVaultNode
 {

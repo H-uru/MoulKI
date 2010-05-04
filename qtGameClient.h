@@ -2,7 +2,7 @@
 #define QTGAMECLIENT_H
 
 #include <QObject>
-#include <net/game/pnGameClient.h>
+#include <game/pnGameClient.h>
 
 class qtVaultNode;
 class MoulKI;

@@ -1,10 +1,10 @@
 #include "MoulKI.h"
 #include "qtGameClient.h"
-#include <core/Stream/hsRAMStream.h>
-#include <core/PRP/NetMessage/plNetMsgLoadClone.h>
-#include <core/PRP/NetMessage/plNetMsgMembersList.h>
-#include <core/PRP/Message/plLoadAvatarMsg.h>
-#include <core/PRP/Message/pfKIMsg.h>
+#include <Stream/hsRAMStream.h>
+#include <PRP/NetMessage/plNetMsgLoadClone.h>
+#include <PRP/NetMessage/plNetMsgMembersList.h>
+#include <PRP/Message/plLoadAvatarMsg.h>
+#include <PRP/Message/pfKIMsg.h>
 
 qtGameClient::qtGameClient(MoulKI* ki) : pnGameClient(ki->getResManager()),
     QObject(ki), fPlayerNode(NULL), fAgeInfoNode(NULL) {
