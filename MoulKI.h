@@ -6,7 +6,7 @@
 #include "qtGameClient.h"
 #include "qtVault.h"
 
-#define BUILD_NUMBER 887
+#define BUILD_NUMBER 889
 #define MOUL_HOST "184.73.198.22"
 #include "keys.cpp"
 static const plUuid s_moulUuid("ea489821-6c35-4bd0-9dae-bb17c585e680");

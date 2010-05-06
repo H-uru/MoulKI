@@ -3,8 +3,8 @@
 # -------------------------------------------------
 TARGET = MoulKI
 TEMPLATE = app
-INCLUDEPATH += ../../libhsplasma/core \
-    ../../libhsplasma/net
+INCLUDEPATH += ../../Plasma/core \
+    ../../Plasma/net
 LIBS += -lHSPlasma \
     -lHSPlasmaNet \
     -L../../libhsplasma/lib
