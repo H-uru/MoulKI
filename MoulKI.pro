@@ -7,7 +7,8 @@ INCLUDEPATH += ../../Plasma/core \
     ../../Plasma/net
 LIBS += -lHSPlasma \
     -lHSPlasmaNet \
-    -L../../libhsplasma/lib
+    -L../../Plasma/lib \
+    -L../../Plasma/bin-dbg
 SOURCES += main.cpp \
     MoulKI.cpp \
     qtAuthClient.cpp \
