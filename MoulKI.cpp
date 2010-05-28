@@ -19,36 +19,60 @@ MoulKI::MoulKI(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MoulKIClass), gameClient(NULL)
 {
     resmgr = new plResManager(pvLive);
+    sdlmgr = new plSDLMgr();
     ui->setupUi(this);
 
     qRegisterMetaType<plUuid>("plUuid");
     qRegisterMetaType<plString>("plString");
     qRegisterMetaType<hsUint32>("hsUint32");
 
-    connect(ui->actionLogin, SIGNAL(triggered()), this, SLOT(showLoginDialog()));
-    connect(ui->actionSet_Active, SIGNAL(triggered()), this, SLOT(showPlayers()));
-    connect(ui->actionFind_Node, SIGNAL(triggered()), this, SLOT(showFindDialog()));
-    connect(ui->actionSubscribe, SIGNAL(triggered()), this, SLOT(showFetchDialog()));
-    connect(ui->actionSave_Vault, SIGNAL(triggered()), this, SLOT(writeVault()));
-    connect(ui->actionLoad_Vault, SIGNAL(triggered()), this, SLOT(readVault()));
-    connect(ui->actionJoin_Age, SIGNAL(triggered()), this, SLOT(showJoinAgeDialog()));
-    connect(ui->vaultTree, SIGNAL(itemSelectionChanged()), this, SLOT(setShownNode()));
+    connect(ui->actionLogin, SIGNAL(triggered()), this,
+            SLOT(showLoginDialog()));
+    connect(ui->actionSet_Active, SIGNAL(triggered()), this,
+            SLOT(showPlayers()));
+    connect(ui->actionFind_Node, SIGNAL(triggered()), this,
+            SLOT(showFindDialog()));
+    connect(ui->actionSubscribe, SIGNAL(triggered()), this,
+            SLOT(showFetchDialog()));
+    connect(ui->actionSave_Vault, SIGNAL(triggered()), this,
+            SLOT(writeVault()));
+    connect(ui->actionLoad_Vault, SIGNAL(triggered()), this,
+            SLOT(readVault()));
+    connect(ui->actionJoin_Age, SIGNAL(triggered()), this,
+            SLOT(showJoinAgeDialog()));
+    connect(ui->vaultTree, SIGNAL(itemSelectionChanged()), this,
+            SLOT(setShownNode()));
     connect(ui->applyButton, SIGNAL(clicked()), this, SLOT(saveNodeData()));
     connect(ui->revertButton, SIGNAL(clicked()), this, SLOT(revertNode()));
-    connect(ui->nodeEditor, SIGNAL(isDirty(bool)), this, SLOT(nodeDirty(bool)));
-    connect(ui->vaultTree, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showItemContextMenu(QPoint)));
-    connect(ui->chatEntry, SIGNAL(returnPressed()), this, SLOT(sendGameChat()));
+    connect(ui->nodeEditor, SIGNAL(isDirty(bool)), this,
+            SLOT(nodeDirty(bool)));
+    connect(ui->vaultTree, SIGNAL(customContextMenuRequested(QPoint)),
+            this, SLOT(showItemContextMenu(QPoint)));
+    connect(ui->chatEntry, SIGNAL(returnPressed()), this,
+            SLOT(sendGameChat()));
 
     authClient = new qtAuthClient(this);
-    connect(authClient, SIGNAL(sigStatus(plString)), this, SLOT(setStatus(plString)));
-    connect(authClient, SIGNAL(loginSuccessful()), this, SLOT(showPlayers()));
-    connect(authClient, SIGNAL(foundNodes(int,QList<hsUint32>)), this, SLOT(showFoundDialog(int,QList<hsUint32>)));
-    connect(authClient, SIGNAL(gotAge(hsUint32,plUuid,hsUint32,hsUint32)), this, SLOT(startGameServer(hsUint32,plUuid,hsUint32,hsUint32)));
+    connect(authClient, SIGNAL(sigStatus(plString)), this,
+            SLOT(setStatus(plString)));
+    connect(authClient, SIGNAL(loginSuccessful()), this,
+            SLOT(showPlayers()));
+    connect(authClient, SIGNAL(foundNodes(int,QList<hsUint32>)), this,
+            SLOT(showFoundDialog(int,QList<hsUint32>)));
+    connect(authClient, SIGNAL(gotAge(hsUint32,plUuid,hsUint32,hsUint32)),
+            this, SLOT(startGameServer(hsUint32,plUuid,hsUint32,hsUint32)));
+    connect(authClient, SIGNAL(gotEncKeys(const hsUint32*)), this,
+            SLOT(setEncryptionKeys(const hsUint32*)));
+    connect(authClient, SIGNAL(gotSDLFile(hsStream*)), this,
+            SLOT(loadStateDescriptors(hsStream*)));
 
-    connect(&vault, SIGNAL(addedNode(hsUint32, hsUint32)), this, SLOT(addNode(hsUint32,hsUint32)));
-    connect(&vault, SIGNAL(removedNode(hsUint32, hsUint32)), this, SLOT(removeNode(hsUint32,hsUint32)));
-    connect(&vault, SIGNAL(gotRootNode(hsUint32)), this, SLOT(addRoot(hsUint32)));
-    connect(&vault, SIGNAL(updatedNode(hsUint32)), this, SLOT(updateNode(hsUint32)));
+    connect(&vault, SIGNAL(addedNode(hsUint32, hsUint32)), this,
+            SLOT(addNode(hsUint32,hsUint32)));
+    connect(&vault, SIGNAL(removedNode(hsUint32, hsUint32)), this,
+            SLOT(removeNode(hsUint32,hsUint32)));
+    connect(&vault, SIGNAL(gotRootNode(hsUint32)), this,
+            SLOT(addRoot(hsUint32)));
+    connect(&vault, SIGNAL(updatedNode(hsUint32)), this,
+            SLOT(updateNode(hsUint32)));
     connect(&vault, SIGNAL(fetchComplete()), this, SLOT(checkCurrentAge()));
 
     ui->vaultTree->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -406,6 +430,23 @@ void MoulKI::sendCreate(pnVaultNode& node, hsUint32 parent) {
 void MoulKI::sendFind(pnVaultNode& node) {
     if(authClient->isConnected())
         authClient->sendVaultNodeFind(node);
+}
+
+void MoulKI::setEncryptionKeys(const hsUint32* keys) {
+    ntdKeys[0] = keys[0];
+    ntdKeys[1] = keys[1];
+    ntdKeys[2] = keys[2];
+    ntdKeys[3] = keys[3];
+}
+
+void MoulKI::loadStateDescriptors(hsStream* S) {
+    plEncryptedStream* str = new plEncryptedStream();
+    str->setKey(ntdKeys);
+    str->openRead(S);
+
+    sdlmgr->ReadDescriptors(str);
+
+    delete str;
 }
 
 void MoulKI::showJoinAgeDialog() {

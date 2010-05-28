@@ -37,13 +37,52 @@ void qtAuthClient::onAcctPlayerInfo(hsUint32 transId, hsUint32 playerId, const p
     qWarning("Added player %s (%u)", playerName.cstr(), playerId);
 }
 
-void qtAuthClient::onAcctLoginReply(hsUint32 transId, ENetError result, const plUuid& acctUuid, hsUint32 acctFlags, hsUint32 billingType, const hsUint32* encryptKey) {
-    if(result == kNetSuccess) {
-        setStatus("Auth Successful");
-        this->acctUuid = acctUuid;
-        emit loginSuccessful();
-    }else{
-        setStatus(plString::Format("Auth Failed (%s)", GetNetErrorString(result)).cstr());
+void qtAuthClient::onAcctLoginReply(hsUint32 transId, ENetError result,
+        const plUuid& acctUuid, hsUint32 acctFlags, hsUint32 billingType,
+        const hsUint32* encryptKey) {
+    if (result != kNetSuccess) {
+        setStatus(plString::Format("Auth Failed (%s)",
+                    GetNetErrorString(result)).cstr());
+        return;
+    }
+
+    setStatus("Auth Successful");
+    this->acctUuid = acctUuid;
+    this->sendFileListRequest("SDL", "sdl");
+
+    emit gotEncKeys(encryptKey);
+    emit loginSuccessful();
+}
+
+void qtAuthClient::onFileListReply(hsUint32 transId, ENetError result,
+        size_t count, const pnAuthFileItem* files) {
+
+    for (size_t i = 0; i < count; i++) {
+        qWarning("Downloading file %s (%d bytes)",
+                files[i].fFilename.cstr(), files[i].fFileSize);
+
+        hsUint32 fileTrans;
+        fileTrans = this->sendFileDownloadRequest(files[i].fFilename);
+        sdlFiles.insert(fileTrans, new hsRAMStream(pvLive));
+    }
+}
+
+void qtAuthClient::onFileDownloadChunk(hsUint32 transId, ENetError result,
+        hsUint32 totalSize, hsUint32 chunkOffset, size_t chunkSize,
+        const unsigned char* chunkData) {
+    if (result != kNetSuccess) {
+        setStatus(plString::Format("File download failed (%s)",
+                    GetNetErrorString(result)).cstr());
+        return;
+    }
+
+    hsStream* S = sdlFiles[transId];
+    S->write(chunkSize, chunkData);
+
+    if (chunkOffset + chunkSize == totalSize) {
+        S->rewind();
+        qWarning("Successfully downloaded a %d byte file.", totalSize);
+        emit gotSDLFile(S);
     }
 }
 
