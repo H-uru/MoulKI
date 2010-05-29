@@ -90,7 +90,7 @@ signals:
     void loginSuccessful();
     void gotAge(hsUint32 gameServerAddr, plUuid ageId, hsUint32 mcpId,
             hsUint32 vaultId);
-    void gotEncKeys(const hsUint32* keys);
+    void gotEncKeys(hsUint32 k0, hsUint32 k1, hsUint32 k2, hsUint32 k3);
     void gotSDLFile(hsStream* file);
 };
 

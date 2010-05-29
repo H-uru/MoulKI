@@ -60,8 +60,8 @@ MoulKI::MoulKI(QWidget *parent)
             SLOT(showFoundDialog(int,QList<hsUint32>)));
     connect(authClient, SIGNAL(gotAge(hsUint32,plUuid,hsUint32,hsUint32)),
             this, SLOT(startGameServer(hsUint32,plUuid,hsUint32,hsUint32)));
-    connect(authClient, SIGNAL(gotEncKeys(const hsUint32*)), this,
-            SLOT(setEncryptionKeys(const hsUint32*)));
+    connect(authClient, SIGNAL(gotEncKeys(hsUint32,hsUint32,hsUint32,hsUint32)),
+            this, SLOT(setEncryptionKeys(hsUint32,hsUint32,hsUint32,hsUint32)));
     connect(authClient, SIGNAL(gotSDLFile(hsStream*)), this,
             SLOT(loadStateDescriptors(hsStream*)));
 
@@ -99,6 +99,8 @@ MoulKI::MoulKI(QWidget *parent)
 
 MoulKI::~MoulKI() {
     delete ui;
+    delete sdlmgr;
+    delete resmgr;
 }
 
 void MoulKI::closeEvent(QCloseEvent* event) {
@@ -432,21 +434,24 @@ void MoulKI::sendFind(pnVaultNode& node) {
         authClient->sendVaultNodeFind(node);
 }
 
-void MoulKI::setEncryptionKeys(const hsUint32* keys) {
-    ntdKeys[0] = keys[0];
-    ntdKeys[1] = keys[1];
-    ntdKeys[2] = keys[2];
-    ntdKeys[3] = keys[3];
+void MoulKI::setEncryptionKeys(hsUint32 k0, hsUint32 k1,
+        hsUint32 k2, hsUint32 k3) {
+    ntdKeys[0] = k0;
+    ntdKeys[1] = k1;
+    ntdKeys[2] = k2;
+    ntdKeys[3] = k3;
 }
 
 void MoulKI::loadStateDescriptors(hsStream* S) {
-    plEncryptedStream* str = new plEncryptedStream();
+    plEncryptedStream* str = new plEncryptedStream(pvLive);
     str->setKey(ntdKeys);
-    str->openRead(S);
+    str->open(S, fmRead, plEncryptedStream::kEncDroid);
 
     sdlmgr->ReadDescriptors(str);
 
     delete str;
+    delete S;
+    S = NULL;
 }
 
 void MoulKI::showJoinAgeDialog() {

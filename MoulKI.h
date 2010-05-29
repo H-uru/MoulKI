@@ -93,7 +93,7 @@ public slots:
     void readVault();
     void logoutActivePlayer();
     // authserver events
-    void setEncryptionKeys(const hsUint32* keys);
+    void setEncryptionKeys(hsUint32 k0, hsUint32 k1, hsUint32 k2, hsUint32 k3);
     void loadStateDescriptors(hsStream* S);
     // gameserver events
     void showJoinAgeDialog();
