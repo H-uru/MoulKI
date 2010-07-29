@@ -95,6 +95,8 @@ MoulKI::MoulKI(QWidget *parent)
     chatSizes.append(350);
     chatSizes.append(100);
     ui->chatSplitter->setSizes(chatSizes);
+
+    ui->nodeEditor->setMgrs(getSDLMgr(), getResManager());
 }
 
 MoulKI::~MoulKI() {
