@@ -18,7 +18,7 @@ Q_DECLARE_METATYPE(hsUint32)
 MoulKI::MoulKI(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MoulKIClass), gameClient(NULL)
 {
-    resmgr = new plResManager(pvLive);
+    resmgr = new plResManager(PlasmaVer::pvMoul);
     sdlmgr = new plSDLMgr();
     ui->setupUi(this);
 
@@ -445,7 +445,7 @@ void MoulKI::setEncryptionKeys(hsUint32 k0, hsUint32 k1,
 }
 
 void MoulKI::loadStateDescriptors(hsStream* S) {
-    plEncryptedStream* str = new plEncryptedStream(pvLive);
+    plEncryptedStream* str = new plEncryptedStream(PlasmaVer::pvMoul);
     str->setKey(ntdKeys);
     str->open(S, fmRead, plEncryptedStream::kEncDroid);
 
@@ -557,7 +557,7 @@ void MoulKI::removeTreeNodes(QTreeWidgetItem* item, qtVaultNode* node) {
 void MoulKI::writeVault() {
     QString fileName = QFileDialog::getSaveFileName(this, "Save Vault", "./", "*.vault");
     if(!fileName.isEmpty()) {
-        hsFileStream file(pvLive);
+        hsFileStream file(PlasmaVer::pvMoul);
         file.open(fileName.toAscii().data(), fmWrite);
         int rootCount = ui->vaultTree->topLevelItemCount();
         file.writeInt(rootCount);
@@ -572,7 +572,7 @@ void MoulKI::writeVault() {
 void MoulKI::readVault() {
     QString fileName = QFileDialog::getOpenFileName(this, "Load Vault", "./", "*.vault");
     if(!fileName.isEmpty()) {
-        hsFileStream file(pvLive);
+        hsFileStream file(PlasmaVer::pvMoul);
         file.open(fileName.toAscii().data(), fmRead);
         int rootCount = file.readInt();
         for(int i = 0; i < rootCount; i++) {

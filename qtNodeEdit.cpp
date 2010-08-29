@@ -168,7 +168,7 @@ void qtNodeEdit::update() {
                 break;
             case plVault::kNodeSDL:
                 {
-                    hsRAMStream S(pvLive);
+                    hsRAMStream S(PlasmaVer::pvMoul);
                     plVaultBlob blob = node->getBlob(0);
                     S.copyFrom(blob.getData(), blob.getSize());
                     plString name;

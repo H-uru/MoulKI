@@ -64,7 +64,7 @@ void qtAuthClient::onFileListReply(hsUint32 transId, ENetError result,
 
         hsUint32 fileTrans;
         fileTrans = this->sendFileDownloadRequest(files[i].fFilename);
-        sdlFiles.insert(fileTrans, new hsRAMStream(pvLive));
+        sdlFiles.insert(fileTrans, new hsRAMStream(PlasmaVer::pvMoul));
     }
 }
 
