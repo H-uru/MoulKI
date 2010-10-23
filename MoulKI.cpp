@@ -18,37 +18,61 @@ Q_DECLARE_METATYPE(hsUint32)
 MoulKI::MoulKI(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MoulKIClass), gameClient(NULL)
 {
-    resmgr = new plResManager(pvLive);
+    resmgr = new plResManager(PlasmaVer::pvMoul);
+    sdlmgr = new plSDLMgr();
     ui->setupUi(this);
 
     qRegisterMetaType<plUuid>("plUuid");
     qRegisterMetaType<plString>("plString");
     qRegisterMetaType<hsUint32>("hsUint32");
 
-    connect(ui->actionLogin, SIGNAL(triggered()), this, SLOT(showLoginDialog()));
-    connect(ui->actionSet_Active, SIGNAL(triggered()), this, SLOT(showPlayers()));
-    connect(ui->actionFind_Node, SIGNAL(triggered()), this, SLOT(showFindDialog()));
-    connect(ui->actionSubscribe, SIGNAL(triggered()), this, SLOT(showFetchDialog()));
-    connect(ui->actionSave_Vault, SIGNAL(triggered()), this, SLOT(writeVault()));
-    connect(ui->actionLoad_Vault, SIGNAL(triggered()), this, SLOT(readVault()));
-    connect(ui->actionJoin_Age, SIGNAL(triggered()), this, SLOT(showJoinAgeDialog()));
-    connect(ui->vaultTree, SIGNAL(itemSelectionChanged()), this, SLOT(setShownNode()));
+    connect(ui->actionLogin, SIGNAL(triggered()), this,
+            SLOT(showLoginDialog()));
+    connect(ui->actionSet_Active, SIGNAL(triggered()), this,
+            SLOT(showPlayers()));
+    connect(ui->actionFind_Node, SIGNAL(triggered()), this,
+            SLOT(showFindDialog()));
+    connect(ui->actionSubscribe, SIGNAL(triggered()), this,
+            SLOT(showFetchDialog()));
+    connect(ui->actionSave_Vault, SIGNAL(triggered()), this,
+            SLOT(writeVault()));
+    connect(ui->actionLoad_Vault, SIGNAL(triggered()), this,
+            SLOT(readVault()));
+    connect(ui->actionJoin_Age, SIGNAL(triggered()), this,
+            SLOT(showJoinAgeDialog()));
+    connect(ui->vaultTree, SIGNAL(itemSelectionChanged()), this,
+            SLOT(setShownNode()));
     connect(ui->applyButton, SIGNAL(clicked()), this, SLOT(saveNodeData()));
     connect(ui->revertButton, SIGNAL(clicked()), this, SLOT(revertNode()));
-    connect(ui->nodeEditor, SIGNAL(isDirty(bool)), this, SLOT(nodeDirty(bool)));
-    connect(ui->vaultTree, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showItemContextMenu(QPoint)));
-    connect(ui->chatEntry, SIGNAL(returnPressed()), this, SLOT(sendGameChat()));
+    connect(ui->nodeEditor, SIGNAL(isDirty(bool)), this,
+            SLOT(nodeDirty(bool)));
+    connect(ui->vaultTree, SIGNAL(customContextMenuRequested(QPoint)),
+            this, SLOT(showItemContextMenu(QPoint)));
+    connect(ui->chatEntry, SIGNAL(returnPressed()), this,
+            SLOT(sendGameChat()));
 
     authClient = new qtAuthClient(this);
-    connect(authClient, SIGNAL(sigStatus(plString)), this, SLOT(setStatus(plString)));
-    connect(authClient, SIGNAL(loginSuccessful()), this, SLOT(showPlayers()));
-    connect(authClient, SIGNAL(foundNodes(int,QList<hsUint32>)), this, SLOT(showFoundDialog(int,QList<hsUint32>)));
-    connect(authClient, SIGNAL(gotAge(hsUint32,plUuid,hsUint32,hsUint32)), this, SLOT(startGameServer(hsUint32,plUuid,hsUint32,hsUint32)));
+    connect(authClient, SIGNAL(sigStatus(plString)), this,
+            SLOT(setStatus(plString)));
+    connect(authClient, SIGNAL(loginSuccessful()), this,
+            SLOT(showPlayers()));
+    connect(authClient, SIGNAL(foundNodes(int,QList<hsUint32>)), this,
+            SLOT(showFoundDialog(int,QList<hsUint32>)));
+    connect(authClient, SIGNAL(gotAge(hsUint32,plUuid,hsUint32,hsUint32)),
+            this, SLOT(startGameServer(hsUint32,plUuid,hsUint32,hsUint32)));
+    connect(authClient, SIGNAL(gotEncKeys(hsUint32,hsUint32,hsUint32,hsUint32)),
+            this, SLOT(setEncryptionKeys(hsUint32,hsUint32,hsUint32,hsUint32)));
+    connect(authClient, SIGNAL(gotSDLFile(hsStream*)), this,
+            SLOT(loadStateDescriptors(hsStream*)));
 
-    connect(&vault, SIGNAL(addedNode(hsUint32, hsUint32)), this, SLOT(addNode(hsUint32,hsUint32)));
-    connect(&vault, SIGNAL(removedNode(hsUint32, hsUint32)), this, SLOT(removeNode(hsUint32,hsUint32)));
-    connect(&vault, SIGNAL(gotRootNode(hsUint32)), this, SLOT(addRoot(hsUint32)));
-    connect(&vault, SIGNAL(updatedNode(hsUint32)), this, SLOT(updateNode(hsUint32)));
+    connect(&vault, SIGNAL(addedNode(hsUint32, hsUint32)), this,
+            SLOT(addNode(hsUint32,hsUint32)));
+    connect(&vault, SIGNAL(removedNode(hsUint32, hsUint32)), this,
+            SLOT(removeNode(hsUint32,hsUint32)));
+    connect(&vault, SIGNAL(gotRootNode(hsUint32)), this,
+            SLOT(addRoot(hsUint32)));
+    connect(&vault, SIGNAL(updatedNode(hsUint32)), this,
+            SLOT(updateNode(hsUint32)));
     connect(&vault, SIGNAL(fetchComplete()), this, SLOT(checkCurrentAge()));
 
     ui->vaultTree->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -71,10 +95,14 @@ MoulKI::MoulKI(QWidget *parent)
     chatSizes.append(350);
     chatSizes.append(100);
     ui->chatSplitter->setSizes(chatSizes);
+
+    ui->nodeEditor->setMgrs(getSDLMgr(), getResManager());
 }
 
 MoulKI::~MoulKI() {
     delete ui;
+    delete sdlmgr;
+    delete resmgr;
 }
 
 void MoulKI::closeEvent(QCloseEvent* event) {
@@ -408,6 +436,26 @@ void MoulKI::sendFind(pnVaultNode& node) {
         authClient->sendVaultNodeFind(node);
 }
 
+void MoulKI::setEncryptionKeys(hsUint32 k0, hsUint32 k1,
+        hsUint32 k2, hsUint32 k3) {
+    ntdKeys[0] = k0;
+    ntdKeys[1] = k1;
+    ntdKeys[2] = k2;
+    ntdKeys[3] = k3;
+}
+
+void MoulKI::loadStateDescriptors(hsStream* S) {
+    plEncryptedStream* str = new plEncryptedStream(PlasmaVer::pvMoul);
+    str->setKey(ntdKeys);
+    str->open(S, fmRead, plEncryptedStream::kEncDroid);
+
+    sdlmgr->ReadDescriptors(str);
+
+    delete str;
+    delete S;
+    S = NULL;
+}
+
 void MoulKI::showJoinAgeDialog() {
     // this should really grab all the ageinfos and pop up the listbox dialog
     QList<qtVaultNode*> ages;
@@ -509,7 +557,7 @@ void MoulKI::removeTreeNodes(QTreeWidgetItem* item, qtVaultNode* node) {
 void MoulKI::writeVault() {
     QString fileName = QFileDialog::getSaveFileName(this, "Save Vault", "./", "*.vault");
     if(!fileName.isEmpty()) {
-        hsFileStream file(pvLive);
+        hsFileStream file(PlasmaVer::pvMoul);
         file.open(fileName.toAscii().data(), fmWrite);
         int rootCount = ui->vaultTree->topLevelItemCount();
         file.writeInt(rootCount);
@@ -524,7 +572,7 @@ void MoulKI::writeVault() {
 void MoulKI::readVault() {
     QString fileName = QFileDialog::getOpenFileName(this, "Load Vault", "./", "*.vault");
     if(!fileName.isEmpty()) {
-        hsFileStream file(pvLive);
+        hsFileStream file(PlasmaVer::pvMoul);
         file.open(fileName.toAscii().data(), fmRead);
         int rootCount = file.readInt();
         for(int i = 0; i < rootCount; i++) {

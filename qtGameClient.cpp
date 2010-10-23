@@ -51,7 +51,7 @@ void qtGameClient::onJoinAgeReply(hsUint32 transId, ENetError result) {
         clientMgr->setName("kNetClientMgr_KEY");
         clientMgr->setID(0);
         clientMgr->setType(0x0052); //plNetClientMger
-        plLocation clientMgrLoc(pvLive);
+        plLocation clientMgrLoc(PlasmaVer::pvMoul);
         clientMgrLoc.setVirtual();
         clientMgrLoc.setFlags(0x0000);
         clientMgr->setLocation(clientMgrLoc);
@@ -59,7 +59,7 @@ void qtGameClient::onJoinAgeReply(hsUint32 transId, ENetError result) {
         if(true) {
             playerKey->setName("Male");
             playerKey->setID(78);
-            plLocation playerKeyLoc(pvLive);
+            plLocation playerKeyLoc(PlasmaVer::pvMoul);
             playerKeyLoc.setPageNum(1);
             playerKeyLoc.setSeqPrefix(-6);
             playerKeyLoc.setFlags(0x0004);
@@ -69,7 +69,7 @@ void qtGameClient::onJoinAgeReply(hsUint32 transId, ENetError result) {
         playerKey->setCloneIDs(2, fPlayerNode->getNodeIdx()); //not sure what the 2 signifies
         plKeyData* avMgr = new plKeyData();
         avMgr->setName("kAvatarMgr_KEY");
-        plLocation avMgrLoc(pvLive);
+        plLocation avMgrLoc(PlasmaVer::pvMoul);
         avMgrLoc.setVirtual();
         avMgrLoc.setFlags(0x0000);
         avMgr->setLocation(avMgrLoc);
@@ -109,7 +109,7 @@ void qtGameClient::onJoinAgeReply(hsUint32 transId, ENetError result) {
 }
 
 void qtGameClient::onPropagateMessage(plCreatable *msg) {
-    hsRAMStream S(pvLive);
+    hsRAMStream S(PlasmaVer::pvMoul);
     pfPrcHelper prc(&S);
     msg->prcWrite(&prc);
     char* data = new char[S.size() + 1];
@@ -186,7 +186,7 @@ void qtGameClient::sendAgeChat(plString message) {
     propagateMessage(&gameMsg);
     qWarning("Sent Chat: %s", message.cstr());
     // debug
-    /*hsRAMStream S(pvLive);
+    /*hsRAMStream S(PlasmaVer::pvMoul);
     pfPrcHelper prc(&S);
     gameMsg.prcWrite(&prc);
     char* data = new char[S.size()];

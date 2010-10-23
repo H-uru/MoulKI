@@ -4,6 +4,9 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QTableWidgetItem>
+#include <SDL/plSDLMgr.h>
+#include <SDL/plStateDataRecord.h>
+#include <Stream/hsRAMStream.h>
 
 qtNodeEdit::qtNodeEdit(QWidget *parent) :
     QWidget(parent),
@@ -20,6 +23,7 @@ qtNodeEdit::qtNodeEdit(QWidget *parent) :
     // disable aux tabs
     ui->nodeDataArea->setTabEnabled(1, false);
     ui->nodeDataArea->setTabEnabled(2, false);
+    ui->nodeDataArea->setTabEnabled(3, false);
 }
 
 qtNodeEdit::~qtNodeEdit()
@@ -44,6 +48,11 @@ void qtNodeEdit::setNode(qtVaultNode *pn) {
     titleEdited = false;
     node = pn;
     update();
+}
+
+void qtNodeEdit::setMgrs(plSDLMgr* sdl, plResManager* res) {
+    sdlmgr = sdl;
+    resmgr = res;
 }
 
 void qtNodeEdit::dataRowChanged(QTableWidgetItem* item) {
@@ -144,19 +153,81 @@ void qtNodeEdit::update() {
                     ui->imageNodeTitle->setText(QString(node->getString64(0).cstr()));
                     ui->nodeDataArea->setTabEnabled(1, true);
                     ui->nodeDataArea->setTabEnabled(2, false);
+                    ui->nodeDataArea->setTabEnabled(3, false);
                 }
                 break;
+            case plVault::kNodeChronicle:
             case plVault::kNodeTextNote:
                 disconnect(ui->textNodeEdit, SIGNAL(textChanged()), this, SLOT(editNodeText()));
                 ui->textNodeEdit->setPlainText(QString(node->getText(0)));
                 ui->textNodeTitle->setText(QString(node->getString64(0)));
                 ui->nodeDataArea->setTabEnabled(1, false);
                 ui->nodeDataArea->setTabEnabled(2, true);
+                ui->nodeDataArea->setTabEnabled(3, false);
                 connect(ui->textNodeEdit, SIGNAL(textChanged()), this, SLOT(editNodeText()));
                 break;
+            case plVault::kNodeSDL:
+                {
+                    hsRAMStream S(PlasmaVer::pvMoul);
+                    plVaultBlob blob = node->getBlob(0);
+                    S.copyFrom(blob.getData(), blob.getSize());
+                    plString name;
+                    int version;
+                    plStateDataRecord record;
+                    record.ReadStreamHeader(&S, name, version, NULL);
+                    record.setDescriptor(sdlmgr->GetDescriptor(name, version));
+                    record.read(&S, resmgr);
+                    for(size_t var = 0; var < record.getNumVars(); var++) {
+                        plStateVariable* stateVar = record.get(var);
+                        plVarDescriptor* varDesc = stateVar->getDescriptor();
+                        QTableWidgetItem* fitem = new QTableWidgetItem();
+                        fitem->setText(QString(varDesc->getName().cstr()));
+                        fitem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+                        QTableWidgetItem* citem = new QTableWidgetItem();
+                        citem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
+                        if(varDesc->getType() != plVarDescriptor::kStateDescriptor) {
+                            plSimpleStateVariable* simpleVar = (plSimpleStateVariable*)stateVar;
+                            for(int i = 0; i < simpleVar->getCount(); i++) {
+                                switch(varDesc->getType()) {
+                                    case plVarDescriptor::kAgeTimeElapsed:
+                                    case plVarDescriptor::kAgeTimeOfDay:
+                                        if(&simpleVar->Time(i) != NULL)
+                                            citem->setText(simpleVar->Time(i).format("MM/dd/yyyy hh:mm:ss").cstr());
+                                        else
+                                            citem->setText("null time");
+                                        break;
+                                    case plVarDescriptor::kBool:
+                                        if(simpleVar->Bool(i))
+                                            citem->setText("True");
+                                        else
+                                            citem->setText("False");
+                                        break;
+                                    case plVarDescriptor::kInt:
+                                            citem->setText(plString::Format("%d", simpleVar->Int(i)).cstr());
+                                        break;
+                                    default:
+                                        citem->setText("");
+                                        break;
+                                }
+                            }
+                        }
+                        if(stateVar->isDirty() && !stateVar->isDefault()) {
+                            QColor rowColor(200, 127, 127);
+                            fitem->setBackground(QBrush(rowColor));
+                            citem->setBackground(QBrush(rowColor));
+                        }
+                        ui->nodeSDLData->setItem(var, 0, fitem);
+                        ui->nodeSDLData->setItem(var, 1, citem);
+                    }
+                    ui->nodeDataArea->setTabEnabled(1, false);
+                    ui->nodeDataArea->setTabEnabled(2, false);
+                    ui->nodeDataArea->setTabEnabled(3, true);
+                    break;
+                }
             default:
                 ui->nodeDataArea->setTabEnabled(1, false);
                 ui->nodeDataArea->setTabEnabled(2, false);
+                ui->nodeDataArea->setTabEnabled(3, false);
                 break;
         }
         node->unlockNode();

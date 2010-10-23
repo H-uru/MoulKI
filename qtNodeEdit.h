@@ -9,6 +9,9 @@ namespace Ui {
     class qtNodeEdit;
 }
 
+class plSDLMgr;
+class plResManager;
+
 class qtNodeEdit : public QWidget {
     Q_OBJECT
 public:
@@ -16,6 +19,7 @@ public:
     ~qtNodeEdit();
 
     void setNode(qtVaultNode* pn);
+    void setMgrs(plSDLMgr* sdl, plResManager* res);
     qtVaultNode* getNode();
     void update();
 
@@ -28,6 +32,8 @@ protected:
 private:
     Ui::qtNodeEdit *ui;
     qtVaultNode* node;
+    plSDLMgr* sdlmgr;
+    plResManager* resmgr;
     bool titleEdited;
     bool textEdited;
     QString newTitle;

@@ -1,6 +1,7 @@
 #ifndef MOULKI_H
 #define MOULKI_H
 
+#include <SDL/plSDLMgr.h>
 #include <QtGui/QMainWindow>
 #include "qtAuthClient.h"
 #include "qtGameClient.h"
@@ -43,6 +44,8 @@ private:
     qtAuthClient* authClient;
     qtGameClient* gameClient;
     plResManager* resmgr;
+    plSDLMgr* sdlmgr;
+    hsUint32 ntdKeys[4];
 
     void addItemChild(QTreeWidgetItem* item, qtVaultNode* node);
     bool itemHasChild(QTreeWidgetItem* item, qtVaultNode* node);
@@ -56,6 +59,7 @@ private:
 
 public:
     plResManager* getResManager() const { return resmgr; }
+    plSDLMgr* getSDLMgr() const { return sdlmgr; }
 
 public slots:
     void showLoginDialog();
@@ -88,6 +92,9 @@ public slots:
     void writeVault();
     void readVault();
     void logoutActivePlayer();
+    // authserver events
+    void setEncryptionKeys(hsUint32 k0, hsUint32 k1, hsUint32 k2, hsUint32 k3);
+    void loadStateDescriptors(hsStream* S);
     // gameserver events
     void showJoinAgeDialog();
     void joinAge(plString name, plUuid uuid);
