@@ -102,9 +102,9 @@ void qtNodeEdit::loadNodeImage() {
     inFile.open(QIODevice::ReadOnly);
     QByteArray data = inFile.readAll();
     inFile.close();
-    hsUint32 len = data.length();
+    uint32_t len = data.length();
     char* dataPtr = new char[len + 4];
-    *(hsUint32*)dataPtr = len;
+    *(uint32_t*)dataPtr = len;
     memcpy(dataPtr + 4, data.data(), len);
     plVaultBlob blob;
     blob.setData(len + 4, (const unsigned char*)dataPtr);

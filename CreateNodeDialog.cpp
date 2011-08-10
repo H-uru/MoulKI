@@ -36,7 +36,7 @@ void CreateNodeDialog::setActFind() {
     act = 1;
 }
 
-void CreateNodeDialog::setParent(hsUint32 idx) {
+void CreateNodeDialog::setParent(uint32_t idx) {
     parentIdx = idx;
     act = 0;
 }

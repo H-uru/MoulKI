@@ -13,7 +13,7 @@
 
 Q_DECLARE_METATYPE(plUuid)
 Q_DECLARE_METATYPE(plString)
-Q_DECLARE_METATYPE(hsUint32)
+Q_DECLARE_METATYPE(uint32_t)
 
 MoulKI::MoulKI(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MoulKIClass), gameClient(NULL)
@@ -24,7 +24,7 @@ MoulKI::MoulKI(QWidget *parent)
 
     qRegisterMetaType<plUuid>("plUuid");
     qRegisterMetaType<plString>("plString");
-    qRegisterMetaType<hsUint32>("hsUint32");
+    qRegisterMetaType<uint32_t>("uint32_t");
 
     connect(ui->actionLogin, SIGNAL(triggered()), this,
             SLOT(showLoginDialog()));
@@ -56,23 +56,23 @@ MoulKI::MoulKI(QWidget *parent)
             SLOT(setStatus(plString)));
     connect(authClient, SIGNAL(loginSuccessful()), this,
             SLOT(showPlayers()));
-    connect(authClient, SIGNAL(foundNodes(int,QList<hsUint32>)), this,
-            SLOT(showFoundDialog(int,QList<hsUint32>)));
-    connect(authClient, SIGNAL(gotAge(hsUint32,plUuid,hsUint32,hsUint32)),
-            this, SLOT(startGameServer(hsUint32,plUuid,hsUint32,hsUint32)));
-    connect(authClient, SIGNAL(gotEncKeys(hsUint32,hsUint32,hsUint32,hsUint32)),
-            this, SLOT(setEncryptionKeys(hsUint32,hsUint32,hsUint32,hsUint32)));
+    connect(authClient, SIGNAL(foundNodes(int,QList<uint32_t>)), this,
+            SLOT(showFoundDialog(int,QList<uint32_t>)));
+    connect(authClient, SIGNAL(gotAge(uint32_t,plUuid,uint32_t,uint32_t)),
+            this, SLOT(startGameServer(uint32_t,plUuid,uint32_t,uint32_t)));
+    connect(authClient, SIGNAL(gotEncKeys(uint32_t,uint32_t,uint32_t,uint32_t)),
+            this, SLOT(setEncryptionKeys(uint32_t,uint32_t,uint32_t,uint32_t)));
     connect(authClient, SIGNAL(gotSDLFile(hsStream*)), this,
             SLOT(loadStateDescriptors(hsStream*)));
 
-    connect(&vault, SIGNAL(addedNode(hsUint32, hsUint32)), this,
-            SLOT(addNode(hsUint32,hsUint32)));
-    connect(&vault, SIGNAL(removedNode(hsUint32, hsUint32)), this,
-            SLOT(removeNode(hsUint32,hsUint32)));
-    connect(&vault, SIGNAL(gotRootNode(hsUint32)), this,
-            SLOT(addRoot(hsUint32)));
-    connect(&vault, SIGNAL(updatedNode(hsUint32)), this,
-            SLOT(updateNode(hsUint32)));
+    connect(&vault, SIGNAL(addedNode(uint32_t, uint32_t)), this,
+            SLOT(addNode(uint32_t,uint32_t)));
+    connect(&vault, SIGNAL(removedNode(uint32_t, uint32_t)), this,
+            SLOT(removeNode(uint32_t,uint32_t)));
+    connect(&vault, SIGNAL(gotRootNode(uint32_t)), this,
+            SLOT(addRoot(uint32_t)));
+    connect(&vault, SIGNAL(updatedNode(uint32_t)), this,
+            SLOT(updateNode(uint32_t)));
     connect(&vault, SIGNAL(fetchComplete()), this, SLOT(checkCurrentAge()));
 
     ui->vaultTree->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -144,12 +144,12 @@ void MoulKI::showPlayers() {
     // show a player list dialog
     SetActiveDialog* dialog = new SetActiveDialog(this);
     dialog->setPlayers(authClient->players);
-    connect(dialog, SIGNAL(setActive(hsUint32)), this, SLOT(setActive(hsUint32)));
+    connect(dialog, SIGNAL(setActive(uint32_t)), this, SLOT(setActive(uint32_t)));
     dialog->exec();
     delete dialog;
 }
 
-void MoulKI::setActive(hsUint32 playerId) {
+void MoulKI::setActive(uint32_t playerId) {
     if(gameClient != NULL) {
         logoutActivePlayer();
     }
@@ -215,7 +215,7 @@ void MoulKI::showItemContextMenu(QPoint pos) {
     menu->popup(ui->vaultTree->mapToGlobal(pos), addRef);
 }
 
-void MoulKI::addRoot(hsUint32 idx) {
+void MoulKI::addRoot(uint32_t idx) {
     qtVaultNode* node = vault.getNode(idx);
     QTreeWidgetItem* item = node->newItem();
     ui->vaultTree->addTopLevelItem(item);
@@ -233,7 +233,7 @@ void MoulKI::addRoot(hsUint32 idx) {
     }
 }
 
-void MoulKI::addNode(hsUint32 parent, hsUint32 child) {
+void MoulKI::addNode(uint32_t parent, uint32_t child) {
     qtVaultNode* parentNode = vault.getNode(parent);
     qtVaultNode* childNode = vault.getNode(child);
     // Now we hook this to handle buddy and Neighborhood owner releated stuff
@@ -291,7 +291,7 @@ bool MoulKI::itemHasChild(QTreeWidgetItem* item, qtVaultNode* node) {
     return false;
 }
 
-void MoulKI::removeNode(hsUint32 parent, hsUint32 child) {
+void MoulKI::removeNode(uint32_t parent, uint32_t child) {
     qtVaultNode* parentNode = vault.getNode(parent);
     qtVaultNode* childNode = vault.getNode(child);
     childNode->lockNode();
@@ -317,7 +317,7 @@ void MoulKI::removeNode(hsUint32 parent, hsUint32 child) {
     }
 }
 
-void MoulKI::updateNode(hsUint32 idx) {
+void MoulKI::updateNode(uint32_t idx) {
     qtVaultNode* node = vault.getNode(idx);
     // update all the items associated with this node
     foreach(QTreeWidgetItem* item, node->getItems()) {
@@ -375,7 +375,7 @@ void MoulKI::showRefDialog() {
         qtVaultNode* node = ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>();
         RefDialog* dialog = new RefDialog(this);
         dialog->setupRefBox(activePlayer, node->getNodeIdx());
-        connect(dialog, SIGNAL(addRef(hsUint32,hsUint32,hsUint32)), this, SLOT(sendAdd(hsUint32,hsUint32,hsUint32)));
+        connect(dialog, SIGNAL(addRef(uint32_t,uint32_t,uint32_t)), this, SLOT(sendAdd(uint32_t,uint32_t,uint32_t)));
         dialog->exec();
         delete dialog;
     }
@@ -383,17 +383,17 @@ void MoulKI::showRefDialog() {
 
 void MoulKI::showFetchDialog() {
     FetchDialog* dialog = new FetchDialog(this);
-    connect(dialog, SIGNAL(fetchNode(hsUint32)), this, SLOT(fetchTree(hsUint32)));
+    connect(dialog, SIGNAL(fetchNode(uint32_t)), this, SLOT(fetchTree(uint32_t)));
     dialog->exec();
     delete dialog;
 }
 
 void MoulKI::showCreateDialog() {
     if(ui->vaultTree->selectedItems().count() == 1) {
-        hsUint32 parent = ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>()->getNodeIdx();
+        uint32_t parent = ui->vaultTree->selectedItems()[0]->data(0, Qt::UserRole).value<qtVaultNode*>()->getNodeIdx();
         CreateNodeDialog* dialog = new CreateNodeDialog(this);
         dialog->setParent(parent);
-        connect(dialog, SIGNAL(createSig(pnVaultNode&,hsUint32)), this, SLOT(sendCreate(pnVaultNode&,hsUint32)));
+        connect(dialog, SIGNAL(createSig(pnVaultNode&,uint32_t)), this, SLOT(sendCreate(pnVaultNode&,uint32_t)));
         dialog->exec();
         delete dialog;
     }
@@ -407,26 +407,26 @@ void MoulKI::showFindDialog() {
     delete dialog;
 }
 
-void MoulKI::showFoundDialog(int count, QList<hsUint32> nodes) {
+void MoulKI::showFoundDialog(int count, QList<uint32_t> nodes) {
     SetActiveDialog* dialog = new SetActiveDialog(this);
     dialog->setFoundNodes(nodes);
-    connect(dialog, SIGNAL(fetchFound(hsUint32)), this, SLOT(fetchTree(hsUint32)));
+    connect(dialog, SIGNAL(fetchFound(uint32_t)), this, SLOT(fetchTree(uint32_t)));
     dialog->exec();
     delete dialog;
 }
 
-void MoulKI::fetchTree(hsUint32 idx) {
+void MoulKI::fetchTree(uint32_t idx) {
     vault.queueRoot(idx);
     if(authClient->isConnected())
         authClient->sendVaultNodeFetch(idx);
 }
 
-void MoulKI::sendAdd(hsUint32 parent, hsUint32 child, hsUint32 owner) {
+void MoulKI::sendAdd(uint32_t parent, uint32_t child, uint32_t owner) {
     if(authClient->isConnected())
         authClient->sendVaultNodeAdd(parent, child, owner);
 }
 
-void MoulKI::sendCreate(pnVaultNode& node, hsUint32 parent) {
+void MoulKI::sendCreate(pnVaultNode& node, uint32_t parent) {
     if(authClient->isConnected())
         authClient->queueRef(authClient->sendVaultNodeCreate(node), parent);
 }
@@ -436,8 +436,8 @@ void MoulKI::sendFind(pnVaultNode& node) {
         authClient->sendVaultNodeFind(node);
 }
 
-void MoulKI::setEncryptionKeys(hsUint32 k0, hsUint32 k1,
-        hsUint32 k2, hsUint32 k3) {
+void MoulKI::setEncryptionKeys(uint32_t k0, uint32_t k1,
+        uint32_t k2, uint32_t k3) {
     ntdKeys[0] = k0;
     ntdKeys[1] = k1;
     ntdKeys[2] = k2;
@@ -489,7 +489,7 @@ void MoulKI::joinSelectedAge() {
     }
 }
 
-void MoulKI::setOnline(hsUint32 playerId, plString ageFilename, plUuid ageUuid) {
+void MoulKI::setOnline(uint32_t playerId, plString ageFilename, plUuid ageUuid) {
     qtVaultNode* playerNode = vault.getNode(playerId);
     foreach(qtVaultNode* node, playerNode->getChildren()) {
         if(node->getNodeType() == plVault::kNodePlayerInfo) {
@@ -502,7 +502,7 @@ void MoulKI::setOnline(hsUint32 playerId, plString ageFilename, plUuid ageUuid) 
     }
 }
 
-void MoulKI::startGameServer(hsUint32 serverAddr, plUuid ageId, hsUint32 mcpId, hsUint32 ageVaultId) {
+void MoulKI::startGameServer(uint32_t serverAddr, plUuid ageId, uint32_t mcpId, uint32_t ageVaultId) {
     currentAgeId = ageVaultId;
     fetchTree(ageVaultId); // fetch the age Vault tree, because the client does, and we will get updates
     qtVaultNode* player = vault.getNode(activePlayer);
@@ -510,10 +510,10 @@ void MoulKI::startGameServer(hsUint32 serverAddr, plUuid ageId, hsUint32 mcpId, 
         delete gameClient;
     gameClient = new qtGameClient(this);
     connect(gameClient, SIGNAL(receivedGameMsg(QString)), this, SLOT(addChatLine(QString)));
-    connect(gameClient, SIGNAL(setMeOnline(hsUint32,plString,plUuid)), this, SLOT(setOnline(hsUint32,plString,plUuid)));
+    connect(gameClient, SIGNAL(setMeOnline(uint32_t,plString,plUuid)), this, SLOT(setOnline(uint32_t,plString,plUuid)));
     connect(gameClient, SIGNAL(clearAgeList()), this, SLOT(clearAgeList()));
-    connect(gameClient, SIGNAL(addAgePlayer(hsUint32,plString)), this, SLOT(addAgePlayer(hsUint32,plString)));
-    connect(gameClient, SIGNAL(removeAgePlayer(hsUint32,plString)), this, SLOT(removeAgePlayer(hsUint32,plString)));
+    connect(gameClient, SIGNAL(addAgePlayer(uint32_t,plString)), this, SLOT(addAgePlayer(uint32_t,plString)));
+    connect(gameClient, SIGNAL(removeAgePlayer(uint32_t,plString)), this, SLOT(removeAgePlayer(uint32_t,plString)));
     gameClient->setPlayer(player);
     if(vault.hasNode(ageVaultId)) { // this will only be true if we've already been to the age this session
         qtVaultNode* info = vault.getNode(ageVaultId)->getAgeInfoNode();
@@ -576,7 +576,7 @@ void MoulKI::readVault() {
         file.open(fileName.toAscii().data(), fmRead);
         int rootCount = file.readInt();
         for(int i = 0; i < rootCount; i++) {
-            hsUint32 root = file.readInt();
+            uint32_t root = file.readInt();
             vault.queueRoot(root);
             qWarning("Read root: %u", root);
         }
@@ -604,13 +604,13 @@ void MoulKI::sendGameChat() {
     if(ui->playersTree->selectedItems().count() == 1) {
         QTreeWidgetItem* item = ui->playersTree->selectedItems()[0];
         QVariant userData = item->data(0, Qt::UserRole);
-        if(userData.canConvert<hsUint32>()) {
-            gameClient->sendPrivate(line, userData.value<hsUint32>());
+        if(userData.canConvert<uint32_t>()) {
+            gameClient->sendPrivate(line, userData.value<uint32_t>());
             addChatLine(plString::Format("To %s: %s\n", item->text(0).toAscii().data(), line.cstr()).cstr());
         }else if(item->text(0) == "BUDDIES" || item->text(0) == "NEIGHBORS") {
-            QList<hsUint32> targets;
+            QList<uint32_t> targets;
             for(int i = 0; i < item->childCount(); i++) {
-                    targets.append(item->child(i)->data(0, Qt::UserRole).value<hsUint32>());
+                    targets.append(item->child(i)->data(0, Qt::UserRole).value<uint32_t>());
             }
             gameClient->sendBroadcast(line, targets, item->text(0) == "BUDDIES");
             addChatLine(plString::Format("To %s: %s\n", item->text(0).toAscii().data(), line.cstr()).cstr());
@@ -625,16 +625,16 @@ void MoulKI::sendGameChat() {
     ui->chatEntry->clear();
 }
 
-void MoulKI::addAgePlayer(hsUint32 playerId, plString playerName) {
+void MoulKI::addAgePlayer(uint32_t playerId, plString playerName) {
     QTreeWidgetItem* item = new QTreeWidgetItem();
     item->setText(0, QString(playerName.cstr()));
     item->setData(0, Qt::UserRole, QVariant(playerId));
     agePlayersItem->addChild(item);
 }
 
-void MoulKI::removeAgePlayer(hsUint32 playerId, plString playerName) {
+void MoulKI::removeAgePlayer(uint32_t playerId, plString playerName) {
     for(int i = 0; i < agePlayersItem->childCount(); i++) {
-        if(agePlayersItem->child(i)->data(0, Qt::UserRole).value<hsUint32>() == playerId) {
+        if(agePlayersItem->child(i)->data(0, Qt::UserRole).value<uint32_t>() == playerId) {
             agePlayersItem->removeChild(agePlayersItem->child(i));
         }
     }
@@ -655,7 +655,7 @@ void MoulKI::clearChatTargetList(QTreeWidgetItem* item) {
 void MoulKI::addRemoveChatTargetItem(QTreeWidgetItem* item, qtVaultNode* infoNode, bool remove) {
     if(infoNode->getInt32(0) == 0 || remove) {
         for(int i = 0; i < item->childCount(); i++) {
-            if(item->child(i)->data(0, Qt::UserRole).value<hsUint32>() == infoNode->getUint32(0)) {
+            if(item->child(i)->data(0, Qt::UserRole).value<uint32_t>() == infoNode->getUint32(0)) {
                 item->removeChild(item->child(i));
                 break;
             }
@@ -670,9 +670,9 @@ void MoulKI::addRemoveChatTargetItem(QTreeWidgetItem* item, qtVaultNode* infoNod
     }
 }
 
-bool MoulKI::itemTreeContains(QTreeWidgetItem* item, hsUint32 playerId) {
+bool MoulKI::itemTreeContains(QTreeWidgetItem* item, uint32_t playerId) {
     for(int i = 0; i < item->childCount(); i++) {
-        if(item->child(i)->data(0, Qt::UserRole).value<hsUint32>() == playerId) {
+        if(item->child(i)->data(0, Qt::UserRole).value<uint32_t>() == playerId) {
             return true;
         }
     }

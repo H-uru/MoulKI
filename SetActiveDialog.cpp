@@ -2,13 +2,13 @@
 #include "ui_SetActiveDialog.h"
 
 Q_DECLARE_METATYPE(authPlayer);
-Q_DECLARE_METATYPE(QList<hsUint32>)
+Q_DECLARE_METATYPE(QList<uint32_t>)
 
 SetActiveDialog::SetActiveDialog(QWidget *parent) :
     QDialog(parent),
     m_ui(new Ui::SetActiveDialog)
 {
-    qRegisterMetaType<QList<hsUint32> >();
+    qRegisterMetaType<QList<uint32_t> >();
     qRegisterMetaType<authPlayer>("authPlayer");
     m_ui->setupUi(this);
 }
@@ -41,8 +41,8 @@ void SetActiveDialog::setPlayers(QList<authPlayer> plyrs) {
     connect(this, SIGNAL(accepted()), this, SLOT(setActive()));
 }
 
-void SetActiveDialog::setFoundNodes(QList<hsUint32> nodes) {
-    foreach(hsUint32 node, nodes) {
+void SetActiveDialog::setFoundNodes(QList<uint32_t> nodes) {
+    foreach(uint32_t node, nodes) {
         QListWidgetItem* item = new QListWidgetItem();
         QVariant data;
         data.setValue(node);
@@ -82,6 +82,6 @@ void SetActiveDialog::setActive() {
 
 void SetActiveDialog::sendFetches() {
     for(int i = 0; i < m_ui->playerList->selectedItems().count(); i++) {
-        emit fetchFound(m_ui->playerList->selectedItems()[i]->data(Qt::UserRole).value<hsUint32>());
+        emit fetchFound(m_ui->playerList->selectedItems()[i]->data(Qt::UserRole).value<uint32_t>());
     }
 }

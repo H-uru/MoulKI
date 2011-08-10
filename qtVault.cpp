@@ -157,7 +157,7 @@ void qtVault::addRef(const pnVaultNodeRef& ref) {
     }
 }
 
-void qtVault::removeRef(hsUint32 parent, hsUint32 child) {
+void qtVault::removeRef(uint32_t parent, uint32_t child) {
     if(nodes.contains(parent) && nodes.contains(child)) {
         nodes[parent].removeChild(&nodes[child]);
         // remove pending refs
@@ -170,15 +170,15 @@ void qtVault::removeRef(hsUint32 parent, hsUint32 child) {
     }
 }
 
-void qtVault::queueRoot(hsUint32 idx) {
+void qtVault::queueRoot(uint32_t idx) {
     rootQueue.append(idx);
 }
 
-qtVaultNode* qtVault::getNode(hsUint32 idx) {
+qtVaultNode* qtVault::getNode(uint32_t idx) {
     return &nodes[idx];
 }
 
-bool qtVault::hasNode(hsUint32 idx) {
+bool qtVault::hasNode(uint32_t idx) {
     return nodes.keys().contains(idx);
 }
 
@@ -192,7 +192,7 @@ void qtVault::writeVault(hsFileStream& file) {
     foreach(qtVaultNode node, nodes) {
         node.allDirty();
         size_t size = node.bufferSize();
-        hsUbyte* buffer = new hsUbyte[size];
+        uint8_t* buffer = new uint8_t[size];
         file.writeInt(size);
         node.write(buffer, size);
         file.write(size, buffer);
@@ -202,19 +202,19 @@ void qtVault::writeVault(hsFileStream& file) {
 }
 
 void qtVault::readVault(hsFileStream& file) {
-    hsUint32 refCount = file.readInt();
-    for(hsUint32 i = 0; i < refCount; i++) {
+    uint32_t refCount = file.readInt();
+    for(uint32_t i = 0; i < refCount; i++) {
         pnVaultNodeRef ref;
         file.read(sizeof(ref), &ref);
         addRef(ref);
     }
-    hsUint32 nodeCount = file.readInt();
-    for(hsUint32 i = 0; i < nodeCount; i++) {
+    uint32_t nodeCount = file.readInt();
+    for(uint32_t i = 0; i < nodeCount; i++) {
         pnVaultNode node;
         size_t size = file.readInt();
-        hsUbyte* buffer = new hsUbyte[size];
+        uint8_t* buffer = new uint8_t[size];
         file.read(size, buffer);
-        node.read((const hsUbyte*)buffer, size);
+        node.read((const uint8_t*)buffer, size);
         addNode(node);
         delete[] buffer;
     }
@@ -377,9 +377,9 @@ plString qtVaultNode::getFieldAsString(size_t field) {
         case kBlob_2:
             {
                 plVaultBlob blob = getBlob(field - kBlob_1);
-                const hsUbyte* data = blob.getData();
+                const uint8_t* data = blob.getData();
                 size_t len = blob.getSize();
-                for(hsUint32 i = 0; i < len; i++) {
+                for(uint32_t i = 0; i < len; i++) {
                     if(data[i] < 32 || data[i] > 126) // Ascii range
                         return plString("[Binary Data]");
                 }

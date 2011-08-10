@@ -15,14 +15,14 @@ public:
     CreateNodeDialog(QWidget *parent = 0);
     ~CreateNodeDialog();
 
-    void setParent(hsUint32 idx);
+    void setParent(uint32_t idx);
     void setActFind();
 
 public slots:
     void sendCreate();
 
 signals:
-    void createSig(pnVaultNode& node, hsUint32 parent);
+    void createSig(pnVaultNode& node, uint32_t parent);
     void findSig(pnVaultNode& node);
 
 protected:
@@ -31,7 +31,7 @@ protected:
 private:
     Ui::CreateNodeDialog *ui;
     qtVaultNode node;
-    hsUint32 parentIdx;
+    uint32_t parentIdx;
     int act;
 };
 

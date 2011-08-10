@@ -16,7 +16,7 @@ public:
     explicit SetActiveDialog(QWidget *parent = 0);
     virtual ~SetActiveDialog();
     void setPlayers(QList<authPlayer> plyrs);
-    void setFoundNodes(QList<hsUint32> nodes);
+    void setFoundNodes(QList<uint32_t> nodes);
     void setAgeNodes(QList<qtVaultNode*> nodes);
 
 protected:
@@ -31,8 +31,8 @@ private slots:
     void joinAge();
 
 signals:
-    void setActive(hsUint32 player);
-    void fetchFound(hsUint32 idx);
+    void setActive(uint32_t player);
+    void fetchFound(uint32_t idx);
     void joinAge(plString name, plUuid uuid);
 };
 

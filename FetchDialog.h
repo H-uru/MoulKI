@@ -3,7 +3,7 @@
 
 #include <QtGui/QDialog>
 
-typedef unsigned int hsUint32;
+typedef unsigned int uint32_t;
 
 namespace Ui {
     class FetchDialog;
@@ -20,7 +20,7 @@ public slots:
     void fetchSlot();
 
 signals:
-    void fetchNode(hsUint32 idx);
+    void fetchNode(uint32_t idx);
 
 protected:
     virtual void changeEvent(QEvent *e);

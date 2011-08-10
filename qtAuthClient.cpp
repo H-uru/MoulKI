@@ -23,12 +23,12 @@ void qtAuthClient::startLogin(QString user, QString pass) {
     sendClientRegisterRequest();
 }
 
-void qtAuthClient::onClientRegisterReply(hsUint32 serverChallenge) {
+void qtAuthClient::onClientRegisterReply(uint32_t serverChallenge) {
     setStatus("Authenticating...");
     sendAcctLoginRequest(serverChallenge, rand(), user, pass);
 }
 
-void qtAuthClient::onAcctPlayerInfo(hsUint32 transId, hsUint32 playerId, const plString& playerName, const plString& avatarModel, hsUint32 explorer) {
+void qtAuthClient::onAcctPlayerInfo(uint32_t transId, uint32_t playerId, const plString& playerName, const plString& avatarModel, uint32_t explorer) {
     authPlayer player;
     player.ID = playerId;
     player.Name = playerName;
@@ -37,9 +37,9 @@ void qtAuthClient::onAcctPlayerInfo(hsUint32 transId, hsUint32 playerId, const p
     qWarning("Added player %s (%u)", playerName.cstr(), playerId);
 }
 
-void qtAuthClient::onAcctLoginReply(hsUint32 transId, ENetError result,
-        const plUuid& acctUuid, hsUint32 acctFlags, hsUint32 billingType,
-        const hsUint32* encryptKey) {
+void qtAuthClient::onAcctLoginReply(uint32_t transId, ENetError result,
+        const plUuid& acctUuid, uint32_t acctFlags, uint32_t billingType,
+        const uint32_t* encryptKey) {
     if (result != kNetSuccess) {
         setStatus(plString::Format("Auth Failed (%s)",
                     GetNetErrorString(result)).cstr());
@@ -55,21 +55,21 @@ void qtAuthClient::onAcctLoginReply(hsUint32 transId, ENetError result,
     emit loginSuccessful();
 }
 
-void qtAuthClient::onFileListReply(hsUint32 transId, ENetError result,
+void qtAuthClient::onFileListReply(uint32_t transId, ENetError result,
         size_t count, const pnAuthFileItem* files) {
 
     for (size_t i = 0; i < count; i++) {
         qWarning("Downloading file %s (%d bytes)",
                 files[i].fFilename.cstr(), files[i].fFileSize);
 
-        hsUint32 fileTrans;
+        uint32_t fileTrans;
         fileTrans = this->sendFileDownloadRequest(files[i].fFilename);
         sdlFiles.insert(fileTrans, new hsRAMStream(PlasmaVer::pvMoul));
     }
 }
 
-void qtAuthClient::onFileDownloadChunk(hsUint32 transId, ENetError result,
-        hsUint32 totalSize, hsUint32 chunkOffset, size_t chunkSize,
+void qtAuthClient::onFileDownloadChunk(uint32_t transId, ENetError result,
+        uint32_t totalSize, uint32_t chunkOffset, size_t chunkSize,
         const unsigned char* chunkData) {
     if (result != kNetSuccess) {
         setStatus(plString::Format("File download failed (%s)",
@@ -87,7 +87,7 @@ void qtAuthClient::onFileDownloadChunk(hsUint32 transId, ENetError result,
     }
 }
 
-void qtAuthClient::onVaultNodeRefsFetched(hsUint32 transId, ENetError result, size_t count, const pnVaultNodeRef* refs) {
+void qtAuthClient::onVaultNodeRefsFetched(uint32_t transId, ENetError result, size_t count, const pnVaultNodeRef* refs) {
     for(unsigned int i = 0; i < count; i++) {
         setStatus(plString::Format("Ref: {%u -> %u} %u", refs[i].fParent, refs[i].fChild, refs[i].fOwner).cstr());
         parent->vault.addRef(refs[i]);
@@ -102,18 +102,18 @@ void qtAuthClient::onVaultNodeRefsFetched(hsUint32 transId, ENetError result, si
     }
 }
 
-void qtAuthClient::onVaultNodeFetched(hsUint32 transId, ENetError result, const pnVaultNode& node) {
+void qtAuthClient::onVaultNodeFetched(uint32_t transId, ENetError result, const pnVaultNode& node) {
     setStatus(plString::Format("Node: (%u)", node.getNodeIdx()));
     parent->vault.addNode(node);
 }
 
-void qtAuthClient::onVaultNodeChanged(hsUint32 nodeId, const plUuid &revisionId) {
+void qtAuthClient::onVaultNodeChanged(uint32_t nodeId, const plUuid &revisionId) {
     if(!fetchQueue.contains(nodeId))
         fetchQueue.append(nodeId);
     sendVaultNodeFetch(nodeId);
 }
 
-void qtAuthClient::onVaultNodeAdded(hsUint32 parent, hsUint32 child, hsUint32 owner) {
+void qtAuthClient::onVaultNodeAdded(uint32_t parent, uint32_t child, uint32_t owner) {
     pnVaultNodeRef ref;
     ref.fParent = parent;
     ref.fChild = child;
@@ -132,12 +132,12 @@ void qtAuthClient::onVaultNodeAdded(hsUint32 parent, hsUint32 child, hsUint32 ow
     }
 }
 
-void qtAuthClient::onVaultNodeRemoved(hsUint32 parent, hsUint32 child) {
+void qtAuthClient::onVaultNodeRemoved(uint32_t parent, uint32_t child) {
     setStatus(plString::Format("UnRef: {%u -> %u}", parent, child).cstr());
     this->parent->vault.removeRef(parent, child);
 }
 
-void qtAuthClient::onVaultNodeCreated(hsUint32 transId, ENetError result, hsUint32 nodeId) {
+void qtAuthClient::onVaultNodeCreated(uint32_t transId, ENetError result, uint32_t nodeId) {
     if(result == kNetSuccess) {
         foreach(queuedRef ref, refQueue) {
             if(ref.fTransId == transId) {
@@ -151,7 +151,7 @@ void qtAuthClient::onVaultNodeCreated(hsUint32 transId, ENetError result, hsUint
     }
 }
 
-void qtAuthClient::queueRef(hsUint32 transId, hsUint32 parent) {
+void qtAuthClient::queueRef(uint32_t transId, uint32_t parent) {
     queuedRef ref;
     ref.fTransId = transId;
     ref.fParent = parent;
@@ -170,12 +170,12 @@ void qtAuthClient::setStatus(plString msg) {
     emit sigStatus(msg);
 }
 
-void qtAuthClient::onVaultNodeFindReply(hsUint32 transId, ENetError result, size_t count, const hsUint32 *nodes) {
+void qtAuthClient::onVaultNodeFindReply(uint32_t transId, ENetError result, size_t count, const uint32_t *nodes) {
     if(result == kNetSuccess) {
         setStatus(plString::Format("Found %u Nodes", count));
         // it's not safe to send an array allocated elsewhere via a queued signal
-        QList<hsUint32> nodeList;
-        for(hsUint32 i = 0; i < count; i++) {
+        QList<uint32_t> nodeList;
+        for(uint32_t i = 0; i < count; i++) {
             nodeList.append(nodes[i]);
         }
         emit foundNodes(count, nodeList);
@@ -184,7 +184,7 @@ void qtAuthClient::onVaultNodeFindReply(hsUint32 transId, ENetError result, size
     }
 }
 
-void qtAuthClient::onVaultAddNodeReply(hsUint32 transId, ENetError result) {
+void qtAuthClient::onVaultAddNodeReply(uint32_t transId, ENetError result) {
     if(result == kNetSuccess) {
         setStatus("Add Node Successful");
     }else{
@@ -192,7 +192,7 @@ void qtAuthClient::onVaultAddNodeReply(hsUint32 transId, ENetError result) {
     }
 }
 
-void qtAuthClient::onVaultSaveNodeReply(hsUint32 transId, ENetError result) {
+void qtAuthClient::onVaultSaveNodeReply(uint32_t transId, ENetError result) {
     if(result == kNetSuccess) {
         setStatus("Save Node Successful");
     }else{
@@ -200,7 +200,7 @@ void qtAuthClient::onVaultSaveNodeReply(hsUint32 transId, ENetError result) {
     }
 }
 
-void qtAuthClient::onVaultRemoveNodeReply(hsUint32 transId, ENetError result) {
+void qtAuthClient::onVaultRemoveNodeReply(uint32_t transId, ENetError result) {
     if(result == kNetSuccess) {
         setStatus("Remove Node Successful");
     }else{
@@ -208,7 +208,7 @@ void qtAuthClient::onVaultRemoveNodeReply(hsUint32 transId, ENetError result) {
     }
 }
 
-void qtAuthClient::onAgeReply(hsUint32 transId, ENetError result, hsUint32 mcpId, const plUuid &ageInstanceId, hsUint32 ageVaultId, hsUint32 gameServerAddress) {
+void qtAuthClient::onAgeReply(uint32_t transId, ENetError result, uint32_t mcpId, const plUuid &ageInstanceId, uint32_t ageVaultId, uint32_t gameServerAddress) {
     if(result == kNetSuccess) {
         setStatus("Age Request Successful");
         emit gotAge(gameServerAddress, ageInstanceId, mcpId, ageVaultId);

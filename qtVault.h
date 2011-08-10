@@ -55,10 +55,10 @@ class qtVault : public QObject
 {
     Q_OBJECT
 private:
-    QMap<hsUint32, qtVaultNode> nodes;
+    QMap<uint32_t, qtVaultNode> nodes;
     QList<pnVaultNodeRef> refQueue;
     QList<pnVaultNodeRef> refList;
-    QList<hsUint32> rootQueue;
+    QList<uint32_t> rootQueue;
     QMutex vaultMutex;
 
 public:
@@ -66,19 +66,19 @@ public:
     ~qtVault();
     void addNode(const pnVaultNode& node);
     void addRef(const pnVaultNodeRef& ref);
-    void removeRef(hsUint32 parent, hsUint32 child);
-    void queueRoot(hsUint32 idx);
-    qtVaultNode* getNode(hsUint32 idx);
-    bool hasNode(hsUint32 idx);
+    void removeRef(uint32_t parent, uint32_t child);
+    void queueRoot(uint32_t idx);
+    qtVaultNode* getNode(uint32_t idx);
+    bool hasNode(uint32_t idx);
 
     void writeVault(hsFileStream& file);
     void readVault(hsFileStream& file);
 
 signals:
-    void addedNode(hsUint32 parent, hsUint32 child);
-    void removedNode(hsUint32 parent, hsUint32 child);
-    void updatedNode(hsUint32 idx);
-    void gotRootNode(hsUint32 idx);
+    void addedNode(uint32_t parent, uint32_t child);
+    void removedNode(uint32_t parent, uint32_t child);
+    void updatedNode(uint32_t idx);
+    void gotRootNode(uint32_t idx);
     void fetchComplete();
 };
 

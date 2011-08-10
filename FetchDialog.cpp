@@ -30,7 +30,7 @@ void FetchDialog::changeEvent(QEvent *e)
 
 void FetchDialog::fetchSlot() {
     bool ok;
-    hsUint32 idx = m_ui->nodeIdBox->text().toUInt(&ok, 10);
+    uint32_t idx = m_ui->nodeIdBox->text().toUInt(&ok, 10);
     if(!ok) {
         qWarning("Invalid Node Id");
         return;

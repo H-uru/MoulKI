@@ -3,7 +3,7 @@
 
 #include <QtGui/QDialog>
 
-typedef unsigned int hsUint32;
+typedef unsigned int uint32_t;
 
 namespace Ui {
     class RefDialog;
@@ -16,20 +16,20 @@ public:
     explicit RefDialog(QWidget *parent = 0);
     virtual ~RefDialog();
 
-    void setupRefBox(hsUint32 owner, hsUint32 parent=0);
+    void setupRefBox(uint32_t owner, uint32_t parent=0);
 
 public slots:
     void sendRef();
 
 signals:
-    void addRef(hsUint32 parent, hsUint32 child, hsUint32 owner);
+    void addRef(uint32_t parent, uint32_t child, uint32_t owner);
 
 protected:
     virtual void changeEvent(QEvent *e);
 
 private:
     Ui::RefDialog *m_ui;
-    hsUint32 owner;
+    uint32_t owner;
 };
 
 #endif // REFDIALOG_H

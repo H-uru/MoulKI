@@ -7,7 +7,7 @@
 #include "qtGameClient.h"
 #include "qtVault.h"
 
-#define BUILD_NUMBER 893
+#define BUILD_NUMBER 902
 #define MOUL_HOST "184.73.198.22"
 #include "keys.cpp"
 static const plUuid s_moulUuid("ea489821-6c35-4bd0-9dae-bb17c585e680");
@@ -28,15 +28,15 @@ public:
     ~MoulKI();
 
     qtVault vault;
-    hsUint32 activePlayer;
+    uint32_t activePlayer;
 
-    hsUint32 buddyListFolder;
-    QList<hsUint32> buddyInfoIds;
-    hsUint32 neighborListFolder;
-    QList<hsUint32> neighborInfoIds;
+    uint32_t buddyListFolder;
+    QList<uint32_t> buddyInfoIds;
+    uint32_t neighborListFolder;
+    QList<uint32_t> neighborInfoIds;
 
     plString currentAgeName;
-    hsUint32 currentAgeId;
+    uint32_t currentAgeId;
 
 private:
     Ui::MoulKIClass *ui;
@@ -45,7 +45,7 @@ private:
     qtGameClient* gameClient;
     plResManager* resmgr;
     plSDLMgr* sdlmgr;
-    hsUint32 ntdKeys[4];
+    uint32_t ntdKeys[4];
 
     void addItemChild(QTreeWidgetItem* item, qtVaultNode* node);
     bool itemHasChild(QTreeWidgetItem* item, qtVaultNode* node);
@@ -66,11 +66,11 @@ public slots:
     void login(QString user, QString pass);
     void setStatus(plString msg);
     void showPlayers();
-    void addNode(hsUint32 parent, hsUint32 child);
-    void removeNode(hsUint32 parent, hsUint32 child);
-    void updateNode(hsUint32 idx);
-    void setActive(hsUint32 playerId);
-    void addRoot(hsUint32 idx);
+    void addNode(uint32_t parent, uint32_t child);
+    void removeNode(uint32_t parent, uint32_t child);
+    void updateNode(uint32_t idx);
+    void setActive(uint32_t playerId);
+    void addRoot(uint32_t idx);
     // node editing slots
     void saveNodeData();
     void revertNode();
@@ -81,36 +81,36 @@ public slots:
     void showCreateDialog();
     void showFindDialog();
     void showFetchDialog();
-    void sendAdd(hsUint32 parent, hsUint32 child, hsUint32 owner);
-    void sendCreate(pnVaultNode& node, hsUint32 parent);
+    void sendAdd(uint32_t parent, uint32_t child, uint32_t owner);
+    void sendCreate(pnVaultNode& node, uint32_t parent);
     void sendFind(pnVaultNode& node);
-    void showFoundDialog(int count, QList<hsUint32> nodes);
+    void showFoundDialog(int count, QList<uint32_t> nodes);
     void showItemContextMenu(QPoint pos);
     void subscribe();
-    void fetchTree(hsUint32 idx);
+    void fetchTree(uint32_t idx);
     void sendRemove();
     void writeVault();
     void readVault();
     void logoutActivePlayer();
     // authserver events
-    void setEncryptionKeys(hsUint32 k0, hsUint32 k1, hsUint32 k2, hsUint32 k3);
+    void setEncryptionKeys(uint32_t k0, uint32_t k1, uint32_t k2, uint32_t k3);
     void loadStateDescriptors(hsStream* S);
     // gameserver events
     void showJoinAgeDialog();
     void joinAge(plString name, plUuid uuid);
     void joinSelectedAge();
-    void startGameServer(hsUint32 serverAddr, plUuid ageId, hsUint32 mcpId, hsUint32 ageVaultId);
+    void startGameServer(uint32_t serverAddr, plUuid ageId, uint32_t mcpId, uint32_t ageVaultId);
     void addChatLine(QString line);
-    void setOnline(hsUint32 playerId, plString ageFilename, plUuid ageUuid);
+    void setOnline(uint32_t playerId, plString ageFilename, plUuid ageUuid);
     void sendGameChat();
     void checkCurrentAge();
     // target manipulation
-    void addAgePlayer(hsUint32, plString);
-    void removeAgePlayer(hsUint32, plString);
+    void addAgePlayer(uint32_t, plString);
+    void removeAgePlayer(uint32_t, plString);
     void clearAgeList();
     void clearChatTargetList(QTreeWidgetItem* item);
     void addRemoveChatTargetItem(QTreeWidgetItem* item, qtVaultNode* infoNode, bool remove=0);
-    bool itemTreeContains(QTreeWidgetItem* item, hsUint32 playerId);
+    bool itemTreeContains(QTreeWidgetItem* item, uint32_t playerId);
 };
 
 #endif // MOULKI_H

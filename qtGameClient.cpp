@@ -23,7 +23,7 @@ void qtGameClient::setAgeInfo(qtVaultNode* ageInfo) {
     emit setMeOnline(fPlayerNode->getNodeIdx(), fAgeInfoNode->getString64(1), fAgeInfoNode->getUuid(0));
 }
 
-void qtGameClient::joinAge(hsUint32 serverAddr, hsUint32 mcpId) {
+void qtGameClient::joinAge(uint32_t serverAddr, uint32_t mcpId) {
     // I've seen a function that does this somewhere in zrax's code..
     // would be nice if I could find it, so I wouldn't have to roll my own here :P
     plString serverString = plString::Format("%u.%u.%u.%u",
@@ -33,7 +33,7 @@ void qtGameClient::joinAge(hsUint32 serverAddr, hsUint32 mcpId) {
                                              (serverAddr & 0x000000FF) >> 0
                                              );
     qWarning("Joining age server at: %s", serverString.cstr());
-    hsUint32 result;
+    uint32_t result;
     if((result = pnGameClient::connect(serverString.cstr())) != kNetSuccess) {
         qWarning("Error Connecting to Game Server (%s)", GetNetErrorString(result));
         return;
@@ -44,7 +44,7 @@ void qtGameClient::joinAge(hsUint32 serverAddr, hsUint32 mcpId) {
     sendJoinAgeRequest(mcpId, fAccountId, fPlayerNode->getNodeIdx());
 }
 
-void qtGameClient::onJoinAgeReply(hsUint32 transId, ENetError result) {
+void qtGameClient::onJoinAgeReply(uint32_t transId, ENetError result) {
     if(result == kNetSuccess) {
         qWarning("Successfuly Joined Age");
         plKeyData* clientMgr = new plKeyData();
@@ -195,8 +195,8 @@ void qtGameClient::sendAgeChat(plString message) {
     delete[] data;*/
 }
 
-void qtGameClient::sendPrivate(plString message, hsUint32 target) {
-    hsTArray<hsUint32> targets;
+void qtGameClient::sendPrivate(plString message, uint32_t target) {
+    hsTArray<uint32_t> targets;
     targets.append(target);
     plNetMsgGameMessageDirected gameMsg;
     pfKIMsg* kiMsg = new pfKIMsg();
@@ -219,9 +219,9 @@ void qtGameClient::sendPrivate(plString message, hsUint32 target) {
     qWarning("Sent Private Chat to %u: %s", target, message.cstr());
 }
 
-void qtGameClient::sendBroadcast(plString message, QList<hsUint32> buddies, int type) {
-    hsTArray<hsUint32> targets;
-    foreach(hsUint32 target, buddies) {
+void qtGameClient::sendBroadcast(plString message, QList<uint32_t> buddies, int type) {
+    hsTArray<uint32_t> targets;
+    foreach(uint32_t target, buddies) {
         targets.append(target);
     }
     plNetMsgGameMessageDirected gameMsg;

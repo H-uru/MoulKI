@@ -33,12 +33,12 @@ void RefDialog::changeEvent(QEvent *e)
 
 void RefDialog::sendRef() {
     bool ok;
-    hsUint32 parent = m_ui->parentBox->text().toUInt(&ok, 10);
+    uint32_t parent = m_ui->parentBox->text().toUInt(&ok, 10);
     if(!ok) {
         qWarning("Invalid Parent");
         return;
     }
-    hsUint32 child = m_ui->childBox->text().toUInt(&ok, 10);
+    uint32_t child = m_ui->childBox->text().toUInt(&ok, 10);
     if(!ok) {
         qWarning("Invalid Child");
         return;
@@ -49,7 +49,7 @@ void RefDialog::sendRef() {
         emit addRef(parent, child, 0);
 }
 
-void RefDialog::setupRefBox(hsUint32 owner, hsUint32 parent) {
+void RefDialog::setupRefBox(uint32_t owner, uint32_t parent) {
     this->owner = owner;
     if(parent) {
         m_ui->parentBox->setText(QString("%1").arg(parent, 0, 10));

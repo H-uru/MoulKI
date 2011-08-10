@@ -11,7 +11,7 @@ class qtGameClient : public QObject, public pnGameClient
 {
     Q_OBJECT
 private:
-    hsUint32 fMcpId;
+    uint32_t fMcpId;
     hsTArray<unsigned int> fAgePlayers;
     qtVaultNode* fPlayerNode;
     qtVaultNode* fAgeInfoNode;
@@ -22,20 +22,20 @@ public:
 
     void setPlayer(qtVaultNode* player);
     void setAgeInfo(qtVaultNode* ageInfo);
-    void joinAge(hsUint32 serverAddr, hsUint32 mcpId);
+    void joinAge(uint32_t serverAddr, uint32_t mcpId);
     void onPropagateMessage(plCreatable *msg);
-    void onJoinAgeReply(hsUint32 transId, ENetError result);
+    void onJoinAgeReply(uint32_t transId, ENetError result);
 
 public slots:
     void sendAgeChat(plString message);
-    void sendBroadcast(plString message, QList<hsUint32> targets, int type);
-    void sendPrivate(plString message, hsUint32 target);
+    void sendBroadcast(plString message, QList<uint32_t> targets, int type);
+    void sendPrivate(plString message, uint32_t target);
 
 signals:
     void receivedGameMsg(QString);
-    void setMeOnline(hsUint32 player, plString ageFilename, plUuid ageUuid);
-    void addAgePlayer(hsUint32, plString);
-    void removeAgePlayer(hsUint32, plString);
+    void setMeOnline(uint32_t player, plString ageFilename, plUuid ageUuid);
+    void addAgePlayer(uint32_t, plString);
+    void removeAgePlayer(uint32_t, plString);
     void clearAgeList();
 };
 

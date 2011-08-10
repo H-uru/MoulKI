@@ -12,7 +12,7 @@
 class MoulKI;
 
 struct authPlayer {
-    hsUint32 ID;
+    uint32_t ID;
     plString Name;
     plString avatar;
 };
@@ -24,19 +24,19 @@ private:
     MoulKI* parent;
     /* the fetch queue acts as a comprehensive list of all nodes fetched
        and pending fetch by the client */
-    QList<hsUint32> fetchQueue;
+    QList<uint32_t> fetchQueue;
     plString user;
     plString pass;
 
     struct queuedRef {
-        hsUint32 fTransId;
-        hsUint32 fParent;
+        uint32_t fTransId;
+        uint32_t fParent;
 
         bool operator==(const queuedRef& ref);
     };
     QList<queuedRef> refQueue;
 
-    QMap<hsUint32, hsStream*> sdlFiles;
+    QMap<uint32_t, hsStream*> sdlFiles;
 
 public:
     QList<authPlayer> players;
@@ -46,51 +46,51 @@ public:
     ~qtAuthClient();
 
     void startLogin(QString user, QString pass);
-    void onClientRegisterReply(hsUint32 serverChallenge);
-    void onAcctLoginReply(hsUint32 transId, ENetError result,
-            const plUuid& acctUuid, hsUint32 acctFlags,
-            hsUint32 billingType, const hsUint32* encryptKey);
-    void onAcctPlayerInfo(hsUint32 transId, hsUint32 playerId,
+    void onClientRegisterReply(uint32_t serverChallenge);
+    void onAcctLoginReply(uint32_t transId, ENetError result,
+            const plUuid& acctUuid, uint32_t acctFlags,
+            uint32_t billingType, const uint32_t* encryptKey);
+    void onAcctPlayerInfo(uint32_t transId, uint32_t playerId,
             const plString &playerName, const plString& avatarModel,
-            hsUint32 explorer);
-    void onAgeReply(hsUint32 transId, ENetError result, hsUint32 mcpId,
-            const plUuid &ageInstanceId, hsUint32 ageVaultId,
-            hsUint32 gameServerAddress);
+            uint32_t explorer);
+    void onAgeReply(uint32_t transId, ENetError result, uint32_t mcpId,
+            const plUuid &ageInstanceId, uint32_t ageVaultId,
+            uint32_t gameServerAddress);
 
-    void onFileListReply(hsUint32 transId, ENetError result,
+    void onFileListReply(uint32_t transId, ENetError result,
             size_t count, const pnAuthFileItem* files);
-    void onFileDownloadChunk(hsUint32 transId, ENetError result,
-            hsUint32 totalSize, hsUint32 chunkOffset,
+    void onFileDownloadChunk(uint32_t transId, ENetError result,
+            uint32_t totalSize, uint32_t chunkOffset,
             size_t chunkSize, const unsigned char* chunkData);
 
-    void onVaultNodeRefsFetched(hsUint32 transId, ENetError result,
+    void onVaultNodeRefsFetched(uint32_t transId, ENetError result,
             size_t count, const pnVaultNodeRef* refs);
-    void onVaultNodeFetched(hsUint32 transId, ENetError result,
+    void onVaultNodeFetched(uint32_t transId, ENetError result,
             const pnVaultNode& node);
-    void onVaultNodeChanged(hsUint32 nodeId, const plUuid& revisionId);
-    void onVaultNodeAdded(hsUint32 parent, hsUint32 child, hsUint32 owner);
-    void onVaultNodeRemoved(hsUint32 parent, hsUint32 child);
-    void onVaultNodeCreated(hsUint32 transId, ENetError result,
-            hsUint32 nodeId);
-    void onVaultNodeFindReply(hsUint32 transId, ENetError result,
-            size_t count, const hsUint32 *nodes);
+    void onVaultNodeChanged(uint32_t nodeId, const plUuid& revisionId);
+    void onVaultNodeAdded(uint32_t parent, uint32_t child, uint32_t owner);
+    void onVaultNodeRemoved(uint32_t parent, uint32_t child);
+    void onVaultNodeCreated(uint32_t transId, ENetError result,
+            uint32_t nodeId);
+    void onVaultNodeFindReply(uint32_t transId, ENetError result,
+            size_t count, const uint32_t *nodes);
 
-    void onVaultSaveNodeReply(hsUint32 transId, ENetError result);
-    void onVaultAddNodeReply(hsUint32 transId, ENetError result);
-    void onVaultRemoveNodeReply(hsUint32 transId, ENetError result);
+    void onVaultSaveNodeReply(uint32_t transId, ENetError result);
+    void onVaultAddNodeReply(uint32_t transId, ENetError result);
+    void onVaultRemoveNodeReply(uint32_t transId, ENetError result);
 
     void setStatus(const char* msg);
     void setStatus(plString msg);
 
-    void queueRef(hsUint32 transId, hsUint32 parent);
+    void queueRef(uint32_t transId, uint32_t parent);
 
 signals:
     void sigStatus(plString msg);
-    void foundNodes(int count, QList<hsUint32> nodes);
+    void foundNodes(int count, QList<uint32_t> nodes);
     void loginSuccessful();
-    void gotAge(hsUint32 gameServerAddr, plUuid ageId, hsUint32 mcpId,
-            hsUint32 vaultId);
-    void gotEncKeys(hsUint32 k0, hsUint32 k1, hsUint32 k2, hsUint32 k3);
+    void gotAge(uint32_t gameServerAddr, plUuid ageId, uint32_t mcpId,
+            uint32_t vaultId);
+    void gotEncKeys(uint32_t k0, uint32_t k1, uint32_t k2, uint32_t k3);
     void gotSDLFile(hsStream* file);
 };
 
