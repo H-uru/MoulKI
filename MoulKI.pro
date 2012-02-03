@@ -3,12 +3,12 @@
 # -------------------------------------------------
 TARGET = MoulKI
 TEMPLATE = app
-INCLUDEPATH += ../../Plasma/core \
-    ../../Plasma/net
+INCLUDEPATH += ../../libhsplasma/core \
+    ../../libhsplasma/net
 LIBS += -lHSPlasma \
     -lHSPlasmaNet \
-    -L../../Plasma/lib \
-    -L../../Plasma/bin
+    -L../../libhsplasma/lib \
+    -L../../libhsplasma/bin
 SOURCES += main.cpp \
     MoulKI.cpp \
     qtAuthClient.cpp \
@@ -19,7 +19,8 @@ SOURCES += main.cpp \
     RefDialog.cpp \
     FetchDialog.cpp \
     qtNodeEdit.cpp \
-    CreateNodeDialog.cpp
+    CreateNodeDialog.cpp \
+    pfConsoleParser.cpp
 HEADERS += MoulKI.h \
     qtAuthClient.h \
     qtGameClient.h \
@@ -29,7 +30,8 @@ HEADERS += MoulKI.h \
     RefDialog.h \
     FetchDialog.h \
     qtNodeEdit.h \
-    CreateNodeDialog.h
+    CreateNodeDialog.h \
+    pfConsoleParser.h
 FORMS += MoulKI.ui \
     LoginDialog.ui \
     SetActiveDialog.ui \

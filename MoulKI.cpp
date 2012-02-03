@@ -3,6 +3,7 @@
 #include "FetchDialog.h"
 #include "RefDialog.h"
 #include "CreateNodeDialog.h"
+#include "pfConsoleParser.h"
 
 #include "MoulKI.h"
 #include "ui_MoulKI.h"
@@ -15,6 +16,12 @@ Q_DECLARE_METATYPE(plUuid)
 Q_DECLARE_METATYPE(plString)
 Q_DECLARE_METATYPE(uint32_t)
 
+void reverseCopy(char* src, unsigned char* dst, int size) {
+    for(int i = 0; i < size; i++) {
+        dst[i] = src[size - i - 1];
+    }
+}
+
 MoulKI::MoulKI(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MoulKIClass), gameClient(NULL)
 {
@@ -25,6 +32,18 @@ MoulKI::MoulKI(QWidget *parent)
     qRegisterMetaType<plUuid>("plUuid");
     qRegisterMetaType<plString>("plString");
     qRegisterMetaType<uint32_t>("uint32_t");
+    
+    // read the server.ini file
+    QFile server("server.ini");
+    server.open(QFile::ReadOnly);
+    pfConsoleParser ini(server);
+    server.close();
+
+    reverseCopy(QByteArray::fromBase64(ini["Server.Auth.N"][0].toAscii()).data(), Keys.Auth.N, 64);
+    reverseCopy(QByteArray::fromBase64(ini["Server.Auth.X"][0].toAscii()).data(), Keys.Auth.X, 64);
+    reverseCopy(QByteArray::fromBase64(ini["Server.Game.N"][0].toAscii()).data(), Keys.Game.N, 64);
+    reverseCopy(QByteArray::fromBase64(ini["Server.Game.X"][0].toAscii()).data(), Keys.Game.X, 64);
+    Host = ini["Server.Auth.Host"][0];
 
     connect(ui->actionLogin, SIGNAL(triggered()), this,
             SLOT(showLoginDialog()));

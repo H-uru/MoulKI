@@ -8,8 +8,6 @@
 #include "qtVault.h"
 
 #define BUILD_NUMBER 902
-#define MOUL_HOST "184.73.198.22"
-#include "keys.cpp"
 static const plUuid s_moulUuid("ea489821-6c35-4bd0-9dae-bb17c585e680");
 
 class QTableWidgetItem;
@@ -37,6 +35,19 @@ public:
 
     plString currentAgeName;
     uint32_t currentAgeId;
+
+    struct {
+        struct {
+            unsigned char N[64];
+            unsigned char X[64];
+        } Auth;
+        struct {
+            unsigned char N[64];
+            unsigned char X[64];
+        } Game;
+    } Keys;
+
+    QString Host;
 
 private:
     Ui::MoulKIClass *ui;

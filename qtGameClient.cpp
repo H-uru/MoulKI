@@ -7,7 +7,7 @@
 #include <PRP/Message/pfKIMsg.h>
 
 qtGameClient::qtGameClient(MoulKI* ki) : QObject(ki), pnGameClient(ki->getResManager()), fPlayerNode(NULL), fAgeInfoNode(NULL) {
-    setKeys(KEY_Game_X, KEY_Game_N);
+    setKeys(ki->Keys.Game.X, ki->Keys.Game.N);
     setClientInfo(BUILD_NUMBER, 50, 1, s_moulUuid);
 }
 
