@@ -103,6 +103,7 @@ public slots:
     void writeVault();
     void readVault();
     void logoutActivePlayer();
+    void getPublicAgeList();
     // authserver events
     void setEncryptionKeys(uint32_t k0, uint32_t k1, uint32_t k2, uint32_t k3);
     void loadStateDescriptors(hsStream* S);

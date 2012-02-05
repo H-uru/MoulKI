@@ -55,6 +55,23 @@ void qtAuthClient::onAcctLoginReply(uint32_t transId, ENetError result,
     emit loginSuccessful();
 }
 
+void qtAuthClient::onPublicAgeList(uint32_t transId, ENetError result, size_t count, const pnNetAgeInfo* ages) {
+    if(result != kNetSuccess) {
+        setStatus(plString::Format("Get Public Ages Failed (%s)",
+                    GetNetErrorString(result)).cstr());
+        return;
+    }
+
+    setStatus(plString::Format("Got %d Public Ages", count).cstr());
+
+    QList< QPair<QString, plUuid> > publicAges;
+    for(size_t i = 0; i < count; i++) {
+        publicAges.append(QPair<QString, plUuid>(ages[i].fAgeFilename.cstr(), ages[i].fAgeInstanceId));
+    }
+
+    emit gotPublicAges(publicAges);
+}
+
 void qtAuthClient::onFileListReply(uint32_t transId, ENetError result,
         size_t count, const pnAuthFileItem* files) {
 

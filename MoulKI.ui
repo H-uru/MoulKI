@@ -159,7 +159,7 @@
      <x>0</x>
      <y>0</y>
      <width>612</width>
-     <height>25</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuAuth">
@@ -176,6 +176,7 @@
     <addaction name="actionSubscribe"/>
     <addaction name="actionSet_Active"/>
     <addaction name="actionFind_Node"/>
+    <addaction name="actionGet_Public_Ages"/>
     <addaction name="separator"/>
     <addaction name="actionSave_Vault"/>
     <addaction name="actionLoad_Vault"/>
@@ -234,6 +235,11 @@
   <action name="actionFind_Node">
    <property name="text">
     <string>Find Node</string>
+   </property>
+  </action>
+  <action name="actionGet_Public_Ages">
+   <property name="text">
+    <string>Public Ages</string>
    </property>
   </action>
  </widget>

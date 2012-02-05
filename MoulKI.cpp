@@ -53,6 +53,8 @@ MoulKI::MoulKI(QWidget *parent)
             SLOT(showFindDialog()));
     connect(ui->actionSubscribe, SIGNAL(triggered()), this,
             SLOT(showFetchDialog()));
+    connect(ui->actionGet_Public_Ages, SIGNAL(triggered()), this,
+            SLOT(getPublicAgeList()));
     connect(ui->actionSave_Vault, SIGNAL(triggered()), this,
             SLOT(writeVault()));
     connect(ui->actionLoad_Vault, SIGNAL(triggered()), this,
@@ -122,6 +124,12 @@ MoulKI::~MoulKI() {
     delete ui;
     delete sdlmgr;
     delete resmgr;
+}
+
+void MoulKI::getPublicAgeList() {
+    if(authClient != NULL) {
+        authClient->sendGetPublicAgeList("Neighborhood");
+    }
 }
 
 void MoulKI::closeEvent(QCloseEvent* event) {

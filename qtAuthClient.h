@@ -56,6 +56,8 @@ public:
     void onAgeReply(uint32_t transId, ENetError result, uint32_t mcpId,
             const plUuid &ageInstanceId, uint32_t ageVaultId,
             uint32_t gameServerAddress);
+    void onPublicAgeList(uint32_t transId, ENetError result, size_t count,
+            const pnNetAgeInfo* ages);
 
     void onFileListReply(uint32_t transId, ENetError result,
             size_t count, const pnAuthFileItem* files);
@@ -92,6 +94,7 @@ signals:
             uint32_t vaultId);
     void gotEncKeys(uint32_t k0, uint32_t k1, uint32_t k2, uint32_t k3);
     void gotSDLFile(hsStream* file);
+    void gotPublicAges(QList< QPair<QString, plUuid> >);
 };
 
 #endif // QTAUTHCLIENT_H
