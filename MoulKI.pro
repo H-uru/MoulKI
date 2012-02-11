@@ -20,7 +20,8 @@ SOURCES += main.cpp \
     FetchDialog.cpp \
     qtNodeEdit.cpp \
     CreateNodeDialog.cpp \
-    pfConsoleParser.cpp
+    pfConsoleParser.cpp \
+    qtSDLTreeModel.cpp
 HEADERS += MoulKI.h \
     qtAuthClient.h \
     qtGameClient.h \
@@ -31,7 +32,8 @@ HEADERS += MoulKI.h \
     FetchDialog.h \
     qtNodeEdit.h \
     CreateNodeDialog.h \
-    pfConsoleParser.h
+    pfConsoleParser.h \
+    qtSDLTreeModel.h
 FORMS += MoulKI.ui \
     LoginDialog.ui \
     SetActiveDialog.ui \
