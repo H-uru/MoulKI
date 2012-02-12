@@ -88,12 +88,12 @@ void qtNodeEdit::saveNodeImage() {
 
     node->lockNode();
     switch(node->getInt32(0)) {
-        case plVault::ImageTypes::kJPEG:
+        case plVault::kJPEG:
             extension = ".jpg";
             filter = "*.jpg *.jpeg";
             offset = 4;
             break;
-        case plVault::ImageTypes::kPNG:
+        case plVault::kPNG:
             extension = ".png";
             filter = "*.png";
             break;
@@ -111,13 +111,13 @@ void qtNodeEdit::loadNodeImage() {
     if(fileName.isEmpty()) {
         return;
     }
-    int imageType = plVault::ImageTypes::kNone;
+    int imageType = plVault::kNone;
     int offset = 0;
     if(fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
-        imageType = plVault::ImageTypes::kJPEG;
+        imageType = plVault::kJPEG;
         offset = 4;
     } else if (fileName.endsWith(".png"))
-        imageType = plVault::ImageTypes::kPNG;
+        imageType = plVault::kPNG;
     else
         return;
     node->lockNode();
@@ -127,7 +127,7 @@ void qtNodeEdit::loadNodeImage() {
     inFile.close();
     uint32_t len = data.length();
     char* dataPtr = new char[len + offset];
-    if(imageType == plVault::ImageTypes::kJPEG)
+    if(imageType == plVault::kJPEG)
         *(uint32_t*)dataPtr = len;
     memcpy(dataPtr + offset, data.data(), len);
     plVaultBlob blob;
@@ -169,7 +169,7 @@ void qtNodeEdit::update() {
                     if(node->getBlob(0).getSize()) {
                         int offset = 0;
 
-                        if(node->getInt32(0) == plVault::ImageTypes::kJPEG) // JPEG Streams have an additional size at the start
+                        if(node->getInt32(0) == plVault::kJPEG) // JPEG Streams have an additional size at the start
                             offset = 4;
 
                         QImage image = QImage::fromData(node->getBlob(0).getData() + offset, (int)node->getBlob(0).getSize() - offset);
