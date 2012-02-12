@@ -194,71 +194,7 @@
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <widget class="QTableWidget" name="nodeSDLData">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="alternatingRowColors">
-          <bool>true</bool>
-         </property>
-         <property name="selectionBehavior">
-          <enum>QAbstractItemView::SelectRows</enum>
-         </property>
-         <property name="rowCount">
-          <number>32</number>
-         </property>
-         <property name="columnCount">
-          <number>2</number>
-         </property>
-         <attribute name="horizontalHeaderStretchLastSection">
-          <bool>true</bool>
-         </attribute>
-         <attribute name="verticalHeaderVisible">
-          <bool>false</bool>
-         </attribute>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <row/>
-         <column>
-          <property name="text">
-           <string>Field</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>Value</string>
-          </property>
-         </column>
-        </widget>
+        <widget class="QTreeView" name="SDLTreeView"/>
        </item>
       </layout>
      </widget>

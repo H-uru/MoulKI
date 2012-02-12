@@ -7,7 +7,7 @@ qtSDLTreeModel::qtSDLTreeModel(plStateDataRecord* sdl) :
 {
 }
 
-QModelIndex qtSDLTreeModel::ICreateIndex(int row, int column, const QModelIndex& parent, void *ptr, ItemType type) {
+QModelIndex qtSDLTreeModel::ICreateIndex(int row, int column, const QModelIndex& parent, void *ptr, ItemType type) const {
     SDLModelIndex index;
     index.ptr.raw = ptr;
     index.type = type;
@@ -20,7 +20,7 @@ QModelIndex qtSDLTreeModel::parent(const QModelIndex &child) const {
     return indices[child.internalId()].parent;
 }
 
-QModelIndex qtSDLTreeModel::index(int row, int column, const QModelIndex& parent) {
+QModelIndex qtSDLTreeModel::index(int row, int column, const QModelIndex& parent) const {
     if(parent.isValid()) {
         SDLModelIndex myParent = indices[parent.internalId()];
         switch(myParent.type) {
@@ -55,7 +55,7 @@ int qtSDLTreeModel::rowCount(const QModelIndex& parent) const {
             return 0;
         }
     }else{
-        return sdl->getNumVars();
+        return 1; // only one root
     }
 }
 

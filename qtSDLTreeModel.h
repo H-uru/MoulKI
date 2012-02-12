@@ -22,13 +22,13 @@ private:
             void* raw;
         } ptr;
     };
-    QVector<SDLModelIndex> indices;
+    mutable QVector<SDLModelIndex> indices;
 
-    QModelIndex ICreateIndex(int row, int column, const QModelIndex& parent, void* ptr, ItemType type);
+    QModelIndex ICreateIndex(int row, int column, const QModelIndex& parent, void* ptr, ItemType type) const;
 
 public:
     explicit qtSDLTreeModel(plStateDataRecord* sdl);
-    QModelIndex index(int row, int column, const QModelIndex& parent);
+    QModelIndex index(int row, int column, const QModelIndex& parent) const;
     QModelIndex parent(const QModelIndex &child) const;
     int rowCount(const QModelIndex& parent) const;
     int columnCount(const QModelIndex& parent) const;
