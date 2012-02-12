@@ -7,9 +7,9 @@ qtSDLTreeModel::qtSDLTreeModel(plStateDataRecord* sdl) :
 {
 }
 
-QModelIndex qtSDLTreeModel::ICreateIndex(int row, int column, QModelIndex parent, void *ptr, ItemType type) {
+QModelIndex qtSDLTreeModel::ICreateIndex(int row, int column, const QModelIndex& parent, void *ptr, ItemType type) {
     SDLModelIndex index;
-    index.ptr = ptr;
+    index.ptr.raw = ptr;
     index.type = type;
     index.parent = parent;
     indices.append(index);
@@ -20,19 +20,21 @@ QModelIndex qtSDLTreeModel::parent(const QModelIndex &child) const {
     return indices[child.internalId()].parent;
 }
 
-QModelIndex qtSDLTreeModel::index(int row, int column, const QModelIndex& parent) const {
+QModelIndex qtSDLTreeModel::index(int row, int column, const QModelIndex& parent) {
     if(parent.isValid()) {
         SDLModelIndex myParent = indices[parent.internalId()];
         switch(myParent.type) {
         case kSDR:
-            return ICreateIndex(row, column, parent, myParent.sdr->get(row), kVar);
+            return ICreateIndex(row, column, parent, myParent.ptr.sdr->get(row), kVar);
         case kVar:
-            if(myParent.sv->getDescriptor()->getType() == plVarDescriptor::kStateDescriptor)
-                return ICreateIndex(row, column, parent, ((plSDStateVariable*)myParent.sv)->Record(row), kSDR);
+            if(myParent.ptr.sv->getDescriptor()->getType() == plVarDescriptor::kStateDescriptor)
+                return ICreateIndex(row, column, parent, ((plSDStateVariable*)myParent.ptr.sv)->Record(row), kSDR);
             else
-                return ICreateIndex(row, column, parent, myParent.sv, kVal);
+                return ICreateIndex(row, column, parent, myParent.ptr.sv, kVal);
         case kVal:
             return QModelIndex(); // this is not valid, values have no children
+        default:
+            return QModelIndex(); // satisfy the compiler
         }
     }else{
         return ICreateIndex(row, column, parent, sdl, kSDR);
@@ -41,13 +43,15 @@ QModelIndex qtSDLTreeModel::index(int row, int column, const QModelIndex& parent
 
 int qtSDLTreeModel::rowCount(const QModelIndex& parent) const {
     if(parent.isValid()) {
-        SDLModelIndex myParent = indicies[parent.internalId()];
+        SDLModelIndex myParent = indices[parent.internalId()];
         switch(myParent.type) {
         case kSDR:
-            return myParent.sdr->getNumVars();
+            return myParent.ptr.sdr->getNumVars();
         case kVar:
-            return myParent.sv->getCount();
+            return myParent.ptr.sv->getCount();
         case kVal:
+            return 0;
+        default:
             return 0;
         }
     }else{
@@ -55,21 +59,23 @@ int qtSDLTreeModel::rowCount(const QModelIndex& parent) const {
     }
 }
 
-int qtSDLTreeModel::columnCount(const QModelIndex& parent) const {
+int qtSDLTreeModel::columnCount(const QModelIndex&) const {
     return 1;
 }
 
-QVariant qtSDLTreeModel::data(const QModelIndex& index, int role = Qt::DisplayRole) const {
+QVariant qtSDLTreeModel::data(const QModelIndex& index, int role) const {
+    if(role != Qt::DisplayRole)
+        return QVariant();
     if(index.isValid()) {
         SDLModelIndex myIndex = indices[index.internalId()];
         switch(myIndex.type) {
         case kSDR:
-            return QVariant(myIndex.sdr->getDescriptor()->getName().cstr());
+            return QVariant(myIndex.ptr.sdr->getDescriptor()->getName().cstr());
         case kVar:
-            return QVariant(myIndex.sv->getDescriptor()->getName().cstr());
+            return QVariant(myIndex.ptr.sv->getDescriptor()->getName().cstr());
         case kVal:
             {
-                plSimpleStateVariable* var = myIndex.sv;
+                plSimpleStateVariable* var = (plSimpleStateVariable*)myIndex.ptr.sv;
                 switch(var->getDescriptor()->getType()) {
                 case plVarDescriptor::kBool:
                     return QVariant(var->Bool(index.row()) ? "True" : "False");

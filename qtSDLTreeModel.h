@@ -19,15 +19,16 @@ private:
         union {
             plStateDataRecord* sdr;
             plStateVariable* sv;
+            void* raw;
         } ptr;
     };
     QVector<SDLModelIndex> indices;
 
-    QModelIndex ICreateIndex(int row, int column, QModelIndex parent, void* ptr, ItemType type);
+    QModelIndex ICreateIndex(int row, int column, const QModelIndex& parent, void* ptr, ItemType type);
 
 public:
     explicit qtSDLTreeModel(plStateDataRecord* sdl);
-    QModelIndex index(int row, int column, const QModelIndex& parent) const;
+    QModelIndex index(int row, int column, const QModelIndex& parent);
     QModelIndex parent(const QModelIndex &child) const;
     int rowCount(const QModelIndex& parent) const;
     int columnCount(const QModelIndex& parent) const;
