@@ -39,6 +39,16 @@ MoulKI::MoulKI(QWidget *parent)
     pfConsoleParser ini(server);
     server.close();
 
+    qWarning("Ini Values:");
+    foreach(QString key, ini.keys()) {
+        QString value = ini[key][0];
+        qWarning("\t%s: %s", key.toAscii().data(), value.toAscii().data());
+    }
+    if(ini.keys().count() < 5) {
+        qWarning("Invalid server.ini file");
+        exit(0);
+    }
+
     reverseCopy(QByteArray::fromBase64(ini["Server.Auth.N"][0].toAscii()).data(), Keys.Auth.N, 64);
     reverseCopy(QByteArray::fromBase64(ini["Server.Auth.X"][0].toAscii()).data(), Keys.Auth.X, 64);
     reverseCopy(QByteArray::fromBase64(ini["Server.Game.N"][0].toAscii()).data(), Keys.Game.N, 64);
