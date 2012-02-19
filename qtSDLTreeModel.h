@@ -16,11 +16,16 @@ private:
     struct SDLModelIndex {
         QModelIndex parent;
         ItemType type;
+        int row, column;
         union {
             plStateDataRecord* sdr;
             plStateVariable* sv;
             void* raw;
         } ptr;
+
+        bool operator==(const SDLModelIndex& other) {
+            return parent == other.parent && type == other.type && row == other.row && column == other.column && ptr.raw == other.ptr.raw;
+        }
     };
     mutable QVector<SDLModelIndex> indices;
 
@@ -28,6 +33,7 @@ private:
 
 public:
     explicit qtSDLTreeModel(plStateDataRecord* sdl);
+    ~qtSDLTreeModel();
     QModelIndex index(int row, int column, const QModelIndex& parent) const;
     QModelIndex parent(const QModelIndex &child) const;
     int rowCount(const QModelIndex& parent) const;

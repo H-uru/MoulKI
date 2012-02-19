@@ -7,13 +7,21 @@ qtSDLTreeModel::qtSDLTreeModel(plStateDataRecord* sdl) :
 {
 }
 
+qtSDLTreeModel::~qtSDLTreeModel() {}
+
 QModelIndex qtSDLTreeModel::ICreateIndex(int row, int column, const QModelIndex& parent, void *ptr, ItemType type) const {
     SDLModelIndex index;
     index.ptr.raw = ptr;
     index.type = type;
     index.parent = parent;
-    indices.append(index);
-    return createIndex(row, column, indices.count() - 1);
+    index.row = row;
+    index.column = column;
+    if(indices.contains(index)) {
+        return createIndex(row, column, indices.indexOf(index));
+    }else{
+        indices.append(index);
+        return createIndex(row, column, indices.count() - 1);
+    }
 }
 
 QModelIndex qtSDLTreeModel::parent(const QModelIndex &child) const {
