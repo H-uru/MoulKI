@@ -4,6 +4,19 @@
 #include <Stream/hsRAMStream.h>
 #include <QStringList>
 
+const char* TypeNames[] = {
+    "INT", "FLOAT", "BOOL", "STRING", "KEY", "STATEDESC", "CREATABLE",
+    "DOUBLE", "TIME", "BYTE", "SHORT", "AGETIMEOFDAY",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "", "", "",
+    "", "", "", "", "", "", "", "",
+    "VECTOR3", "POINT3", "RGB", "RGBA", "QUATERNION", "RGB8", "RGBA8",
+    "UINT", "CHAR", "MATRIX44", "BUFFER", "AGETIMEELAPSED", "GAMETIMEELAPSED"
+};
+
+enum { kDataRow, kTypeRow };
+
 qtSDLTreeModel::qtSDLTreeModel(plStateDataRecord* sdl) :
     QAbstractItemModel(0), sdl(sdl)
 {
@@ -70,7 +83,7 @@ int qtSDLTreeModel::rowCount(const QModelIndex& parent) const {
 }
 
 int qtSDLTreeModel::columnCount(const QModelIndex&) const {
-    return 1;
+    return 2;
 }
 
 // gets a prc string for any pointer
@@ -100,51 +113,76 @@ QVariant qtSDLTreeModel::data(const QModelIndex& index, int role) const {
         return QVariant();
     if(index.isValid()) {
         SDLModelIndex myIndex = indices[index.internalId()];
-        switch(myIndex.type) {
-        case kSDR:
-            return QVariant(myIndex.ptr.sdr->getDescriptor()->getName().cstr());
-        case kVar:
-            return QVariant(myIndex.ptr.sv->getDescriptor()->getName().cstr());
-        case kVal:
-            {
-                plSimpleStateVariable* var = (plSimpleStateVariable*)myIndex.ptr.sv;
-                switch(var->getDescriptor()->getType()) {
-                case plVarDescriptor::kBool:
-                    return QVariant(var->Bool(index.row()) ? "True" : "False");
-                case plVarDescriptor::kInt:
-                    return QVariant(plString::Format("%d", var->Int(index.row())).cstr());
-                case plVarDescriptor::kByte:
-                    return QVariant(plString::Format("%d", var->Byte(index.row())).cstr());
-                case plVarDescriptor::kFloat:
-                    return QVariant(plString::Format("%f", var->Float(index.row())).cstr());
-                case plVarDescriptor::kDouble:
-                    return QVariant(plString::Format("%f", var->Double(index.row())).cstr());
-                case plVarDescriptor::kString:
-                    return QVariant(var->String(index.row()).cstr());
-                case plVarDescriptor::kChar:
-                    return QVariant(QString(var->Char(index.row())));
-                case plVarDescriptor::kKey:
-                    return QVariant(getPrc<plUoid*>(&var->Uoid(index.row())));
-                case plVarDescriptor::kCreatable:
-                    return QVariant(getPrc<plCreatable*>(var->Creatable(index.row())));
-                case plVarDescriptor::kRGB8:
-                case plVarDescriptor::kRGBA8:
-                    return QVariant(getPrc<hsColor32*>(&var->Color32(index.row())));
-                case plVarDescriptor::kRGB:
-                case plVarDescriptor::kRGBA:
-                    return QVariant(getPrc<hsColorRGBA*>(&var->ColorRGBA(index.row())));
-                case plVarDescriptor::kPoint3:
-                case plVarDescriptor::kVector3:
-                    return QVariant(getPrc<hsVector3*>(&var->Vector(index.row())));
-                case plVarDescriptor::kQuaternion:
-                    return QVariant(getPrc<hsQuat*>(&var->Quat(index.row())));
-                default:
-                    return QVariant(plString::Format("Unhandled SDL Var Type (%d)", var->getDescriptor()->getType()).cstr());
+        switch(index.column()) {
+        case kDataRow:
+            switch(myIndex.type) {
+            case kSDR:
+                return QVariant(myIndex.ptr.sdr->getDescriptor()->getName().cstr());
+            case kVar:
+                return QVariant(myIndex.ptr.sv->getDescriptor()->getName().cstr());
+            case kVal:
+                {
+                    plSimpleStateVariable* var = (plSimpleStateVariable*)myIndex.ptr.sv;
+                    switch(var->getDescriptor()->getType()) {
+                    case plVarDescriptor::kBool:
+                        return QVariant(var->Bool(index.row()) ? "True" : "False");
+                    case plVarDescriptor::kInt:
+                        return QVariant(plString::Format("%d", var->Int(index.row())).cstr());
+                    case plVarDescriptor::kByte:
+                        return QVariant(plString::Format("%d", var->Byte(index.row())).cstr());
+                    case plVarDescriptor::kFloat:
+                        return QVariant(plString::Format("%f", var->Float(index.row())).cstr());
+                    case plVarDescriptor::kDouble:
+                        return QVariant(plString::Format("%f", var->Double(index.row())).cstr());
+                    case plVarDescriptor::kString:
+                        return QVariant(var->String(index.row()).cstr());
+                    case plVarDescriptor::kChar:
+                        return QVariant(QString(var->Char(index.row())));
+                    case plVarDescriptor::kKey:
+                        return QVariant(getPrc<plUoid*>(&var->Uoid(index.row())));
+                    case plVarDescriptor::kCreatable:
+                        return QVariant(getPrc<plCreatable*>(var->Creatable(index.row())));
+                    case plVarDescriptor::kRGB8:
+                    case plVarDescriptor::kRGBA8:
+                        return QVariant(getPrc<hsColor32*>(&var->Color32(index.row())));
+                    case plVarDescriptor::kRGB:
+                    case plVarDescriptor::kRGBA:
+                        return QVariant(getPrc<hsColorRGBA*>(&var->ColorRGBA(index.row())));
+                    case plVarDescriptor::kPoint3:
+                    case plVarDescriptor::kVector3:
+                        return QVariant(getPrc<hsVector3*>(&var->Vector(index.row())));
+                    case plVarDescriptor::kQuaternion:
+                        return QVariant(getPrc<hsQuat*>(&var->Quat(index.row())));
+                    default:
+                        return QVariant(plString::Format("Unhandled SDL Var Type (%d)", var->getDescriptor()->getType()).cstr());
+                    }
                 }
+            }
+        case kTypeRow:
+            switch(myIndex.type) {
+            case kSDR:
+                return QVariant("STATEDESC");
+            case kVar:
+                return QVariant(plString::Format("%s[%d]", TypeNames[myIndex.ptr.sv->getDescriptor()->getType()], myIndex.ptr.sv->getCount()));
+            case kVal:
+                return QVariant(TypeNames[myIndex.ptr.sv->getDescriptor()->getType()]);
             }
         }
     }
     return QVariant("Requested invalid index");
+}
+
+QVariant qtSDLTreeModel::headerData(int section, Qt::Orientation orientation, int role) const {
+    if(orientation != Qt::Horizontal || role != Qt::DisplayRole)
+        return QVariant();
+    switch(section) {
+    case kDataRow:
+        return QVariant("Data");
+    case kTypeRow:
+        return QVariant("Type");
+    default:
+        return QVariant();
+    }
 }
 
 Qt::ItemFlags qtSDLTreeModel::flags(const QModelIndex &index) const {
