@@ -98,6 +98,10 @@ MoulKI::~MoulKI() {
     delete ui;
     delete sdlmgr;
     delete resmgr;
+    if(authClient != NULL)
+        delete authClient;
+    if(gameClient != NULL)
+        delete gameClient;
 }
 
 void MoulKI::getPublicAgeList() {
@@ -156,7 +160,13 @@ void MoulKI::login(QString user, QString pass, QString iniFilename) {
     reverseCopy(QByteArray::fromBase64(ini["Server.Game.X"][0].toAscii()).data(), Keys.Game.X, 64);
     Host = ini["Server.Auth.Host"][0];
 
-    if(authClient)
+    if(gameClient != NULL) {
+        logoutActivePlayer();
+        delete gameClient;
+        gameClient = NULL;
+    }
+
+    if(authClient != NULL)
         delete authClient;
 
     authClient = new qtAuthClient(this);
