@@ -74,7 +74,7 @@ public:
 
 public slots:
     void showLoginDialog();
-    void login(QString user, QString pass);
+    void login(QString user, QString pass, QString iniFilename);
     void setStatus(plString msg);
     void showPlayers();
     void addNode(uint32_t parent, uint32_t child);

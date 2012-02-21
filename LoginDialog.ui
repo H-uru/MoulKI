@@ -30,7 +30,7 @@
      </property>
     </widget>
    </item>
-   <item row="4" column="1">
+   <item row="5" column="1">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -60,6 +60,9 @@
       <string>Remember login</string>
      </property>
     </widget>
+   </item>
+   <item row="4" column="1">
+    <widget class="QComboBox" name="shardSelectBox"/>
    </item>
   </layout>
  </widget>

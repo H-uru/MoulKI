@@ -23,7 +23,7 @@ void reverseCopy(char* src, unsigned char* dst, int size) {
 }
 
 MoulKI::MoulKI(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MoulKIClass), gameClient(NULL)
+    : QMainWindow(parent), ui(new Ui::MoulKIClass), gameClient(NULL), authClient(NULL)
 {
     resmgr = new plResManager(PlasmaVer::pvMoul);
     sdlmgr = new plSDLMgr();
@@ -32,28 +32,6 @@ MoulKI::MoulKI(QWidget *parent)
     qRegisterMetaType<plUuid>("plUuid");
     qRegisterMetaType<plString>("plString");
     qRegisterMetaType<uint32_t>("uint32_t");
-    
-    // read the server.ini file
-    QFile server("server.ini");
-    server.open(QFile::ReadOnly);
-    pfConsoleParser ini(server);
-    server.close();
-
-    qWarning("Ini Values:");
-    foreach(QString key, ini.keys()) {
-        QString value = ini[key][0];
-        qWarning("\t%s: %s", key.toAscii().data(), value.toAscii().data());
-    }
-    if(ini.keys().count() < 5) {
-        qWarning("Invalid server.ini file");
-        exit(0);
-    }
-
-    reverseCopy(QByteArray::fromBase64(ini["Server.Auth.N"][0].toAscii()).data(), Keys.Auth.N, 64);
-    reverseCopy(QByteArray::fromBase64(ini["Server.Auth.X"][0].toAscii()).data(), Keys.Auth.X, 64);
-    reverseCopy(QByteArray::fromBase64(ini["Server.Game.N"][0].toAscii()).data(), Keys.Game.N, 64);
-    reverseCopy(QByteArray::fromBase64(ini["Server.Game.X"][0].toAscii()).data(), Keys.Game.X, 64);
-    Host = ini["Server.Auth.Host"][0];
 
     connect(ui->actionLogin, SIGNAL(triggered()), this,
             SLOT(showLoginDialog()));
@@ -81,20 +59,6 @@ MoulKI::MoulKI(QWidget *parent)
             this, SLOT(showItemContextMenu(QPoint)));
     connect(ui->chatEntry, SIGNAL(returnPressed()), this,
             SLOT(sendGameChat()));
-
-    authClient = new qtAuthClient(this);
-    connect(authClient, SIGNAL(sigStatus(plString)), this,
-            SLOT(setStatus(plString)));
-    connect(authClient, SIGNAL(loginSuccessful()), this,
-            SLOT(showPlayers()));
-    connect(authClient, SIGNAL(foundNodes(QList<uint32_t>)), this,
-            SLOT(showFoundDialog(QList<uint32_t>)));
-    connect(authClient, SIGNAL(gotAge(uint32_t,plUuid,uint32_t,uint32_t)),
-            this, SLOT(startGameServer(uint32_t,plUuid,uint32_t,uint32_t)));
-    connect(authClient, SIGNAL(gotEncKeys(uint32_t,uint32_t,uint32_t,uint32_t)),
-            this, SLOT(setEncryptionKeys(uint32_t,uint32_t,uint32_t,uint32_t)));
-    connect(authClient, SIGNAL(gotSDLFile(hsStream*)), this,
-            SLOT(loadStateDescriptors(hsStream*)));
 
     connect(&vault, SIGNAL(addedNode(uint32_t, uint32_t)), this,
             SLOT(addNode(uint32_t,uint32_t)));
@@ -164,12 +128,51 @@ void MoulKI::logoutActivePlayer() {
 
 void MoulKI::showLoginDialog() {
     LoginDialog* dialog = new LoginDialog(this);
-    connect(dialog, SIGNAL(login(QString,QString)), this, SLOT(login(QString,QString)));
+    connect(dialog, SIGNAL(login(QString,QString,QString)), this, SLOT(login(QString,QString,QString)));
     dialog->exec();
     delete dialog;
 }
 
-void MoulKI::login(QString user, QString pass) {
+void MoulKI::login(QString user, QString pass, QString iniFilename) {
+    // read the server.ini file
+    QFile server(iniFilename);
+    server.open(QFile::ReadOnly);
+    pfConsoleParser ini(server);
+    server.close();
+
+    qWarning("Ini Values:");
+    foreach(QString key, ini.keys()) {
+        QString value = ini[key][0];
+        qWarning("\t%s: %s", key.toAscii().data(), value.toAscii().data());
+    }
+    if(ini.keys().count() < 5) {
+        ui->statusBar->showMessage("Invalid server.ini file");
+        return;
+    }
+
+    reverseCopy(QByteArray::fromBase64(ini["Server.Auth.N"][0].toAscii()).data(), Keys.Auth.N, 64);
+    reverseCopy(QByteArray::fromBase64(ini["Server.Auth.X"][0].toAscii()).data(), Keys.Auth.X, 64);
+    reverseCopy(QByteArray::fromBase64(ini["Server.Game.N"][0].toAscii()).data(), Keys.Game.N, 64);
+    reverseCopy(QByteArray::fromBase64(ini["Server.Game.X"][0].toAscii()).data(), Keys.Game.X, 64);
+    Host = ini["Server.Auth.Host"][0];
+
+    if(authClient)
+        delete authClient;
+
+    authClient = new qtAuthClient(this);
+    connect(authClient, SIGNAL(sigStatus(plString)), this,
+            SLOT(setStatus(plString)));
+    connect(authClient, SIGNAL(loginSuccessful()), this,
+            SLOT(showPlayers()));
+    connect(authClient, SIGNAL(foundNodes(QList<uint32_t>)), this,
+            SLOT(showFoundDialog(QList<uint32_t>)));
+    connect(authClient, SIGNAL(gotAge(uint32_t,plUuid,uint32_t,uint32_t)),
+            this, SLOT(startGameServer(uint32_t,plUuid,uint32_t,uint32_t)));
+    connect(authClient, SIGNAL(gotEncKeys(uint32_t,uint32_t,uint32_t,uint32_t)),
+            this, SLOT(setEncryptionKeys(uint32_t,uint32_t,uint32_t,uint32_t)));
+    connect(authClient, SIGNAL(gotSDLFile(hsStream*)), this,
+            SLOT(loadStateDescriptors(hsStream*)));
+
     authClient->startLogin(user, pass);
 }
 
