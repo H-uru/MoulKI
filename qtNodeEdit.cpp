@@ -71,7 +71,7 @@ void qtNodeEdit::editNodeText() {
     textEdited = true;
 }
 
-void qtNodeEdit::tabActivated(int tab) {
+void qtNodeEdit::tabActivated(int) {
     if(titleEdited)
         node->setString64(0, plString(newTitle.toUtf8().data()));
     if(textEdited)

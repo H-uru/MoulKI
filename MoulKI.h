@@ -95,7 +95,7 @@ public slots:
     void sendAdd(uint32_t parent, uint32_t child, uint32_t owner);
     void sendCreate(pnVaultNode& node, uint32_t parent);
     void sendFind(pnVaultNode& node);
-    void showFoundDialog(int count, QList<uint32_t> nodes);
+    void showFoundDialog(QList<uint32_t> nodes);
     void showItemContextMenu(QPoint pos);
     void subscribe();
     void fetchTree(uint32_t idx);

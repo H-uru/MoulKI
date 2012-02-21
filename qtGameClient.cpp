@@ -44,7 +44,7 @@ void qtGameClient::joinAge(uint32_t serverAddr, uint32_t mcpId) {
     sendJoinAgeRequest(mcpId, fAccountId, fPlayerNode->getNodeIdx());
 }
 
-void qtGameClient::onJoinAgeReply(uint32_t transId, ENetError result) {
+void qtGameClient::onJoinAgeReply(uint32_t, ENetError result) {
     if(result == kNetSuccess) {
         qWarning("Successfuly Joined Age");
         plKeyData* clientMgr = new plKeyData();

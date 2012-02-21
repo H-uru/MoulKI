@@ -87,8 +87,8 @@ MoulKI::MoulKI(QWidget *parent)
             SLOT(setStatus(plString)));
     connect(authClient, SIGNAL(loginSuccessful()), this,
             SLOT(showPlayers()));
-    connect(authClient, SIGNAL(foundNodes(int,QList<uint32_t>)), this,
-            SLOT(showFoundDialog(int,QList<uint32_t>)));
+    connect(authClient, SIGNAL(foundNodes(QList<uint32_t>)), this,
+            SLOT(showFoundDialog(QList<uint32_t>)));
     connect(authClient, SIGNAL(gotAge(uint32_t,plUuid,uint32_t,uint32_t)),
             this, SLOT(startGameServer(uint32_t,plUuid,uint32_t,uint32_t)));
     connect(authClient, SIGNAL(gotEncKeys(uint32_t,uint32_t,uint32_t,uint32_t)),
@@ -142,7 +142,7 @@ void MoulKI::getPublicAgeList() {
     }
 }
 
-void MoulKI::closeEvent(QCloseEvent* event) {
+void MoulKI::closeEvent(QCloseEvent*) {
     // log the player out when the window is closed
     if(gameClient != NULL) {
         logoutActivePlayer();
@@ -444,7 +444,7 @@ void MoulKI::showFindDialog() {
     delete dialog;
 }
 
-void MoulKI::showFoundDialog(int count, QList<uint32_t> nodes) {
+void MoulKI::showFoundDialog(QList<uint32_t> nodes) {
     SetActiveDialog* dialog = new SetActiveDialog(this);
     dialog->setFoundNodes(nodes);
     connect(dialog, SIGNAL(fetchFound(uint32_t)), this, SLOT(fetchTree(uint32_t)));
