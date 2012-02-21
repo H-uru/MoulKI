@@ -3,12 +3,13 @@
 # -------------------------------------------------
 TARGET = MoulKI
 TEMPLATE = app
-INCLUDEPATH += ../../libhsplasma/core \
-    ../../libhsplasma/net
+INCLUDEPATH += C:/Development/libhsplasma/core \
+    C:/Development/libhsplasma/net \
+    C:/Development/openssl-1.0.0g/include
 LIBS += -lHSPlasma \
     -lHSPlasmaNet \
-    -L../../libhsplasma/lib \
-    -L../../libhsplasma/bin
+    -LC:/Development/libhsplasma/net/Debug \
+    -LC:/Development/libhsplasma/core/Debug
 SOURCES += main.cpp \
     MoulKI.cpp \
     qtAuthClient.cpp \
