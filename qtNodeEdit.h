@@ -11,6 +11,7 @@ namespace Ui {
 
 class plSDLMgr;
 class plResManager;
+class plStateDataRecord;
 
 class qtNodeEdit : public QWidget {
     Q_OBJECT
@@ -44,6 +45,7 @@ private slots:
     void editNodeText();
     void loadNodeImage();
     void saveNodeImage();
+    void sdlChanged(plStateDataRecord* sdl);
     void tabActivated(int tab);
 
 };

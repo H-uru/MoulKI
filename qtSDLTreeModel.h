@@ -39,9 +39,12 @@ public:
     int rowCount(const QModelIndex& parent) const;
     int columnCount(const QModelIndex& parent) const;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
+    Qt::ItemFlags flags(const QModelIndex &index) const;
+    bool setData(const QModelIndex &index, const QVariant &value, int role);
 
 signals:
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+    void sdlChanged(plStateDataRecord* sdl);
 
 public slots:
 

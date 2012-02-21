@@ -140,6 +140,20 @@ void qtNodeEdit::loadNodeImage() {
     update();
 }
 
+void qtNodeEdit::sdlChanged(plStateDataRecord *sdl) {
+    hsRAMStream S(PlasmaVer::pvMoul);
+    plStateDescriptor* desc = sdl->getDescriptor();
+    sdl->WriteStreamHeader(&S, desc->getName(), desc->getVersion(), NULL);
+    sdl->write(&S, resmgr);
+    plVaultBlob blob = node->getBlob(0);
+    char* data = new char[S.size()];
+    S.copyTo(data, S.size());
+    blob.setData(S.size(), (const unsigned char*)data);
+    delete[] data;
+    node->setBlob(0, blob);
+    update();
+}
+
 void qtNodeEdit::update() {
     disconnect(ui->nodeData, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(dataRowChanged(QTableWidgetItem*)));
     emit isDirty(false);
@@ -214,9 +228,12 @@ void qtNodeEdit::update() {
                         ui->SDLTreeView->setEnabled(true);
                         ui->SDLTreeView->setModel(sdlModel);
                         ui->SDLTreeView->expand(sdlModel->index(0, 0, QModelIndex()));
+                        disconnect(this, SLOT(sdlChanged(plStateDataRecord*)));
+                        connect(sdlModel, SIGNAL(sdlChanged(plStateDataRecord*)), this, SLOT(sdlChanged(plStateDataRecord*)));
                         if(oldModel)
                             delete oldModel;
                     }else{
+                        ui->SDLTreeView->setModel(0);
                         ui->SDLTreeView->setEnabled(false);
                     }
                     ui->nodeDataArea->setTabEnabled(1, false);

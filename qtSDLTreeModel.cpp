@@ -146,3 +146,44 @@ QVariant qtSDLTreeModel::data(const QModelIndex& index, int role) const {
     }
     return QVariant("Requested invalid index");
 }
+
+Qt::ItemFlags qtSDLTreeModel::flags(const QModelIndex &index) const {
+    Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    if(indices[index.internalId()].type == kVal)
+        return flags |= Qt::ItemIsEditable;
+    return flags;
+}
+
+bool qtSDLTreeModel::setData(const QModelIndex &index, const QVariant &value, int role) {
+    if(role != Qt::EditRole && value.type() != QVariant::String)
+        return false;
+    QString* strVal = (QString*)value.data();
+    SDLModelIndex myIndex = indices[index.internalId()];
+    if(myIndex.type != kVal)
+        return false;
+    plSimpleStateVariable* var = (plSimpleStateVariable*)myIndex.ptr.sv;
+    switch(var->getDescriptor()->getType()) {
+    case plVarDescriptor::kBool:
+        if(*strVal == "True")
+            var->Bool(index.row()) = true;
+        else if(*strVal == "False")
+            var->Bool(index.row()) = false;
+        else
+            return false;
+        break;
+    case plVarDescriptor::kInt:
+    {
+        bool result;
+        int value = strVal->toInt(&result);
+        if(result)
+            var->Int(index.row()) = value;
+        else
+            return false;
+        break;
+    }
+    default:
+        return false;
+    }
+    emit sdlChanged(sdl);
+    return true;
+}
