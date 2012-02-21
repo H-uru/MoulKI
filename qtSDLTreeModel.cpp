@@ -163,7 +163,10 @@ QVariant qtSDLTreeModel::data(const QModelIndex& index, int role) const {
             case kSDR:
                 return QVariant("STATEDESC");
             case kVar:
-                return QVariant(plString::Format("%s[%d]", TypeNames[myIndex.ptr.sv->getDescriptor()->getType()], myIndex.ptr.sv->getCount()));
+                if(myIndex.ptr.sv->getDescriptor()->isVariableLength())
+                    return QVariant(plString::Format("%s[]", TypeNames[myIndex.ptr.sv->getDescriptor()->getType()]));
+                else
+                    return QVariant(plString::Format("%s[%d]", TypeNames[myIndex.ptr.sv->getDescriptor()->getType()], myIndex.ptr.sv->getCount()));
             case kVal:
                 return QVariant(TypeNames[myIndex.ptr.sv->getDescriptor()->getType()]);
             }
@@ -187,7 +190,7 @@ QVariant qtSDLTreeModel::headerData(int section, Qt::Orientation orientation, in
 
 Qt::ItemFlags qtSDLTreeModel::flags(const QModelIndex &index) const {
     Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
-    if(indices[index.internalId()].type == kVal)
+    if(indices[index.internalId()].type == kVal && index.column() == 0)
         return flags |= Qt::ItemIsEditable;
     return flags;
 }
