@@ -59,7 +59,7 @@ public:
     void onPublicAgeList(uint32_t transId, ENetError result, size_t count,
             const pnNetAgeInfo* ages);
 
-    void onFileListReply(uint32_t transId, ENetError result,
+    void onFileListReply(uint32_t transId, ENetError ,
             size_t count, const pnAuthFileItem* files);
     void onFileDownloadChunk(uint32_t transId, ENetError result,
             uint32_t totalSize, uint32_t chunkOffset,
@@ -88,7 +88,7 @@ public:
 
 signals:
     void sigStatus(plString msg);
-    void foundNodes(int count, QList<uint32_t> nodes);
+    void foundNodes(QList<uint32_t> nodes);
     void loginSuccessful();
     void gotAge(uint32_t gameServerAddr, plUuid ageId, uint32_t mcpId,
             uint32_t vaultId);

@@ -19,10 +19,13 @@ public slots:
     void sendLogin();
 
 signals:
-    void login(QString user, QString pass);
+    void login(QString user, QString pass, QString iniFilename);
 
 protected:
     virtual void changeEvent(QEvent *e);
+
+protected slots:
+    void recallShard(QString shardName);
 
 private:
     Ui::LoginDialog *m_ui;

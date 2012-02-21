@@ -7,7 +7,7 @@
 #include "qtGameClient.h"
 #include "qtVault.h"
 
-#define BUILD_NUMBER 902
+#define BUILD_NUMBER 905
 static const plUuid s_moulUuid("ea489821-6c35-4bd0-9dae-bb17c585e680");
 
 class QTableWidgetItem;
@@ -74,7 +74,7 @@ public:
 
 public slots:
     void showLoginDialog();
-    void login(QString user, QString pass);
+    void login(QString user, QString pass, QString iniFilename);
     void setStatus(plString msg);
     void showPlayers();
     void addNode(uint32_t parent, uint32_t child);
@@ -95,7 +95,7 @@ public slots:
     void sendAdd(uint32_t parent, uint32_t child, uint32_t owner);
     void sendCreate(pnVaultNode& node, uint32_t parent);
     void sendFind(pnVaultNode& node);
-    void showFoundDialog(int count, QList<uint32_t> nodes);
+    void showFoundDialog(QList<uint32_t> nodes);
     void showItemContextMenu(QPoint pos);
     void subscribe();
     void fetchTree(uint32_t idx);
