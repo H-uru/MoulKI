@@ -196,7 +196,7 @@ Qt::ItemFlags qtSDLTreeModel::flags(const QModelIndex &index) const {
 }
 
 bool qtSDLTreeModel::setData(const QModelIndex &index, const QVariant &value, int role) {
-    if(role != Qt::EditRole && value.type() != QVariant::String)
+    if(role != Qt::EditRole || value.type() != QVariant::String || index.column() != 0)
         return false;
     QString* strVal = (QString*)value.data();
     SDLModelIndex myIndex = indices[index.internalId()];
@@ -222,6 +222,48 @@ bool qtSDLTreeModel::setData(const QModelIndex &index, const QVariant &value, in
             return false;
         break;
     }
+    case plVarDescriptor::kByte:
+    {
+        bool result;
+        int value = strVal->toInt(&result);
+        if(result && value >= 0 && value < 256)
+            var->Byte(index.row()) = (unsigned char)value;
+        else
+            return false;
+        break;
+    }
+    case plVarDescriptor::kChar:
+    {
+        char* str = strVal->toLocal8Bit().data();
+        if(strlen(str) == 1)
+            var->Char(index.row()) = str[0];
+        else
+            return false;
+        break;
+     }
+    case plVarDescriptor::kFloat:
+    {
+        bool result;
+        float value = strVal->toFloat(&result);
+        if(result)
+            var->Float(index.row()) = value;
+        else
+            return false;
+        break;
+    }
+    case plVarDescriptor::kDouble:
+    {
+        bool result;
+        double value = strVal->toDouble(&result);
+        if(result)
+            var->Double(index.row()) = value;
+        else
+            return false;
+        break;
+    }
+    case plVarDescriptor::kString:
+        var->String(index.row()) = plString(strVal->toLocal8Bit().data());
+        break;
     default:
         return false;
     }
