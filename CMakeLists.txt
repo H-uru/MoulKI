@@ -45,6 +45,10 @@ set(MoulKI_Resources
     Resources.qrc
     )
 
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    set(CMAKE_CXX_FLAGS "-Wall -std=c++0x ${CMAKE_CXXFLAGS}")
+endif()
+
 # Set up Qt requirements
 INCLUDE(${QT_USE_FILE})
 ADD_DEFINITIONS(${QT_DEFINITIONS})
