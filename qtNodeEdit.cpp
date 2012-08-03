@@ -1,5 +1,6 @@
 #include "qtNodeEdit.h"
 #include "ui_qtNodeEdit.h"
+#include "qtSDLTreeModel.h"
 
 #include <QFile>
 #include <QFileDialog>
@@ -139,6 +140,20 @@ void qtNodeEdit::loadNodeImage() {
     update();
 }
 
+void qtNodeEdit::sdlChanged(plStateDataRecord *sdl) {
+    hsRAMStream S(PlasmaVer::pvMoul);
+    plStateDescriptor* desc = sdl->getDescriptor();
+    sdl->WriteStreamHeader(&S, desc->getName(), desc->getVersion(), NULL);
+    sdl->write(&S, resmgr);
+    plVaultBlob blob = node->getBlob(0);
+    char* data = new char[S.size()];
+    S.copyTo(data, S.size());
+    blob.setData(S.size(), (const unsigned char*)data);
+    delete[] data;
+    node->setBlob(0, blob);
+    update();
+}
+
 void qtNodeEdit::update() {
     disconnect(ui->nodeData, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(dataRowChanged(QTableWidgetItem*)));
     emit isDirty(false);
@@ -198,56 +213,28 @@ void qtNodeEdit::update() {
                 break;
             case plVault::kNodeSDL:
                 {
-                    hsRAMStream S(PlasmaVer::pvMoul);
                     plVaultBlob blob = node->getBlob(0);
-                    S.copyFrom(blob.getData(), blob.getSize());
-                    plString name;
-                    int version;
-                    plStateDataRecord record;
-                    record.ReadStreamHeader(&S, name, version, NULL);
-                    record.setDescriptor(sdlmgr->GetDescriptor(name, version));
-                    record.read(&S, resmgr);
-                    for(size_t var = 0; var < record.getNumVars(); var++) {
-                        plStateVariable* stateVar = record.get(var);
-                        plVarDescriptor* varDesc = stateVar->getDescriptor();
-                        QTableWidgetItem* fitem = new QTableWidgetItem();
-                        fitem->setText(QString(varDesc->getName().cstr()));
-                        fitem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-                        QTableWidgetItem* citem = new QTableWidgetItem();
-                        citem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
-                        if(varDesc->getType() != plVarDescriptor::kStateDescriptor) {
-                            plSimpleStateVariable* simpleVar = (plSimpleStateVariable*)stateVar;
-                            for(int i = 0; i < simpleVar->getCount(); i++) {
-                                switch(varDesc->getType()) {
-                                    case plVarDescriptor::kAgeTimeElapsed:
-                                    case plVarDescriptor::kAgeTimeOfDay:
-                                        if(&simpleVar->Time(i) != NULL)
-                                            citem->setText(simpleVar->Time(i).format("MM/dd/yyyy hh:mm:ss").cstr());
-                                        else
-                                            citem->setText("null time");
-                                        break;
-                                    case plVarDescriptor::kBool:
-                                        if(simpleVar->Bool(i))
-                                            citem->setText("True");
-                                        else
-                                            citem->setText("False");
-                                        break;
-                                    case plVarDescriptor::kInt:
-                                            citem->setText(plString::Format("%d", simpleVar->Int(i)).cstr());
-                                        break;
-                                    default:
-                                        citem->setText("");
-                                        break;
-                                }
-                            }
-                        }
-                        if(stateVar->isDirty() && !stateVar->isDefault()) {
-                            QColor rowColor(200, 127, 127);
-                            fitem->setBackground(QBrush(rowColor));
-                            citem->setBackground(QBrush(rowColor));
-                        }
-                        ui->nodeSDLData->setItem(var, 0, fitem);
-                        ui->nodeSDLData->setItem(var, 1, citem);
+                    if(blob.getSize() > 0) {
+                        hsRAMStream S(PlasmaVer::pvMoul);
+                        S.copyFrom(blob.getData(), blob.getSize());
+                        int version;
+                        plString name;
+                        plStateDataRecord* record = new plStateDataRecord;
+                        record->ReadStreamHeader(&S, name, version, NULL);
+                        record->setDescriptor(sdlmgr->GetDescriptor(name, version));
+                        record->read(&S, resmgr);
+                        QAbstractItemModel* oldModel = ui->SDLTreeView->model();
+                        qtSDLTreeModel* sdlModel = new qtSDLTreeModel(record);
+                        ui->SDLTreeView->setEnabled(true);
+                        ui->SDLTreeView->setModel(sdlModel);
+                        ui->SDLTreeView->expand(sdlModel->index(0, 0, QModelIndex()));
+                        disconnect(this, SLOT(sdlChanged(plStateDataRecord*)));
+                        connect(sdlModel, SIGNAL(sdlChanged(plStateDataRecord*)), this, SLOT(sdlChanged(plStateDataRecord*)));
+                        if(oldModel)
+                            delete oldModel;
+                    }else{
+                        ui->SDLTreeView->setModel(0);
+                        ui->SDLTreeView->setEnabled(false);
                     }
                     ui->nodeDataArea->setTabEnabled(1, false);
                     ui->nodeDataArea->setTabEnabled(2, false);
