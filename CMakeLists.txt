@@ -16,6 +16,7 @@ set(MoulKI_SOURCES
     RefDialog.cpp
     FetchDialog.cpp
     qtNodeEdit.cpp
+    qtSDLTreeModel.cpp
     CreateNodeDialog.cpp
     pfConsoleParser.cpp
     )
@@ -24,6 +25,7 @@ set(MoulKI_HEADERS
     qtAuthClient.h
     qtGameClient.h
     qtVault.h
+    qtSDLTreeModel.h
     LoginDialog.h
     SetActiveDialog.h
     RefDialog.h
