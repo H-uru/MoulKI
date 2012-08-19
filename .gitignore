@@ -38,3 +38,8 @@
 Icon?
 ehthumbs.db
 Thumbs.db
+
+/uic
+/moc
+/obj
+qrc*.cpp
