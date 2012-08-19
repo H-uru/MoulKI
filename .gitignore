@@ -6,8 +6,21 @@
 *.exe
 *.o
 *.so
+*.a
+*.pch
 /build
+/build64
+/Dist
+/Dist64
 /bin
+
+# CMake #
+#########
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+CMakeFiles
+install_manifest.txt
 
 # Packages #
 ############
@@ -35,9 +48,26 @@
 ._*
 .Spotlight-V100
 .Trashes
+*.dSYM
+*.user
+*.aps
+*.suo
+*.sdf
+*.ncb
+*.pdb
+*.kdev4
 Icon?
-ehthumbs.db
+thumbs.db
 Thumbs.db
+*.tmproj
+tmtags
+tags
+
+# Other #
+#########
+.*.swp
+*.orig
+*.pyc
 
 /uic
 /moc
