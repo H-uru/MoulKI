@@ -9,7 +9,7 @@ LoginDialog::LoginDialog(QWidget *parent) :
     settings("cyan.com", "VaultManager")
 {
     m_ui->setupUi(this);
-    QDir dir(".");
+    QDir dir = QCoreApplication::applicationDirPath();
     QStringList filters;
     filters.append("*.ini");
     dir.setNameFilters(filters);

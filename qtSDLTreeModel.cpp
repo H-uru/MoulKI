@@ -129,13 +129,13 @@ QVariant qtSDLTreeModel::data(const QModelIndex& index, int role) const {
                     case plVarDescriptor::kBool:
                         return var->Bool(index.row()) ? "True" : "False";
                     case plVarDescriptor::kInt:
-                        return plString::Format("%d", var->Int(index.row()));
+                        return QVariant(plString::Format("%d", var->Int(index.row())));
                     case plVarDescriptor::kByte:
-                        return plString::Format("%d", var->Byte(index.row()));
+                        return QVariant(plString::Format("%d", var->Byte(index.row())));
                     case plVarDescriptor::kFloat:
-                        return plString::Format("%f", var->Float(index.row()));
+                        return QVariant(plString::Format("%f", var->Float(index.row())));
                     case plVarDescriptor::kDouble:
-                        return plString::Format("%f", var->Double(index.row()));
+                        return QVariant(plString::Format("%f", var->Double(index.row())));
                     case plVarDescriptor::kString:
                         return var->String(index.row()).cstr();
                     case plVarDescriptor::kChar:
@@ -156,7 +156,7 @@ QVariant qtSDLTreeModel::data(const QModelIndex& index, int role) const {
                     case plVarDescriptor::kQuaternion:
                         return getPrc<hsQuat*>(&var->Quat(index.row()));
                     default:
-                        return plString::Format("Unhandled SDL Var Type (%d)", var->getDescriptor()->getType());
+                        return QVariant(plString::Format("Unhandled SDL Var Type (%d)", var->getDescriptor()->getType()));
                     }
                 }
             }
@@ -166,9 +166,9 @@ QVariant qtSDLTreeModel::data(const QModelIndex& index, int role) const {
                 return "STATEDESC";
             case kVar:
                 if(myIndex.ptr.sv->getDescriptor()->isVariableLength())
-                    return plString::Format("%s[]", TypeNames[myIndex.ptr.sv->getDescriptor()->getType()]);
+                    return QVariant(plString::Format("%s[]", TypeNames[myIndex.ptr.sv->getDescriptor()->getType()]));
                 else
-                    return plString::Format("%s[%d]", TypeNames[myIndex.ptr.sv->getDescriptor()->getType()], myIndex.ptr.sv->getCount());
+                    return QVariant(plString::Format("%s[%d]", TypeNames[myIndex.ptr.sv->getDescriptor()->getType()], myIndex.ptr.sv->getCount()));
             case kVal:
                 return TypeNames[myIndex.ptr.sv->getDescriptor()->getType()];
             }
