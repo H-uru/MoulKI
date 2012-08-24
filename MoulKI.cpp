@@ -140,7 +140,7 @@ void MoulKI::showLoginDialog() {
 void MoulKI::login(QString user, QString pass, QString iniFilename) {
     // read the server.ini file
     QFile server(QCoreApplication::applicationDirPath()+QString("/")+iniFilename);
-    std::cout<<(QCoreApplication::applicationDirPath()+QString("/")+iniFilename).toStdString()<<"\n";
+
     server.open(QFile::ReadOnly);
     pfConsoleParser ini(server);
     server.close();
