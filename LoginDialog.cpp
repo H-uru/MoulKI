@@ -2,7 +2,6 @@
 #include "ui_LoginDialog.h"
 
 #include <QDir>
-#include <iostream>
 
 LoginDialog::LoginDialog(QWidget *parent) :
     QDialog(parent),

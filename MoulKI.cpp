@@ -11,7 +11,6 @@
 #include <QLabel>
 #include <QScrollBar>
 #include <QFileDialog>
-#include <iostream>
 Q_DECLARE_METATYPE(plUuid)
 Q_DECLARE_METATYPE(plString)
 Q_DECLARE_METATYPE(uint32_t)
