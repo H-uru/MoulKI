@@ -11,6 +11,7 @@
 #include <QLabel>
 #include <QScrollBar>
 #include <QFileDialog>
+
 Q_DECLARE_METATYPE(plUuid)
 Q_DECLARE_METATYPE(plString)
 Q_DECLARE_METATYPE(uint32_t)
@@ -139,7 +140,6 @@ void MoulKI::showLoginDialog() {
 void MoulKI::login(QString user, QString pass, QString iniFilename) {
     // read the server.ini file
     QFile server(QCoreApplication::applicationDirPath()+QString("/")+iniFilename);
-
     server.open(QFile::ReadOnly);
     pfConsoleParser ini(server);
     server.close();
