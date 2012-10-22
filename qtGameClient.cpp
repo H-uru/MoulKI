@@ -138,11 +138,11 @@ void qtGameClient::onPropagateMessage(plCreatable *msg) {
         fAgePlayers.clear();
         emit clearAgeList();
         plNetMsgMembersList* membersList = (plNetMsgMembersList*)msg;
-        for(unsigned int i = 0; i < membersList->getMembers().getSize(); i++) {
+        for(unsigned int i = 0; i < membersList->getMembers().size(); i++) {
             const plNetMsgMemberInfoHelper* info = &membersList->getMembers()[i];
             const plClientGuid* guid = &info->getClientGuid();
             qWarning("Age Player: %s", guid->getPlayerName().cstr());
-            fAgePlayers.append(guid->getPlayerID());
+            fAgePlayers.push_back(guid->getPlayerID());
             emit addAgePlayer(guid->getPlayerID(), guid->getPlayerName());
         }
     }else if(msg->ClassIndex() == kNetMsgMemberUpdate) {
@@ -152,13 +152,13 @@ void qtGameClient::onPropagateMessage(plCreatable *msg) {
         if(memberUpdate->getAddMember()) {
             // add member
             qWarning("Added Player: %s", guid->getPlayerName().cstr());
-            fAgePlayers.append(guid->getPlayerID());
+            fAgePlayers.push_back(guid->getPlayerID());
             emit receivedGameMsg(plString::Format("* %s joined the age\n", guid->getPlayerName().cstr()).cstr());
             emit addAgePlayer(guid->getPlayerID(), guid->getPlayerName());
         }else{
             // remove member
             qWarning("Removed Player: %s", guid->getPlayerName().cstr());
-            fAgePlayers.remove(fAgePlayers.find(guid->getPlayerID()));
+            fAgePlayers.erase(std::find(fAgePlayers.begin(), fAgePlayers.end(), guid->getPlayerID()));
             emit receivedGameMsg("* Someone left the age\n");
             emit removeAgePlayer(guid->getPlayerID(), guid->getPlayerName());
         }
@@ -196,8 +196,8 @@ void qtGameClient::sendAgeChat(plString message) {
 }
 
 void qtGameClient::sendPrivate(plString message, uint32_t target) {
-    hsTArray<uint32_t> targets;
-    targets.append(target);
+    std::vector<uint32_t> targets;
+    targets.push_back(target);
     plNetMsgGameMessageDirected gameMsg;
     pfKIMsg* kiMsg = new pfKIMsg();
     gameMsg.setFlags(0x00049001);
@@ -220,9 +220,9 @@ void qtGameClient::sendPrivate(plString message, uint32_t target) {
 }
 
 void qtGameClient::sendBroadcast(plString message, QList<uint32_t> buddies, int type) {
-    hsTArray<uint32_t> targets;
+    std::vector<uint32_t> targets;
     foreach(uint32_t target, buddies) {
-        targets.append(target);
+        targets.push_back(target);
     }
     plNetMsgGameMessageDirected gameMsg;
     pfKIMsg* kiMsg = new pfKIMsg();

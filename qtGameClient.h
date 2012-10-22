@@ -12,7 +12,7 @@ class qtGameClient : public QObject, public pnGameClient
     Q_OBJECT
 private:
     uint32_t fMcpId;
-    hsTArray<unsigned int> fAgePlayers;
+    std::vector<unsigned int> fAgePlayers;
     qtVaultNode* fPlayerNode;
     qtVaultNode* fAgeInfoNode;
 
