@@ -2,7 +2,7 @@
 #include "qtAuthClient.h"
 
 qtAuthClient::qtAuthClient(MoulKI* ki) : pnAuthClient(ki->getResManager()),
-        QObject(ki), parent(ki) {
+        QObject(ki), parent(ki), currentPlayerId(0) {
     setKeys(ki->Keys.Auth.X, ki->Keys.Auth.N);
     setClientInfo(BUILD_NUMBER, 50, 1, s_moulUuid);
 }
@@ -21,6 +21,11 @@ void qtAuthClient::startLogin(QString user, QString pass) {
         return;
     }
     sendClientRegisterRequest();
+}
+
+void qtAuthClient::setPlayer(uint32_t playerId) {
+    currentPlayerId = playerId;
+    sendAcctSetPlayerRequest(playerId);
 }
 
 void qtAuthClient::onClientRegisterReply(uint32_t serverChallenge) {
@@ -55,6 +60,11 @@ void qtAuthClient::onAcctLoginReply(uint32_t, ENetError result,
     emit loginSuccessful();
 }
 
+void qtAuthClient::onAcctSetPlayerReply(uint32_t transId, ENetError result) {
+    parent->vault.queueRoot(currentPlayerId);
+    sendVaultNodeFetch(currentPlayerId);
+}
+
 void qtAuthClient::onPublicAgeList(uint32_t, ENetError result, size_t count, const pnNetAgeInfo* ages) {
     if(result != kNetSuccess) {
         setStatus(plString::Format("Get Public Ages Failed (%s)",
@@ -75,14 +85,13 @@ void qtAuthClient::onPublicAgeList(uint32_t, ENetError result, size_t count, con
 void qtAuthClient::onFileListReply(uint32_t, ENetError,
         size_t count, const pnAuthFileItem* files) {
 
+    pendingSdlFiles.clear();
+    pendingSdlFiles.reserve(count);
     for (size_t i = 0; i < count; i++) {
-        qWarning("Downloading file %s (%d bytes)",
-                files[i].fFilename.cstr(), files[i].fFileSize);
-
-        uint32_t fileTrans;
-        fileTrans = this->sendFileDownloadRequest(files[i].fFilename);
-        sdlFiles.insert(fileTrans, new hsRAMStream(PlasmaVer::pvMoul));
+        pendingSdlFiles.append(files[i]);
     }
+    currentPendingSdlFile = 0;
+    downloadNextSdlFile();
 }
 
 void qtAuthClient::onFileDownloadChunk(uint32_t transId, ENetError result,
@@ -100,7 +109,24 @@ void qtAuthClient::onFileDownloadChunk(uint32_t transId, ENetError result,
     if (chunkOffset + chunkSize == totalSize) {
         S->rewind();
         qWarning("Successfully downloaded a %d byte file.", totalSize);
+        downloadNextSdlFile();
         emit gotSDLFile(S);
+    }
+}
+
+void qtAuthClient::downloadNextSdlFile() {
+    if(currentPendingSdlFile == pendingSdlFiles.size()) {
+        qWarning("Done downloading SDL files.");
+        currentPendingSdlFile = 0;
+        pendingSdlFiles.clear();
+    }else{
+        qWarning("Downloading file %s (%d of %d, %d bytes)",
+                pendingSdlFiles[currentPendingSdlFile].fFilename.cstr(), currentPendingSdlFile+1,
+                pendingSdlFiles.size(), pendingSdlFiles[currentPendingSdlFile].fFileSize);
+        uint32_t fileTrans;
+        fileTrans = this->sendFileDownloadRequest(pendingSdlFiles[currentPendingSdlFile].fFilename);
+        sdlFiles.insert(fileTrans, new hsRAMStream(PlasmaVer::pvMoul));
+        currentPendingSdlFile++;
     }
 }
 

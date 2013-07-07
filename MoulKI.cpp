@@ -230,9 +230,7 @@ void MoulKI::setActive(uint32_t playerId) {
         }
     }
     // return to normally scheduled operations
-    vault.queueRoot(playerId);
-    authClient->sendVaultNodeFetch(playerId);
-    authClient->sendAcctSetPlayerRequest(playerId);
+    authClient->setPlayer(playerId);
 }
 
 void MoulKI::showItemContextMenu(QPoint pos) {
