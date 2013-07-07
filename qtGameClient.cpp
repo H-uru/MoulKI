@@ -8,6 +8,8 @@
 
 qtGameClient::qtGameClient(MoulKI* ki) : QObject(ki), pnGameClient(ki->getResManager()), fPlayerNode(NULL), fAgeInfoNode(NULL) {
     setKeys(ki->Keys.Game.X, ki->Keys.Game.N);
+    if(ki->Keys.Game.G != 0)
+        setKeyG(ki->Keys.Game.G);
     setClientInfo(BUILD_NUMBER, 50, 1, s_moulUuid);
 }
 

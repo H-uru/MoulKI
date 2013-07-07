@@ -40,10 +40,12 @@ public:
         struct {
             unsigned char N[64];
             unsigned char X[64];
+            int G;
         } Auth;
         struct {
             unsigned char N[64];
             unsigned char X[64];
+            int G;
         } Game;
     } Keys;
 

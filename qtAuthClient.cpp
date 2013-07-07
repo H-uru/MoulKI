@@ -4,6 +4,8 @@
 qtAuthClient::qtAuthClient(MoulKI* ki) : pnAuthClient(ki->getResManager()),
         QObject(ki), parent(ki), currentPlayerId(0) {
     setKeys(ki->Keys.Auth.X, ki->Keys.Auth.N);
+    if(ki->Keys.Auth.G != 0)
+        setKeyG(ki->Keys.Auth.G);
     setClientInfo(BUILD_NUMBER, 50, 1, s_moulUuid);
 }
 
