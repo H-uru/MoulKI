@@ -507,13 +507,17 @@ void MoulKI::setEncryptionKeys(uint32_t k0, uint32_t k1,
 }
 
 void MoulKI::loadStateDescriptors(hsStream* S) {
-    plEncryptedStream* str = new plEncryptedStream(PlasmaVer::pvMoul);
-    str->setKey(ntdKeys);
-    str->open(S, fmRead, plEncryptedStream::kEncDroid);
+    if(S->size() == 0) {
+        qWarning("Warning: ignoring zero size SDL");
+    }else{
+        plEncryptedStream* str = new plEncryptedStream(PlasmaVer::pvMoul);
+        str->setKey(ntdKeys);
+        str->open(S, fmRead, plEncryptedStream::kEncDroid);
 
-    sdlmgr->ReadDescriptors(str);
+        sdlmgr->ReadDescriptors(str);
 
-    delete str;
+        delete str;
+    }
     delete S;
     S = NULL;
 }
