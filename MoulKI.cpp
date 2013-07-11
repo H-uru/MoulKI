@@ -156,8 +156,22 @@ void MoulKI::login(QString user, QString pass, QString iniFilename) {
 
     reverseCopy(QByteArray::fromBase64(ini["Server.Auth.N"][0].toAscii()).data(), Keys.Auth.N, 64);
     reverseCopy(QByteArray::fromBase64(ini["Server.Auth.X"][0].toAscii()).data(), Keys.Auth.X, 64);
+    Keys.Auth.G = 0;
+    if(ini.keys().contains("Server.Auth.G")) {
+        bool ok = false;
+        int g = ini["Server.Auth.G"][0].toInt(&ok);
+        if(ok)
+            Keys.Auth.G = g;
+    }
     reverseCopy(QByteArray::fromBase64(ini["Server.Game.N"][0].toAscii()).data(), Keys.Game.N, 64);
     reverseCopy(QByteArray::fromBase64(ini["Server.Game.X"][0].toAscii()).data(), Keys.Game.X, 64);
+    Keys.Game.G = 0;
+    if(ini.keys().contains("Server.Game.G")) {
+        bool ok = false;
+        int g = ini["Server.Game.G"][0].toInt(&ok);
+        if(ok)
+            Keys.Game.G = g;
+    }
     Host = ini["Server.Auth.Host"][0];
 
     if(gameClient != NULL) {
@@ -230,9 +244,7 @@ void MoulKI::setActive(uint32_t playerId) {
         }
     }
     // return to normally scheduled operations
-    vault.queueRoot(playerId);
-    authClient->sendVaultNodeFetch(playerId);
-    authClient->sendAcctSetPlayerRequest(playerId);
+    authClient->setPlayer(playerId);
 }
 
 void MoulKI::showItemContextMenu(QPoint pos) {
@@ -495,13 +507,17 @@ void MoulKI::setEncryptionKeys(uint32_t k0, uint32_t k1,
 }
 
 void MoulKI::loadStateDescriptors(hsStream* S) {
-    plEncryptedStream* str = new plEncryptedStream(PlasmaVer::pvMoul);
-    str->setKey(ntdKeys);
-    str->open(S, fmRead, plEncryptedStream::kEncDroid);
+    if(S->size() == 0) {
+        qWarning("Warning: ignoring zero size SDL");
+    }else{
+        plEncryptedStream* str = new plEncryptedStream(PlasmaVer::pvMoul);
+        str->setKey(ntdKeys);
+        str->open(S, fmRead, plEncryptedStream::kEncDroid);
 
-    sdlmgr->ReadDescriptors(str);
+        sdlmgr->ReadDescriptors(str);
 
-    delete str;
+        delete str;
+    }
     delete S;
     S = NULL;
 }

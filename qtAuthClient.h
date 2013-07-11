@@ -38,14 +38,22 @@ private:
 
     QMap<uint32_t, hsStream*> sdlFiles;
 
+    QList<pnAuthFileItem> pendingSdlFiles;
+    int currentPendingSdlFile;
+
+private:
+    void downloadNextSdlFile();
+
 public:
     QList<authPlayer> players;
     plUuid acctUuid;
+    uint32_t currentPlayerId;
 
     qtAuthClient(MoulKI* ki);
     ~qtAuthClient();
 
     void startLogin(QString user, QString pass);
+    void setPlayer(uint32_t playerId);
     void onClientRegisterReply(uint32_t serverChallenge);
     void onAcctLoginReply(uint32_t transId, ENetError result,
             const plUuid& acctUuid, uint32_t acctFlags,
@@ -53,6 +61,7 @@ public:
     void onAcctPlayerInfo(uint32_t transId, uint32_t playerId,
             const plString &playerName, const plString& avatarModel,
             uint32_t explorer);
+    void onAcctSetPlayerReply(uint32_t transId, ENetError result);
     void onAgeReply(uint32_t transId, ENetError result, uint32_t mcpId,
             const plUuid &ageInstanceId, uint32_t ageVaultId,
             uint32_t gameServerAddress);
