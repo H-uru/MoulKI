@@ -70,5 +70,21 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>playerList</sender>
+   <signal>itemDoubleClicked(QListWidgetItem*)</signal>
+   <receiver>SetActiveDialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>199</x>
+     <y>135</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>199</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
 </ui>
