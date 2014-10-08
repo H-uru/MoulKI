@@ -213,6 +213,7 @@ void qtNodeEdit::update() {
                 break;
             case plVault::kNodeSDL:
                 {
+                    ui->SDLTreeView->header()->setResizeMode(QHeaderView::ResizeToContents);
                     plVaultBlob blob = node->getBlob(0);
                     if(blob.getSize() > 0) {
                         hsRAMStream S(PlasmaVer::pvMoul);
