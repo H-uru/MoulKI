@@ -29,6 +29,10 @@ qtNodeEdit::qtNodeEdit(QWidget *parent) :
 
 qtNodeEdit::~qtNodeEdit()
 {
+    QAbstractItemModel* oldModel = ui->SDLTreeView->model();
+    ui->SDLTreeView->setModel(0);
+    if(oldModel)
+        delete oldModel;
     delete ui;
 }
 
@@ -233,7 +237,10 @@ void qtNodeEdit::update() {
                         if(oldModel)
                             delete oldModel;
                     }else{
+                        QAbstractItemModel* oldModel = ui->SDLTreeView->model();
                         ui->SDLTreeView->setModel(0);
+                        if(oldModel)
+                            delete oldModel;
                         ui->SDLTreeView->setEnabled(false);
                     }
                     ui->nodeDataArea->setTabEnabled(1, false);

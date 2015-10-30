@@ -22,7 +22,9 @@ qtSDLTreeModel::qtSDLTreeModel(plStateDataRecord* sdl) :
 {
 }
 
-qtSDLTreeModel::~qtSDLTreeModel() {}
+qtSDLTreeModel::~qtSDLTreeModel() {
+    delete sdl;
+}
 
 QModelIndex qtSDLTreeModel::ICreateIndex(int row, int column, const QModelIndex& parent, void *ptr, ItemType type) const {
     SDLModelIndex index;
