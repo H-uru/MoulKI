@@ -1,7 +1,7 @@
 #ifndef REFDIALOG_H
 #define REFDIALOG_H
 
-#include <QtGui/QDialog>
+#include <QDialog>
 
 typedef unsigned int uint32_t;
 

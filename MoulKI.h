@@ -2,7 +2,7 @@
 #define MOULKI_H
 
 #include <SDL/plSDLMgr.h>
-#include <QtGui/QMainWindow>
+#include <QMainWindow>
 #include "qtAuthClient.h"
 #include "qtGameClient.h"
 #include "qtVault.h"

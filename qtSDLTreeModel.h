@@ -23,7 +23,7 @@ private:
             void* raw;
         } ptr;
 
-        bool operator==(const SDLModelIndex& other) {
+        bool operator==(const SDLModelIndex& other) const {
             return parent == other.parent && type == other.type && row == other.row && column == other.column && ptr.raw == other.ptr.raw;
         }
     };

@@ -147,15 +147,15 @@ void MoulKI::login(QString user, QString pass, QString iniFilename) {
     qWarning("Ini Values:");
     foreach(QString key, ini.keys()) {
         QString value = ini[key][0];
-        qWarning("\t%s: %s", key.toAscii().data(), value.toAscii().data());
+        qWarning("\t%s: %s", key.toStdString().data(), value.toStdString().data());
     }
     if(ini.keys().count() < 5) {
         ui->statusBar->showMessage("Invalid server.ini file");
         return;
     }
 
-    reverseCopy(QByteArray::fromBase64(ini["Server.Auth.N"][0].toAscii()).data(), Keys.Auth.N, 64);
-    reverseCopy(QByteArray::fromBase64(ini["Server.Auth.X"][0].toAscii()).data(), Keys.Auth.X, 64);
+    reverseCopy(QByteArray::fromBase64(ini["Server.Auth.N"][0].toStdString().data()).data(), Keys.Auth.N, 64);
+    reverseCopy(QByteArray::fromBase64(ini["Server.Auth.X"][0].toStdString().data()).data(), Keys.Auth.X, 64);
     Keys.Auth.G = 0;
     if(ini.keys().contains("Server.Auth.G")) {
         bool ok = false;
@@ -163,8 +163,8 @@ void MoulKI::login(QString user, QString pass, QString iniFilename) {
         if(ok)
             Keys.Auth.G = g;
     }
-    reverseCopy(QByteArray::fromBase64(ini["Server.Game.N"][0].toAscii()).data(), Keys.Game.N, 64);
-    reverseCopy(QByteArray::fromBase64(ini["Server.Game.X"][0].toAscii()).data(), Keys.Game.X, 64);
+    reverseCopy(QByteArray::fromBase64(ini["Server.Game.N"][0].toStdString().data()).data(), Keys.Game.N, 64);
+    reverseCopy(QByteArray::fromBase64(ini["Server.Game.X"][0].toStdString().data()).data(), Keys.Game.X, 64);
     Keys.Game.G = 0;
     if(ini.keys().contains("Server.Game.G")) {
         bool ok = false;
@@ -624,7 +624,7 @@ void MoulKI::writeVault() {
     QString fileName = QFileDialog::getSaveFileName(this, "Save Vault", "./", "*.vault");
     if(!fileName.isEmpty()) {
         hsFileStream file(PlasmaVer::pvMoul);
-        file.open(fileName.toAscii().data(), fmWrite);
+        file.open(fileName.toStdString().data(), fmWrite);
         int rootCount = ui->vaultTree->topLevelItemCount();
         file.writeInt(rootCount);
         for(int i = 0; i < rootCount; i++) {
@@ -639,7 +639,7 @@ void MoulKI::readVault() {
     QString fileName = QFileDialog::getOpenFileName(this, "Load Vault", "./", "*.vault");
     if(!fileName.isEmpty()) {
         hsFileStream file(PlasmaVer::pvMoul);
-        file.open(fileName.toAscii().data(), fmRead);
+        file.open(fileName.toStdString().data(), fmRead);
         int rootCount = file.readInt();
         for(int i = 0; i < rootCount; i++) {
             uint32_t root = file.readInt();
@@ -666,20 +666,20 @@ void MoulKI::addChatLine(QString line) {
 void MoulKI::sendGameChat() {
     if(gameClient == NULL)
         return;
-    plString line = plString(ui->chatEntry->text().toAscii().data());
+    plString line = plString(ui->chatEntry->text().toStdString().data());
     if(ui->playersTree->selectedItems().count() == 1) {
         QTreeWidgetItem* item = ui->playersTree->selectedItems()[0];
         QVariant userData = item->data(0, Qt::UserRole);
         if(userData.canConvert<uint32_t>()) {
             gameClient->sendPrivate(line, userData.value<uint32_t>());
-            addChatLine(plString::Format("To %s: %s\n", item->text(0).toAscii().data(), line.cstr()).cstr());
+            addChatLine(plString::Format("To %s: %s\n", item->text(0).toStdString().data(), line.cstr()).cstr());
         }else if(item->text(0) == "BUDDIES" || item->text(0) == "NEIGHBORS") {
             QList<uint32_t> targets;
             for(int i = 0; i < item->childCount(); i++) {
                     targets.append(item->child(i)->data(0, Qt::UserRole).value<uint32_t>());
             }
             gameClient->sendBroadcast(line, targets, item->text(0) == "BUDDIES");
-            addChatLine(plString::Format("To %s: %s\n", item->text(0).toAscii().data(), line.cstr()).cstr());
+            addChatLine(plString::Format("To %s: %s\n", item->text(0).toStdString().data(), line.cstr()).cstr());
         }else{
             gameClient->sendAgeChat(line);
             addChatLine(plString::Format("%s: %s\n", vault.getNode(activePlayer)->getIString64(0).cstr(), line.cstr()).cstr());

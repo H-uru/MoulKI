@@ -15,10 +15,10 @@ qtAuthClient::~qtAuthClient() {
 void qtAuthClient::startLogin(QString user, QString pass) {
     players.clear();
     // apparently HSPlasma still doesn't lowercase the username
-    this->user = plString(user.toLower().toAscii().constData());
-    this->pass = plString(pass.toAscii().constData());
+    this->user = plString(user.toLower().toStdString().data());
+    this->pass = plString(pass.toStdString().data());
     setStatus("Connecting...");
-    if(pnAuthClient::connect(parent->Host.toAscii().data()) != kNetSuccess) {
+    if(pnAuthClient::connect(parent->Host.toStdString().data()) != kNetSuccess) {
         setStatus("Error Connecting To Server");
         return;
     }
