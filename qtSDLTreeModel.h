@@ -45,7 +45,7 @@ public:
 
 signals:
     void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight);
-    void sdlChanged(plStateDataRecord* sdl);
+    void sdlEdited(plStateDataRecord* sdl);
 
 public slots:
 

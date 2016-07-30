@@ -271,6 +271,6 @@ bool qtSDLTreeModel::setData(const QModelIndex &index, const QVariant &value, in
     default:
         return false;
     }
-    emit sdlChanged(sdl);
+    emit sdlEdited(sdl);
     return true;
 }
