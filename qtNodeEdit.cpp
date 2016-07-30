@@ -30,17 +30,11 @@ qtNodeEdit::qtNodeEdit(QWidget *parent) :
     ui->SDLTreeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
-qtNodeEdit::~qtNodeEdit()
-{
-    QAbstractItemModel* oldModel = ui->SDLTreeView->model();
-    ui->SDLTreeView->setModel(0);
-    if(oldModel)
-        delete oldModel;
+qtNodeEdit::~qtNodeEdit() {
     delete ui;
 }
 
-void qtNodeEdit::changeEvent(QEvent *e)
-{
+void qtNodeEdit::changeEvent(QEvent *e) {
     QWidget::changeEvent(e);
     switch (e->type()) {
     case QEvent::LanguageChange:
@@ -223,16 +217,8 @@ void qtNodeEdit::update(bool sdlEdit) {
                     if(sdlEdit) break; /* if the editor made the change, we don't need to reset the model */
                     plVaultBlob blob = node->getBlob(0);
                     if(blob.getSize() > 0) {
-                        hsRAMStream S(PlasmaVer::pvMoul);
-                        S.copyFrom(blob.getData(), blob.getSize());
-                        int version;
-                        plString name;
-                        plStateDataRecord* record = new plStateDataRecord;
-                        record->ReadStreamHeader(&S, name, version, NULL);
-                        record->setDescriptor(sdlmgr->GetDescriptor(name, version));
-                        record->read(&S, resmgr);
                         QAbstractItemModel* oldModel = ui->SDLTreeView->model();
-                        qtSDLTreeModel* sdlModel = new qtSDLTreeModel(record);
+                        qtSDLTreeModel* sdlModel = new qtSDLTreeModel(ui->SDLTreeView, blob, sdlmgr, resmgr);
                         ui->SDLTreeView->setEnabled(true);
                         ui->SDLTreeView->setModel(sdlModel);
                         ui->SDLTreeView->expand(sdlModel->index(0, 0, QModelIndex()));

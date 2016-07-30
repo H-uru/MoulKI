@@ -3,6 +3,8 @@
 
 #include <QVector>
 #include <QAbstractItemModel>
+#include <auth/pnVaultNode.h>
+#include <SDL/plSDLMgr.h>
 
 class plStateDataRecord;
 class plStateVariable;
@@ -32,7 +34,7 @@ private:
     QModelIndex ICreateIndex(int row, int column, const QModelIndex& parent, void* ptr, ItemType type) const;
 
 public:
-    explicit qtSDLTreeModel(plStateDataRecord* sdl);
+    explicit qtSDLTreeModel(QObject* parent, plVaultBlob blob, plSDLMgr* sdlmgr, plResManager* resmgr);
     ~qtSDLTreeModel();
     QModelIndex index(int row, int column, const QModelIndex& parent) const;
     QModelIndex parent(const QModelIndex &child) const;
