@@ -1,8 +1,8 @@
 #include "MoulKI.h"
 #include "qtAuthClient.h"
 
-qtAuthClient::qtAuthClient(MoulKI* ki) : pnAuthClient(ki->getResManager()),
-        QObject(ki), parent(ki), currentPlayerId(0) {
+qtAuthClient::qtAuthClient(MoulKI* ki) : QObject(ki),
+    pnAuthClient(ki->getResManager()), parent(ki), currentPlayerId(0) {
     setKeys(ki->Keys.Auth.X, ki->Keys.Auth.N);
     if(ki->Keys.Auth.G != 0)
         setKeyG(ki->Keys.Auth.G);
@@ -15,10 +15,10 @@ qtAuthClient::~qtAuthClient() {
 void qtAuthClient::startLogin(QString user, QString pass) {
     players.clear();
     // apparently HSPlasma still doesn't lowercase the username
-    this->user = plString(user.toLower().toAscii().constData());
-    this->pass = plString(pass.toAscii().constData());
+    this->user = plString(user.toLower().toStdString().data());
+    this->pass = plString(pass.toStdString().data());
     setStatus("Connecting...");
-    if(pnAuthClient::connect(parent->Host.toAscii().data()) != kNetSuccess) {
+    if(pnAuthClient::connect(parent->Host.toStdString().data()) != kNetSuccess) {
         setStatus("Error Connecting To Server");
         return;
     }
@@ -62,7 +62,7 @@ void qtAuthClient::onAcctLoginReply(uint32_t, ENetError result,
     emit loginSuccessful();
 }
 
-void qtAuthClient::onAcctSetPlayerReply(uint32_t transId, ENetError result) {
+void qtAuthClient::onAcctSetPlayerReply(uint32_t, ENetError) {
     parent->vault.queueRoot(currentPlayerId);
     sendVaultNodeFetch(currentPlayerId);
 }

@@ -1,7 +1,7 @@
 #ifndef LOGINDIALOG_H
 #define LOGINDIALOG_H
 
-#include <QtGui/QDialog>
+#include <QDialog>
 #include <QSettings>
 
 namespace Ui {

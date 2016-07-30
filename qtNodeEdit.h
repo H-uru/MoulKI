@@ -22,7 +22,7 @@ public:
     void setNode(qtVaultNode* pn);
     void setMgrs(plSDLMgr* sdl, plResManager* res);
     qtVaultNode* getNode();
-    void update();
+    void update(bool sdlEdit = false);
 
 signals:
     void isDirty(bool);
@@ -45,7 +45,7 @@ private slots:
     void editNodeText();
     void loadNodeImage();
     void saveNodeImage();
-    void sdlChanged(plStateDataRecord* sdl);
+    void editSDL(plStateDataRecord* sdl);
     void tabActivated(int tab);
 
 };

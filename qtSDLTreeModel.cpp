@@ -1,6 +1,6 @@
 #include "qtSDLTreeModel.h"
-#include "SDL/plStateDataRecord.h"
-#include "SDL/plStateVariable.h"
+#include <SDL/plStateDataRecord.h>
+#include <SDL/plStateVariable.h>
 #include <Stream/hsRAMStream.h>
 #include <QStringList>
 
@@ -17,9 +17,17 @@ const char* TypeNames[] = {
 
 enum { kDataRow, kTypeRow };
 
-qtSDLTreeModel::qtSDLTreeModel(plStateDataRecord* sdl) :
-    QAbstractItemModel(0), sdl(sdl)
+qtSDLTreeModel::qtSDLTreeModel(QObject* parent, plVaultBlob blob, plSDLMgr* sdlmgr, plResManager* resmgr) :
+    QAbstractItemModel(parent)
 {
+    hsRAMStream S(PlasmaVer::pvMoul);
+    S.copyFrom(blob.getData(), blob.getSize());
+    int version;
+    plString name;
+    sdl = new plStateDataRecord;
+    sdl->ReadStreamHeader(&S, name, version, NULL);
+    sdl->setDescriptor(sdlmgr->GetDescriptor(name, version));
+    sdl->read(&S, resmgr);
 }
 
 qtSDLTreeModel::~qtSDLTreeModel() {
@@ -271,6 +279,6 @@ bool qtSDLTreeModel::setData(const QModelIndex &index, const QVariant &value, in
     default:
         return false;
     }
-    emit sdlChanged(sdl);
+    emit sdlEdited(sdl);
     return true;
 }

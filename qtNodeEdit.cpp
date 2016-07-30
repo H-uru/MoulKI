@@ -25,19 +25,16 @@ qtNodeEdit::qtNodeEdit(QWidget *parent) :
     ui->nodeDataArea->setTabEnabled(1, false);
     ui->nodeDataArea->setTabEnabled(2, false);
     ui->nodeDataArea->setTabEnabled(3, false);
+
+    // set header behavior
+    ui->SDLTreeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
-qtNodeEdit::~qtNodeEdit()
-{
-    QAbstractItemModel* oldModel = ui->SDLTreeView->model();
-    ui->SDLTreeView->setModel(0);
-    if(oldModel)
-        delete oldModel;
+qtNodeEdit::~qtNodeEdit() {
     delete ui;
 }
 
-void qtNodeEdit::changeEvent(QEvent *e)
-{
+void qtNodeEdit::changeEvent(QEvent *e) {
     QWidget::changeEvent(e);
     switch (e->type()) {
     case QEvent::LanguageChange:
@@ -144,7 +141,7 @@ void qtNodeEdit::loadNodeImage() {
     update();
 }
 
-void qtNodeEdit::sdlChanged(plStateDataRecord *sdl) {
+void qtNodeEdit::editSDL(plStateDataRecord *sdl) {
     hsRAMStream S(PlasmaVer::pvMoul);
     plStateDescriptor* desc = sdl->getDescriptor();
     sdl->WriteStreamHeader(&S, desc->getName(), desc->getVersion(), NULL);
@@ -155,10 +152,10 @@ void qtNodeEdit::sdlChanged(plStateDataRecord *sdl) {
     blob.setData(S.size(), (const unsigned char*)data);
     delete[] data;
     node->setBlob(0, blob);
-    update();
+    update(true);
 }
 
-void qtNodeEdit::update() {
+void qtNodeEdit::update(bool sdlEdit) {
     disconnect(ui->nodeData, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(dataRowChanged(QTableWidgetItem*)));
     emit isDirty(false);
     ui->nodeData->clearContents();
@@ -217,24 +214,16 @@ void qtNodeEdit::update() {
                 break;
             case plVault::kNodeSDL:
                 {
-                    ui->SDLTreeView->header()->setResizeMode(QHeaderView::ResizeToContents);
+                    if(sdlEdit) break; /* if the editor made the change, we don't need to reset the model */
                     plVaultBlob blob = node->getBlob(0);
                     if(blob.getSize() > 0) {
-                        hsRAMStream S(PlasmaVer::pvMoul);
-                        S.copyFrom(blob.getData(), blob.getSize());
-                        int version;
-                        plString name;
-                        plStateDataRecord* record = new plStateDataRecord;
-                        record->ReadStreamHeader(&S, name, version, NULL);
-                        record->setDescriptor(sdlmgr->GetDescriptor(name, version));
-                        record->read(&S, resmgr);
                         QAbstractItemModel* oldModel = ui->SDLTreeView->model();
-                        qtSDLTreeModel* sdlModel = new qtSDLTreeModel(record);
+                        qtSDLTreeModel* sdlModel = new qtSDLTreeModel(ui->SDLTreeView, blob, sdlmgr, resmgr);
                         ui->SDLTreeView->setEnabled(true);
                         ui->SDLTreeView->setModel(sdlModel);
                         ui->SDLTreeView->expand(sdlModel->index(0, 0, QModelIndex()));
-                        disconnect(this, SLOT(sdlChanged(plStateDataRecord*)));
-                        connect(sdlModel, SIGNAL(sdlChanged(plStateDataRecord*)), this, SLOT(sdlChanged(plStateDataRecord*)));
+                        disconnect(this, SLOT(editSDL(plStateDataRecord*)));
+                        connect(sdlModel, SIGNAL(sdlEdited(plStateDataRecord*)), this, SLOT(editSDL(plStateDataRecord*)));
                         if(oldModel)
                             delete oldModel;
                     }else{

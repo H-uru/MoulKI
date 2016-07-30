@@ -1,7 +1,7 @@
 #ifndef SETACTIVEDIALOG_H
 #define SETACTIVEDIALOG_H
 
-#include <QtGui/QDialog>
+#include <QDialog>
 
 #include "qtAuthClient.h"
 

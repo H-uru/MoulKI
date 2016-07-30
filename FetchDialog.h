@@ -1,7 +1,7 @@
 #ifndef FETCHDIALOG_H
 #define FETCHDIALOG_H
 
-#include <QtGui/QDialog>
+#include <QDialog>
 
 typedef unsigned int uint32_t;
 

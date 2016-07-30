@@ -1,7 +1,8 @@
 project(MoulKI)
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.12)
 
-find_package(Qt4 REQUIRED)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Widgets REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(HSPlasmaNet REQUIRED)
 
@@ -52,11 +53,9 @@ if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 # Set up Qt requirements
-INCLUDE(${QT_USE_FILE})
-ADD_DEFINITIONS(${QT_DEFINITIONS})
-QT4_WRAP_CPP(MoulKI_HEADERS_MOC ${MoulKI_HEADERS})
-QT4_WRAP_UI(MoulKI_FORMS_HEADERS ${MoulKI_FORMS})
-QT4_ADD_RESOURCES(MoulKI_Resources_RCC ${MoulKI_Resources})
+QT5_WRAP_CPP(MoulKI_HEADERS_MOC ${MoulKI_HEADERS})
+QT5_WRAP_UI(MoulKI_FORMS_HEADERS ${MoulKI_FORMS})
+QT5_ADD_RESOURCES(MoulKI_Resources_RCC ${MoulKI_Resources})
 
 include_directories("${CMAKE_SOURCE_DIR}"
                     "${OPENSSL_INCLUDE_DIR}"
@@ -78,4 +77,4 @@ add_executable(MoulKI ${all_SOURCES}
                     ${MoulKI_Resources_RCC}
                     )
 
-target_link_libraries(MoulKI ${HSPlasmaNet_LIBRARIES} ${QT_LIBRARIES})
+target_link_libraries(MoulKI ${HSPlasmaNet_LIBRARIES} Qt5::Core Qt5::Widgets)
