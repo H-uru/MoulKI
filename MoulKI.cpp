@@ -23,7 +23,7 @@ void reverseCopy(char* src, unsigned char* dst, int size) {
 }
 
 MoulKI::MoulKI(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MoulKIClass), gameClient(NULL), authClient(NULL)
+    : QMainWindow(parent), ui(new Ui::MoulKIClass), authClient(NULL), gameClient(NULL)
 {
     resmgr = new plResManager(PlasmaVer::pvMoul);
     sdlmgr = new plSDLMgr();

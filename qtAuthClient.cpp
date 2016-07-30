@@ -1,8 +1,8 @@
 #include "MoulKI.h"
 #include "qtAuthClient.h"
 
-qtAuthClient::qtAuthClient(MoulKI* ki) : pnAuthClient(ki->getResManager()),
-        QObject(ki), parent(ki), currentPlayerId(0) {
+qtAuthClient::qtAuthClient(MoulKI* ki) : QObject(ki),
+    pnAuthClient(ki->getResManager()), parent(ki), currentPlayerId(0) {
     setKeys(ki->Keys.Auth.X, ki->Keys.Auth.N);
     if(ki->Keys.Auth.G != 0)
         setKeyG(ki->Keys.Auth.G);
@@ -62,7 +62,7 @@ void qtAuthClient::onAcctLoginReply(uint32_t, ENetError result,
     emit loginSuccessful();
 }
 
-void qtAuthClient::onAcctSetPlayerReply(uint32_t transId, ENetError result) {
+void qtAuthClient::onAcctSetPlayerReply(uint32_t, ENetError) {
     parent->vault.queueRoot(currentPlayerId);
     sendVaultNodeFetch(currentPlayerId);
 }
