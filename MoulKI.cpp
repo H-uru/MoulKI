@@ -22,11 +22,9 @@ void reverseCopy(char* src, unsigned char* dst, int size) {
     }
 }
 
-MoulKI::MoulKI(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MoulKIClass), authClient(NULL), gameClient(NULL)
+MoulKI::MoulKI(plResManager* resMgr, plSDLMgr* sdlMgr, QWidget *parent)
+    : QMainWindow(parent), ui(new Ui::MoulKIClass), resmgr(resMgr), sdlmgr(sdlMgr), authClient(NULL), gameClient(NULL)
 {
-    resmgr = new plResManager(PlasmaVer::pvMoul);
-    sdlmgr = new plSDLMgr();
     ui->setupUi(this);
 
     qRegisterMetaType<plUuid>("plUuid");
@@ -96,8 +94,6 @@ MoulKI::MoulKI(QWidget *parent)
 
 MoulKI::~MoulKI() {
     delete ui;
-    delete sdlmgr;
-    delete resmgr;
     if(authClient != NULL)
         delete authClient;
     if(gameClient != NULL)
@@ -698,7 +694,7 @@ void MoulKI::addAgePlayer(uint32_t playerId, plString playerName) {
     agePlayersItem->addChild(item);
 }
 
-void MoulKI::removeAgePlayer(uint32_t playerId, plString playerName) {
+void MoulKI::removeAgePlayer(uint32_t playerId, plString) {
     for(int i = 0; i < agePlayersItem->childCount(); i++) {
         if(agePlayersItem->child(i)->data(0, Qt::UserRole).value<uint32_t>() == playerId) {
             agePlayersItem->removeChild(agePlayersItem->child(i));

@@ -22,7 +22,7 @@ class MoulKI : public QMainWindow
     Q_OBJECT
 
 public:
-    MoulKI(QWidget *parent = 0);
+    MoulKI(plResManager* resMgr, plSDLMgr* sdlMgr, QWidget *parent = 0);
     ~MoulKI();
 
     qtVault vault;
@@ -54,10 +54,10 @@ public:
 private:
     Ui::MoulKIClass *ui;
 
-    qtAuthClient* authClient;
-    qtGameClient* gameClient;
     plResManager* resmgr;
     plSDLMgr* sdlmgr;
+    qtAuthClient* authClient;
+    qtGameClient* gameClient;
     uint32_t ntdKeys[4];
 
     void addItemChild(QTreeWidgetItem* item, qtVaultNode* node);
