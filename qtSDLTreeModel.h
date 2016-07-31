@@ -13,6 +13,7 @@ class qtSDLTreeModel : public QAbstractItemModel
 {
     Q_OBJECT
 private:
+    plResManager* resmgr;
     plStateDataRecord* sdl;
     enum ItemType { kSDR, kVar, kVal };
     struct SDLModelIndex {

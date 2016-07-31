@@ -18,7 +18,7 @@ const char* TypeNames[] = {
 enum { kDataRow, kTypeRow };
 
 qtSDLTreeModel::qtSDLTreeModel(QObject* parent, plVaultBlob blob, plSDLMgr* sdlmgr, plResManager* resmgr) :
-    QAbstractItemModel(parent)
+    QAbstractItemModel(parent), resmgr(resmgr)
 {
     hsRAMStream S(PlasmaVer::pvMoul);
     S.copyFrom(blob.getData(), blob.getSize());
@@ -276,6 +276,58 @@ bool qtSDLTreeModel::setData(const QModelIndex &index, const QVariant &value, in
     case plVarDescriptor::kString:
         var->String(index.row()) = plString(strVal->toLocal8Bit().data());
         break;
+    case plVarDescriptor::kKey:
+    case plVarDescriptor::kCreatable:
+    case plVarDescriptor::kRGB8:
+    case plVarDescriptor::kRGBA8:
+    case plVarDescriptor::kRGB:
+    case plVarDescriptor::kRGBA:
+    case plVarDescriptor::kPoint3:
+    case plVarDescriptor::kVector3:
+    case plVarDescriptor::kQuaternion:
+    {
+        pfPrcParser p;
+        hsRAMStream s(PlasmaVer::pvMoul);
+        s.copyFrom(strVal->toLocal8Bit().data(), strVal->toLocal8Bit().size());
+        try {
+            p.read(&s);
+        } catch (hsException e) {
+            qWarning("Exception parsing prc: %s", e.what());
+            return false;
+        }
+        try {
+            switch(var->getDescriptor()->getType()) {
+            case plVarDescriptor::kKey:
+                var->Uoid(index.row()).prcParse(p.getRoot());
+                break;
+            case plVarDescriptor::kCreatable:
+                var->Creatable(index.row())->prcParse(p.getRoot(), resmgr);
+                break;
+            case plVarDescriptor::kRGB8:
+            case plVarDescriptor::kRGBA8:
+                var->Color32(index.row()).prcParse(p.getRoot());
+                break;
+            case plVarDescriptor::kRGB:
+            case plVarDescriptor::kRGBA:
+                var->ColorRGBA(index.row()).prcParse(p.getRoot());
+                break;
+            case plVarDescriptor::kPoint3:
+            case plVarDescriptor::kVector3:
+                var->Vector(index.row()).prcParse(p.getRoot());
+                break;
+            case plVarDescriptor::kQuaternion:
+                var->Quat(index.row()).prcParse(p.getRoot());
+                break;
+            default:
+                // this should not be possible
+                Q_ASSERT(false);
+            }
+        } catch (pfPrcTagException e) {
+            qWarning("Exception setting prc value: %s", e.what());
+            return false;
+        }
+        break;
+    }
     default:
         return false;
     }
