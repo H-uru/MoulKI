@@ -3,6 +3,7 @@
 #include "qtSDLTreeModel.h"
 
 #include <QFile>
+#include <QComboBox>
 #include <QFileDialog>
 #include <QTableWidgetItem>
 #include <SDL/plSDLMgr.h>
@@ -11,7 +12,8 @@
 
 qtNodeEdit::qtNodeEdit(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::qtNodeEdit)
+    ui(new Ui::qtNodeEdit),
+    typeBox(new NodeTypeDelegate(this))
 {
     ui->setupUi(this);
     connect(ui->nodeData, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(dataRowChanged(QTableWidgetItem*)));
@@ -155,6 +157,46 @@ void qtNodeEdit::editSDL(plStateDataRecord *sdl) {
     update(true);
 }
 
+NodeTypeDelegate::NodeTypeDelegate(QObject *parent) : QStyledItemDelegate(parent) {}
+
+QWidget* NodeTypeDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem&, const QModelIndex&) const {
+    QComboBox* box = new QComboBox(parent);
+    box->setFrame(false);
+    box->setInsertPolicy(QComboBox::NoInsert);
+    box->setEditable(true);
+    box->addItems({
+                      "Player",
+                      "Age",
+                      "Folder",
+                      "PlayerInfo",
+                      "System",
+                      "Image",
+                      "TextNote",
+                      "SDL",
+                      "AgeLink",
+                      "Chronicle",
+                      "PlayerInfoList",
+                      "Marker",
+                      "AgeInfo",
+                      "AgeInfoList",
+                      "MarkerList"
+                  });
+    return box;
+}
+
+void NodeTypeDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const {
+    QString str = index.model()->data(index, Qt::EditRole).toString();
+    static_cast<QComboBox*>(editor)->setCurrentText(str);
+}
+
+void NodeTypeDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const {
+    model->setData(index, static_cast<QComboBox*>(editor)->currentText(), Qt::EditRole);
+}
+
+void NodeTypeDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex&) const {
+    editor->setGeometry(option.rect);
+}
+
 void qtNodeEdit::update(bool sdlEdit) {
     disconnect(ui->nodeData, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(dataRowChanged(QTableWidgetItem*)));
     emit isDirty(false);
@@ -174,6 +216,9 @@ void qtNodeEdit::update(bool sdlEdit) {
                 fitem->setBackground(QBrush(rowColor));
                 citem->setBackground(QBrush(rowColor));
                 emit isDirty(true);
+            }
+            if(node->fieldName(i) == "NodeType") {
+                ui->nodeData->setItemDelegateForRow(i, typeBox);
             }
             ui->nodeData->setItem(i, 0, fitem);
             ui->nodeData->setItem(i, 1, citem);

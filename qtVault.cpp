@@ -123,7 +123,7 @@ void qtVault::addNode(const pnVaultNode& node) {
     // check to see if there are any queued refs referencing the newly added node
     foreach(pnVaultNodeRef ref, refQueue) {
         if(ref.fChild == node.getNodeIdx() || ref.fParent == node.getNodeIdx()) {
-            // if a ref is found, re-add it, this will resolve it, it possible
+            // if a ref is found, re-add it, this will resolve it, if possible
             // if not, when the other node arrives, the ref will be resolved
             addRef(ref);
         }
