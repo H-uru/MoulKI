@@ -99,6 +99,7 @@ signals:
     void sigStatus(plString msg);
     void foundNodes(QList<uint32_t> nodes);
     void loginSuccessful();
+    void saveNodeSuccessful(uint32_t transId);
     void gotAge(uint32_t gameServerAddr, plUuid ageId, uint32_t mcpId,
             uint32_t vaultId);
     void gotEncKeys(uint32_t k0, uint32_t k1, uint32_t k2, uint32_t k3);

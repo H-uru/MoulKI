@@ -192,6 +192,7 @@ void MoulKI::login(QString user, QString pass, QString iniFilename) {
             this, SLOT(setEncryptionKeys(uint32_t,uint32_t,uint32_t,uint32_t)));
     connect(authClient, SIGNAL(gotSDLFile(hsStream*)), this,
             SLOT(loadStateDescriptors(hsStream*)));
+    connect(authClient, SIGNAL(saveNodeSuccessful(uint32_t)), this, SLOT(nodeSaveComplete(uint32_t)));
 
     authClient->startLogin(user, pass);
 }
@@ -401,7 +402,19 @@ void MoulKI::saveNodeData() {
     ui->applyButton->setEnabled(false);
     qtVaultNode* node = ui->nodeEditor->getNode();
     if(authClient->isConnected()) {
-        authClient->sendVaultNodeSave(node->getNodeIdx(), plUuid(), *node);
+        uint32_t transId = authClient->sendVaultNodeSave(node->getNodeIdx(), plUuid(), *node);
+        pendingSaves.push_back({transId, node->getNodeIdx()});
+    }
+}
+
+void MoulKI::nodeSaveComplete(uint32_t transId) {
+    foreach(pendingTrans e, pendingSaves) {
+        if(e.transId == transId) {
+            vault.getNode(e.nodeIdx)->allClean();
+            emit vault.updatedNode(e.nodeIdx);
+            pendingSaves.removeAll(e);
+            break;
+        }
     }
 }
 

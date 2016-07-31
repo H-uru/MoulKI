@@ -237,9 +237,10 @@ void qtAuthClient::onVaultAddNodeReply(uint32_t, ENetError result) {
     }
 }
 
-void qtAuthClient::onVaultSaveNodeReply(uint32_t, ENetError result) {
+void qtAuthClient::onVaultSaveNodeReply(uint32_t transId, ENetError result) {
     if(result == kNetSuccess) {
         setStatus("Save Node Successful");
+        emit saveNodeSuccessful(transId);
     }else{
         setStatus(plString::Format("Save Node Failure: (%s)", GetNetErrorString(result)));
     }

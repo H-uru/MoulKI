@@ -60,6 +60,17 @@ private:
     qtGameClient* gameClient;
     uint32_t ntdKeys[4];
 
+    struct pendingTrans {
+        uint32_t transId;
+        uint32_t nodeIdx;
+
+        operator==(pendingTrans p) {
+            return p.transId == this->transId && p.nodeIdx == this->nodeIdx;
+        }
+    };
+
+    QList<pendingTrans> pendingSaves;
+
     void addItemChild(QTreeWidgetItem* item, qtVaultNode* node);
     bool itemHasChild(QTreeWidgetItem* item, qtVaultNode* node);
     void removeTreeNodes(QTreeWidgetItem* item, qtVaultNode* node);
@@ -109,6 +120,7 @@ public slots:
     // authserver events
     void setEncryptionKeys(uint32_t k0, uint32_t k1, uint32_t k2, uint32_t k3);
     void loadStateDescriptors(hsStream* S);
+    void nodeSaveComplete(uint32_t transId);
     // gameserver events
     void showJoinAgeDialog();
     void joinAge(plString name, plUuid uuid);
