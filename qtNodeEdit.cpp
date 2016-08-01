@@ -328,23 +328,21 @@ void qtNodeEdit::update(bool sdlEdit) {
                 {
                     if(sdlEdit) break; /* if the editor made the change, we don't need to reset the model */
                     plVaultBlob blob = node->getBlob(0);
-                    if(blob.getSize() > 0) {
-                        QAbstractItemModel* oldModel = ui->SDLTreeView->model();
+                    disconnect(this, SLOT(editSDL(plStateDataRecord*)));
+                    QAbstractItemModel* oldModel = ui->SDLTreeView->model();
+                    try {
                         qtSDLTreeModel* sdlModel = new qtSDLTreeModel(ui->SDLTreeView, blob, sdlmgr, resmgr);
                         ui->SDLTreeView->setEnabled(true);
                         ui->SDLTreeView->setModel(sdlModel);
                         ui->SDLTreeView->expand(sdlModel->index(0, 0, QModelIndex()));
-                        disconnect(this, SLOT(editSDL(plStateDataRecord*)));
                         connect(sdlModel, SIGNAL(sdlEdited(plStateDataRecord*)), this, SLOT(editSDL(plStateDataRecord*)));
-                        if(oldModel)
-                            delete oldModel;
-                    }else{
-                        QAbstractItemModel* oldModel = ui->SDLTreeView->model();
+                    } catch (hsException e) {
+                        qWarning("Exception reading SDL Blob: %s", e.what());
                         ui->SDLTreeView->setModel(0);
-                        if(oldModel)
-                            delete oldModel;
                         ui->SDLTreeView->setEnabled(false);
                     }
+                    if(oldModel)
+                        delete oldModel;
                     ui->nodeDataArea->setTabEnabled(1, false);
                     ui->nodeDataArea->setTabEnabled(2, false);
                     ui->nodeDataArea->setTabEnabled(3, true);
