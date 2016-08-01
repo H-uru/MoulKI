@@ -13,7 +13,8 @@
 qtNodeEdit::qtNodeEdit(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::qtNodeEdit),
-    typeBox(new NodeTypeDelegate(this))
+    typeBox(new NodeTypeDelegate(this)),
+    folderBox(new FolderTypeDelegate(this))
 {
     ui->setupUi(this);
     connect(ui->nodeData, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(dataRowChanged(QTableWidgetItem*)));
@@ -197,6 +198,63 @@ void NodeTypeDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionV
     editor->setGeometry(option.rect);
 }
 
+FolderTypeDelegate::FolderTypeDelegate(QObject *parent) : QStyledItemDelegate(parent) {}
+
+QWidget* FolderTypeDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem&, const QModelIndex&) const {
+    QComboBox* box = new QComboBox(parent);
+    box->setFrame(false);
+    box->addItems({
+                      "UserDefinedNode",
+                      "InboxFolder",
+                      "BuddyListFolder",
+                      "IgnoreListFolder",
+                      "PeopleIKnowAboutFolder",
+                      "VaultMgrGlobalDataFolder",
+                      "ChronicleFolder",
+                      "AvatarOutfitFolder",
+                      "AgeTypeJournalFolder",
+                      "SubAgesFolder",
+                      "DeviceInboxFolder",
+                      "HoodMembersFolder",
+                      "AllPlayersFolder",
+                      "AgeMembersFolder",
+                      "AgeJournalsFolder",
+                      "AgeDevicesFolder",
+                      "AgeInstanceSDLNode",
+                      "AgeGlobalSDLNode",
+                      "CanVisitFolder",
+                      "AgeOwnersFolder",
+                      "AllAgeGlobalSDLNodesFolder",
+                      "PlayerInfoNode",
+                      "PublicAgesFolder",
+                      "AgesIOwnFolder",
+                      "AgesICanVisitFolder",
+                      "AvatarClosetFolder",
+                      "AgeInfoNode",
+                      "SystemNode",
+                      "PlayerInviteFolder",
+                      "CCRPlayersFolder",
+                      "GlobalInboxFolder",
+                      "ChildAgesFolder",
+                      "GameScoresFolder",
+                      "LastStandardNode"
+                  });
+    return box;
+}
+
+void FolderTypeDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const {
+    int i = index.model()->data(index, Qt::EditRole).toInt();
+    static_cast<QComboBox*>(editor)->setCurrentIndex(i);
+}
+
+void FolderTypeDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const {
+    model->setData(index, static_cast<QComboBox*>(editor)->currentIndex(), Qt::EditRole);
+}
+
+void FolderTypeDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex&) const {
+    editor->setGeometry(option.rect);
+}
+
 void qtNodeEdit::update(bool sdlEdit) {
     disconnect(ui->nodeData, SIGNAL(itemChanged(QTableWidgetItem*)), this, SLOT(dataRowChanged(QTableWidgetItem*)));
     emit isDirty(false);
@@ -219,6 +277,15 @@ void qtNodeEdit::update(bool sdlEdit) {
             }
             if(node->fieldName(i) == "NodeType") {
                 ui->nodeData->setItemDelegateForRow(i, typeBox);
+            }else if(node->fieldName(i) == "Int32_1" && QStringList({
+                "Folder",
+                "PlayerInfoList",
+                "AgeInfoList",
+                "MarkerList"
+            }).contains(node->getFieldAsString(7).cstr())) {
+                ui->nodeData->setItemDelegateForRow(i, folderBox);
+            }else{
+                ui->nodeData->setItemDelegateForRow(i, 0);
             }
             ui->nodeData->setItem(i, 0, fitem);
             ui->nodeData->setItem(i, 1, citem);
