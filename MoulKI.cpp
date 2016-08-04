@@ -287,7 +287,7 @@ void MoulKI::addRoot(uint32_t idx) {
         addItemChild(item, childNode);
     }
     node->unlockNode();
-    if(authClient->isConnected()) {
+    if(authClient != NULL && authClient->isConnected()) {
         authClient->sendVaultFetchNodeRefs(node->getNodeIdx());
     }
 }

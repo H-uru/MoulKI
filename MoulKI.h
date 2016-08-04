@@ -64,7 +64,7 @@ private:
         uint32_t transId;
         uint32_t nodeIdx;
 
-        operator==(pendingTrans p) {
+        bool operator==(const pendingTrans& p) const {
             return p.transId == this->transId && p.nodeIdx == this->nodeIdx;
         }
     };
