@@ -89,7 +89,7 @@ void qtGameClient::onJoinAgeReply(uint32_t, ENetError result) {
         loadAvMsg->setIsPlayer(1);
         plNetMsgLoadClone loadClone;
         loadClone.setFlags(0x00041001);
-        loadClone.setTimeSent(plUnifiedTime::GetCurrentTime());
+        loadClone.setTimeSent(plUnifiedTime::CurrentTime());
         loadClone.setPlayerID(fPlayerNode->getNodeIdx());
         loadClone.setMessage(loadAvMsg);
         loadClone.setIsPlayer(1);
@@ -101,7 +101,7 @@ void qtGameClient::onJoinAgeReply(uint32_t, ENetError result) {
         qWarning("Sent LoadClone");
         plNetMsgMembersListReq listReq;
         listReq.setFlags(0x00061001);
-        listReq.setTimeSent(plUnifiedTime::GetCurrentTime());
+        listReq.setTimeSent(plUnifiedTime::CurrentTime());
         listReq.setPlayerID(fPlayerNode->getNodeIdx());
         propagateMessage(&listReq);
         qWarning("Sent Members Request");
@@ -171,7 +171,7 @@ void qtGameClient::sendAgeChat(plString message) {
     plNetMsgGameMessageDirected gameMsg;
     pfKIMsg* kiMsg = new pfKIMsg();
     gameMsg.setFlags(0x00049001);
-    gameMsg.setTimeSent(plUnifiedTime::GetCurrentTime());
+    gameMsg.setTimeSent(plUnifiedTime::CurrentTime());
     gameMsg.setPlayerID(fPlayerNode->getNodeIdx());
     gameMsg.setReceivers(fAgePlayers);
     kiMsg->setBCastFlags(0x00000248);
@@ -203,7 +203,7 @@ void qtGameClient::sendPrivate(plString message, uint32_t target) {
     plNetMsgGameMessageDirected gameMsg;
     pfKIMsg* kiMsg = new pfKIMsg();
     gameMsg.setFlags(0x00049001);
-    gameMsg.setTimeSent(plUnifiedTime::GetCurrentTime());
+    gameMsg.setTimeSent(plUnifiedTime::CurrentTime());
     gameMsg.setPlayerID(fPlayerNode->getNodeIdx());
     gameMsg.setReceivers(targets);
     kiMsg->setBCastFlags(0x00004248);
@@ -229,7 +229,7 @@ void qtGameClient::sendBroadcast(plString message, QList<uint32_t> buddies, int 
     plNetMsgGameMessageDirected gameMsg;
     pfKIMsg* kiMsg = new pfKIMsg();
     gameMsg.setFlags(0x00049001);
-    gameMsg.setTimeSent(plUnifiedTime::GetCurrentTime());
+    gameMsg.setTimeSent(plUnifiedTime::CurrentTime());
     gameMsg.setPlayerID(fPlayerNode->getNodeIdx());
     gameMsg.setReceivers(targets);
     kiMsg->setBCastFlags(0x00004248);
