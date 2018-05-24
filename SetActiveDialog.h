@@ -33,7 +33,7 @@ private slots:
 signals:
     void setActive(uint32_t player);
     void fetchFound(uint32_t idx);
-    void joinAge(plString name, plUuid uuid);
+    void joinAge(ST::string name, plUuid uuid);
 };
 
 #endif // SETACTIVEDIALOG_H

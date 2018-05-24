@@ -27,11 +27,11 @@ public:
     void operator=(const qtVaultNode& node);
     void copy(const qtVaultNode &init);
 
-    plString displayName();
-    plString fieldName(size_t field);
-    plString getFieldAsString(size_t field);
+    ST::string displayName();
+    ST::string fieldName(size_t field);
+    ST::string getFieldAsString(size_t field);
     QIcon getIcon();
-    void setFieldFromString(size_t field, plString string);
+    void setFieldFromString(size_t field, ST::string string);
     const QList<qtVaultNode*> getChildren();
     bool addChild(qtVaultNode* child);
     void removeChild(qtVaultNode* child);

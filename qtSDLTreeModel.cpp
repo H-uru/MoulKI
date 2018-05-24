@@ -23,7 +23,7 @@ qtSDLTreeModel::qtSDLTreeModel(QObject* parent, plVaultBlob blob, plSDLMgr* sdlm
     hsRAMStream S(PlasmaVer::pvMoul);
     S.copyFrom(blob.getData(), blob.getSize());
     int version;
-    plString name;
+    ST::string name;
     sdl = new plStateDataRecord;
     sdl->ReadStreamHeader(&S, name, version, NULL);
     sdl->setDescriptor(sdlmgr->GetDescriptor(name, version));
@@ -129,9 +129,9 @@ QVariant qtSDLTreeModel::data(const QModelIndex& index, int role) const {
         case kDataRow:
             switch(myIndex.type) {
             case kSDR:
-                return myIndex.ptr.sdr->getDescriptor()->getName().cstr();
+                return myIndex.ptr.sdr->getDescriptor()->getName().c_str();
             case kVar:
-                return myIndex.ptr.sv->getDescriptor()->getName().cstr();
+                return myIndex.ptr.sv->getDescriptor()->getName().c_str();
             case kVal:
                 {
                     plSimpleStateVariable* var = (plSimpleStateVariable*)myIndex.ptr.sv;
@@ -139,15 +139,15 @@ QVariant qtSDLTreeModel::data(const QModelIndex& index, int role) const {
                     case plVarDescriptor::kBool:
                         return var->Bool(index.row()) ? "True" : "False";
                     case plVarDescriptor::kInt:
-                        return QVariant(plString::Format("%d", var->Int(index.row())));
+                        return QString::number(var->Int(index.row()));
                     case plVarDescriptor::kByte:
-                        return QVariant(plString::Format("%d", var->Byte(index.row())));
+                        return QString::number(var->Byte(index.row()));
                     case plVarDescriptor::kFloat:
-                        return QVariant(plString::Format("%f", var->Float(index.row())));
+                        return QString::number(var->Float(index.row()));
                     case plVarDescriptor::kDouble:
-                        return QVariant(plString::Format("%f", var->Double(index.row())));
+                        return QString::number(var->Double(index.row()));
                     case plVarDescriptor::kString:
-                        return var->String(index.row()).cstr();
+                        return var->String(index.row()).c_str();
                     case plVarDescriptor::kChar:
                         return QString(var->Char(index.row()));
                     case plVarDescriptor::kKey:
@@ -166,7 +166,7 @@ QVariant qtSDLTreeModel::data(const QModelIndex& index, int role) const {
                     case plVarDescriptor::kQuaternion:
                         return getPrc<hsQuat*>(&var->Quat(index.row()));
                     default:
-                        return QVariant(plString::Format("Unhandled SDL Var Type (%d)", var->getDescriptor()->getType()));
+                        return ST::format("Unhandled SDL Var Type ({})", var->getDescriptor()->getType()).c_str();
                     }
                 }
             }
@@ -176,9 +176,9 @@ QVariant qtSDLTreeModel::data(const QModelIndex& index, int role) const {
                 return "STATEDESC";
             case kVar:
                 if(myIndex.ptr.sv->getDescriptor()->isVariableLength())
-                    return QVariant(plString::Format("%s[]", TypeNames[myIndex.ptr.sv->getDescriptor()->getType()]));
+                    return ST::format("{}[]", TypeNames[myIndex.ptr.sv->getDescriptor()->getType()]).c_str();
                 else
-                    return QVariant(plString::Format("%s[%d]", TypeNames[myIndex.ptr.sv->getDescriptor()->getType()], myIndex.ptr.sv->getCount()));
+                    return ST::format("{}[{}]", TypeNames[myIndex.ptr.sv->getDescriptor()->getType()], myIndex.ptr.sv->getCount()).c_str();
             case kVal:
                 return TypeNames[myIndex.ptr.sv->getDescriptor()->getType()];
             }
@@ -274,7 +274,7 @@ bool qtSDLTreeModel::setData(const QModelIndex &index, const QVariant &value, in
         break;
     }
     case plVarDescriptor::kString:
-        var->String(index.row()) = plString(strVal->toLocal8Bit().data());
+        var->String(index.row()) = strVal->toUtf8().constData();
         break;
     case plVarDescriptor::kKey:
     case plVarDescriptor::kCreatable:
@@ -291,7 +291,7 @@ bool qtSDLTreeModel::setData(const QModelIndex &index, const QVariant &value, in
         s.copyFrom(strVal->toLocal8Bit().data(), strVal->toLocal8Bit().size());
         try {
             p.read(&s);
-        } catch (hsException e) {
+        } catch (const hsException& e) {
             qWarning("Exception parsing prc: %s", e.what());
             return false;
         }
@@ -322,7 +322,7 @@ bool qtSDLTreeModel::setData(const QModelIndex &index, const QVariant &value, in
                 // this should not be possible
                 Q_ASSERT(false);
             }
-        } catch (pfPrcTagException e) {
+        } catch (const pfPrcTagException& e) {
             qWarning("Exception setting prc value: %s", e.what());
             return false;
         }

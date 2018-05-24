@@ -63,7 +63,7 @@ void qtNodeEdit::setMgrs(plSDLMgr* sdl, plResManager* res) {
 void qtNodeEdit::dataRowChanged(QTableWidgetItem* item) {
     qWarning("Node data changed");
     int field = item->row();
-    node->setFieldFromString(field, plString(item->text().toUtf8().data()));
+    node->setFieldFromString(field, item->text().toUtf8().constData());
     update();
 }
 
@@ -78,9 +78,9 @@ void qtNodeEdit::editNodeText() {
 
 void qtNodeEdit::tabActivated(int) {
     if(titleEdited)
-        node->setString64(0, plString(newTitle.toUtf8().data()));
+        node->setString64(0, newTitle.toUtf8().constData());
     if(textEdited)
-        node->setText(0, plString(ui->textNodeEdit->document()->toPlainText().toUtf8().data()));
+        node->setText(0, ui->textNodeEdit->document()->toPlainText().toUtf8().constData());
     if(titleEdited || textEdited)
         update();
     titleEdited = false;
@@ -88,7 +88,7 @@ void qtNodeEdit::tabActivated(int) {
 }
 
 void qtNodeEdit::saveNodeImage() {
-    plString extension, filter;
+    QString extension, filter;
     int offset = 0;
 
     node->lockNode();
@@ -103,7 +103,7 @@ void qtNodeEdit::saveNodeImage() {
             filter = "*.png";
             break;
     }
-    QString fileName = QFileDialog::getSaveFileName(this, "Save Image", (node->getString64(0) + extension).cstr(), filter.cstr());
+    QString fileName = QFileDialog::getSaveFileName(this, "Save Image", QString(node->getString64(0).c_str()) + extension, filter);
     QFile outFile(fileName);
     outFile.open(QIODevice::WriteOnly);
     outFile.write((const char*)node->getBlob(0).getData() + offset, node->getBlob(0).getSize() - offset);
@@ -264,11 +264,11 @@ void qtNodeEdit::update(bool sdlEdit) {
         ui->nodeData->setEnabled(true);
         for(int i = 0; i < qtVaultNode::kNumFields; i++) {
             QTableWidgetItem* fitem = new QTableWidgetItem();
-            fitem->setText(QString(node->fieldName(i).cstr()));
+            fitem->setText(QString(node->fieldName(i).c_str()));
             fitem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
             QTableWidgetItem* citem = new QTableWidgetItem();
             citem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
-            citem->setText(QString(node->getFieldAsString(i).cstr()));
+            citem->setText(QString(node->getFieldAsString(i).c_str()));
             if(node->hasDirty(i)) {
                 QColor rowColor(200, 127, 127);
                 fitem->setBackground(QBrush(rowColor));
@@ -282,7 +282,7 @@ void qtNodeEdit::update(bool sdlEdit) {
                 "PlayerInfoList",
                 "AgeInfoList",
                 "MarkerList"
-            }).contains(node->getFieldAsString(7).cstr())) {
+            }).contains(node->getFieldAsString(7).c_str())) {
                 ui->nodeData->setItemDelegateForRow(i, folderBox);
             }else{
                 ui->nodeData->setItemDelegateForRow(i, 0);
@@ -308,7 +308,7 @@ void qtNodeEdit::update(bool sdlEdit) {
                         ui->imageLabel->setPixmap(QPixmap());
                     }
                     ui->imageLabel->setMaximumSize(320, 240);
-                    ui->imageNodeTitle->setText(QString(node->getString64(0).cstr()));
+                    ui->imageNodeTitle->setText(QString(node->getString64(0).c_str()));
                     ui->nodeDataArea->setTabEnabled(1, true);
                     ui->nodeDataArea->setTabEnabled(2, false);
                     ui->nodeDataArea->setTabEnabled(3, false);
@@ -317,8 +317,8 @@ void qtNodeEdit::update(bool sdlEdit) {
             case plVault::kNodeChronicle:
             case plVault::kNodeTextNote:
                 disconnect(ui->textNodeEdit, SIGNAL(textChanged()), this, SLOT(editNodeText()));
-                ui->textNodeEdit->setPlainText(QString(node->getText(0)));
-                ui->textNodeTitle->setText(QString(node->getString64(0)));
+                ui->textNodeEdit->setPlainText(QString(node->getText(0).c_str()));
+                ui->textNodeTitle->setText(QString(node->getString64(0).c_str()));
                 ui->nodeDataArea->setTabEnabled(1, false);
                 ui->nodeDataArea->setTabEnabled(2, true);
                 ui->nodeDataArea->setTabEnabled(3, false);
@@ -336,7 +336,7 @@ void qtNodeEdit::update(bool sdlEdit) {
                         ui->SDLTreeView->setModel(sdlModel);
                         ui->SDLTreeView->expand(sdlModel->index(0, 0, QModelIndex()));
                         connect(sdlModel, SIGNAL(sdlEdited(plStateDataRecord*)), this, SLOT(editSDL(plStateDataRecord*)));
-                    } catch (hsException e) {
+                    } catch (const hsException& e) {
                         qWarning("Exception reading SDL Blob: %s", e.what());
                         ui->SDLTreeView->setModel(0);
                         ui->SDLTreeView->setEnabled(false);

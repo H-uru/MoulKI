@@ -13,8 +13,8 @@ class MoulKI;
 
 struct authPlayer {
     uint32_t ID;
-    plString Name;
-    plString avatar;
+    ST::string Name;
+    ST::string avatar;
 };
 
 class qtAuthClient : public QObject, public pnAuthClient
@@ -25,8 +25,8 @@ private:
     /* the fetch queue acts as a comprehensive list of all nodes fetched
        and pending fetch by the client */
     QList<uint32_t> fetchQueue;
-    plString user;
-    plString pass;
+    ST::string user;
+    ST::string pass;
 
     struct queuedRef {
         uint32_t fTransId;
@@ -59,7 +59,7 @@ public:
             const plUuid& acctUuid, uint32_t acctFlags,
             uint32_t billingType, const uint32_t* encryptKey);
     void onAcctPlayerInfo(uint32_t transId, uint32_t playerId,
-            const plString &playerName, const plString& avatarModel,
+            const ST::string &playerName, const ST::string& avatarModel,
             uint32_t explorer);
     void onAcctSetPlayerReply(uint32_t transId, ENetError result);
     void onAgeReply(uint32_t transId, ENetError result, uint32_t mcpId,
@@ -90,13 +90,12 @@ public:
     void onVaultAddNodeReply(uint32_t transId, ENetError result);
     void onVaultRemoveNodeReply(uint32_t transId, ENetError result);
 
-    void setStatus(const char* msg);
-    void setStatus(plString msg);
+    void setStatus(ST::string msg);
 
     void queueRef(uint32_t transId, uint32_t parent);
 
 signals:
-    void sigStatus(plString msg);
+    void sigStatus(ST::string msg);
     void foundNodes(QList<uint32_t> nodes);
     void loginSuccessful();
     void saveNodeSuccessful(uint32_t transId);

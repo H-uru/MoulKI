@@ -15,8 +15,8 @@ qtAuthClient::~qtAuthClient() {
 void qtAuthClient::startLogin(QString user, QString pass) {
     players.clear();
     // apparently HSPlasma still doesn't lowercase the username
-    this->user = plString(user.toLower().toStdString().data());
-    this->pass = plString(pass.toStdString().data());
+    this->user = user.toLower().toUtf8().constData();
+    this->pass = pass.toUtf8().constData();
     setStatus("Connecting...");
     if(pnAuthClient::connect(parent->Host.toStdString().data()) != kNetSuccess) {
         setStatus("Error Connecting To Server");
@@ -35,21 +35,21 @@ void qtAuthClient::onClientRegisterReply(uint32_t serverChallenge) {
     sendAcctLoginRequest(serverChallenge, rand(), user, pass);
 }
 
-void qtAuthClient::onAcctPlayerInfo(uint32_t, uint32_t playerId, const plString& playerName, const plString& avatarModel, uint32_t) {
+void qtAuthClient::onAcctPlayerInfo(uint32_t, uint32_t playerId, const ST::string& playerName, const ST::string& avatarModel, uint32_t) {
     authPlayer player;
     player.ID = playerId;
     player.Name = playerName;
     player.avatar = avatarModel;
     players.append(player);
-    qWarning("Added player %s (%u)", playerName.cstr(), playerId);
+    qWarning("Added player %s (%u)", playerName.c_str(), playerId);
 }
 
 void qtAuthClient::onAcctLoginReply(uint32_t, ENetError result,
         const plUuid& acctUuid, uint32_t, uint32_t,
         const uint32_t* encryptKey) {
     if (result != kNetSuccess) {
-        setStatus(plString::Format("Auth Failed (%s)",
-                    GetNetErrorString(result)).cstr());
+        setStatus(ST::format("Auth Failed ({})",
+                    GetNetErrorString(result)));
         return;
     }
 
@@ -69,16 +69,16 @@ void qtAuthClient::onAcctSetPlayerReply(uint32_t, ENetError) {
 
 void qtAuthClient::onPublicAgeList(uint32_t, ENetError result, size_t count, const pnNetAgeInfo* ages) {
     if(result != kNetSuccess) {
-        setStatus(plString::Format("Get Public Ages Failed (%s)",
-                    GetNetErrorString(result)).cstr());
+        setStatus(ST::format("Get Public Ages Failed ({})",
+                    GetNetErrorString(result)));
         return;
     }
 
-    setStatus(plString::Format("Got %d Public Ages", count).cstr());
+    setStatus(ST::format("Got {} Public Ages", count));
 
     QList< QPair<QString, plUuid> > publicAges;
     for(size_t i = 0; i < count; i++) {
-        publicAges.append(QPair<QString, plUuid>(ages[i].fAgeFilename.cstr(), ages[i].fAgeInstanceId));
+        publicAges.append(QPair<QString, plUuid>(ages[i].fAgeFilename.c_str(), ages[i].fAgeInstanceId));
     }
 
     emit gotPublicAges(publicAges);
@@ -100,8 +100,8 @@ void qtAuthClient::onFileDownloadChunk(uint32_t transId, ENetError result,
         uint32_t totalSize, uint32_t chunkOffset, size_t chunkSize,
         const unsigned char* chunkData) {
     if (result != kNetSuccess) {
-        setStatus(plString::Format("File download failed (%s)",
-                    GetNetErrorString(result)).cstr());
+        setStatus(ST::format("File download failed ({})",
+                    GetNetErrorString(result)));
         return;
     }
 
@@ -123,7 +123,7 @@ void qtAuthClient::downloadNextSdlFile() {
         pendingSdlFiles.clear();
     }else{
         qWarning("Downloading file %s (%d of %d, %d bytes)",
-                pendingSdlFiles[currentPendingSdlFile].fFilename.cstr(), currentPendingSdlFile+1,
+                pendingSdlFiles[currentPendingSdlFile].fFilename.c_str(), currentPendingSdlFile+1,
                 pendingSdlFiles.size(), pendingSdlFiles[currentPendingSdlFile].fFileSize);
         uint32_t fileTrans;
         fileTrans = this->sendFileDownloadRequest(pendingSdlFiles[currentPendingSdlFile].fFilename);
@@ -134,7 +134,7 @@ void qtAuthClient::downloadNextSdlFile() {
 
 void qtAuthClient::onVaultNodeRefsFetched(uint32_t, ENetError, size_t count, const pnVaultNodeRef* refs) {
     for(unsigned int i = 0; i < count; i++) {
-        setStatus(plString::Format("Ref: {%u -> %u} %u", refs[i].fParent, refs[i].fChild, refs[i].fOwner).cstr());
+        setStatus(ST::format("Ref: {{{} -> {}} {}", refs[i].fParent, refs[i].fChild, refs[i].fOwner));
         parent->vault.addRef(refs[i]);
         if(!fetchQueue.contains(refs[i].fChild)) {
             fetchQueue.append(refs[i].fChild);
@@ -148,7 +148,7 @@ void qtAuthClient::onVaultNodeRefsFetched(uint32_t, ENetError, size_t count, con
 }
 
 void qtAuthClient::onVaultNodeFetched(uint32_t, ENetError, const pnVaultNode& node) {
-    setStatus(plString::Format("Node: (%u)", node.getNodeIdx()));
+    setStatus(ST::format("Node: ({})", node.getNodeIdx()));
     parent->vault.addNode(node);
 }
 
@@ -163,7 +163,7 @@ void qtAuthClient::onVaultNodeAdded(uint32_t parent, uint32_t child, uint32_t ow
     ref.fParent = parent;
     ref.fChild = child;
     ref.fOwner = owner;
-    setStatus(plString::Format("Ref: {%u -> %u} %u", ref.fParent, ref.fChild, ref.fOwner).cstr());
+    setStatus(ST::format("Ref: {{{} -> {}} {}", ref.fParent, ref.fChild, ref.fOwner));
     this->parent->vault.addRef(ref);
     if(!fetchQueue.contains(parent)) {
         fetchQueue.append(parent);
@@ -178,7 +178,7 @@ void qtAuthClient::onVaultNodeAdded(uint32_t parent, uint32_t child, uint32_t ow
 }
 
 void qtAuthClient::onVaultNodeRemoved(uint32_t parent, uint32_t child) {
-    setStatus(plString::Format("UnRef: {%u -> %u}", parent, child).cstr());
+    setStatus(ST::format("UnRef: {{{} -> {}}", parent, child));
     this->parent->vault.removeRef(parent, child);
 }
 
@@ -192,7 +192,7 @@ void qtAuthClient::onVaultNodeCreated(uint32_t transId, ENetError result, uint32
             }
         }
     }else{
-        setStatus(plString::Format("Create Node Failed (%s)", GetNetErrorString(result)));
+        setStatus(ST::format("Create Node Failed ({})", GetNetErrorString(result)));
     }
 }
 
@@ -207,17 +207,13 @@ bool qtAuthClient::queuedRef::operator ==(const qtAuthClient::queuedRef& ref) {
     return fTransId == ref.fTransId;
 }
 
-void qtAuthClient::setStatus(const char* msg) {
-    emit sigStatus(plString(msg));
-}
-
-void qtAuthClient::setStatus(plString msg) {
-    emit sigStatus(msg);
+void qtAuthClient::setStatus(ST::string msg) {
+    emit sigStatus(std::move(msg));
 }
 
 void qtAuthClient::onVaultNodeFindReply(uint32_t, ENetError result, size_t count, const uint32_t *nodes) {
     if(result == kNetSuccess) {
-        setStatus(plString::Format("Found %u Nodes", count));
+        setStatus(ST::format("Found {} Nodes", count));
         // it's not safe to send an array allocated elsewhere via a queued signal
         QList<uint32_t> nodeList;
         for(uint32_t i = 0; i < count; i++) {
@@ -225,7 +221,7 @@ void qtAuthClient::onVaultNodeFindReply(uint32_t, ENetError result, size_t count
         }
         emit foundNodes(nodeList);
     }else{
-        setStatus(plString::Format("Find Node Failure: (%s)", GetNetErrorString(result)));
+        setStatus(ST::format("Find Node Failure: ({})", GetNetErrorString(result)));
     }
 }
 
@@ -233,7 +229,7 @@ void qtAuthClient::onVaultAddNodeReply(uint32_t, ENetError result) {
     if(result == kNetSuccess) {
         setStatus("Add Node Successful");
     }else{
-        setStatus(plString::Format("Add Node Failure: (%s)", GetNetErrorString(result)));
+        setStatus(ST::format("Add Node Failure: ({})", GetNetErrorString(result)));
     }
 }
 
@@ -242,7 +238,7 @@ void qtAuthClient::onVaultSaveNodeReply(uint32_t transId, ENetError result) {
         setStatus("Save Node Successful");
         emit saveNodeSuccessful(transId);
     }else{
-        setStatus(plString::Format("Save Node Failure: (%s)", GetNetErrorString(result)));
+        setStatus(ST::format("Save Node Failure: ({})", GetNetErrorString(result)));
     }
 }
 
@@ -250,7 +246,7 @@ void qtAuthClient::onVaultRemoveNodeReply(uint32_t, ENetError result) {
     if(result == kNetSuccess) {
         setStatus("Remove Node Successful");
     }else{
-        setStatus(plString::Format("Remove Node Failure: (%s)", GetNetErrorString(result)));
+        setStatus(ST::format("Remove Node Failure: ({})", GetNetErrorString(result)));
     }
 }
 
@@ -259,6 +255,6 @@ void qtAuthClient::onAgeReply(uint32_t, ENetError result, uint32_t mcpId, const 
         setStatus("Age Request Successful");
         emit gotAge(gameServerAddress, ageInstanceId, mcpId, ageVaultId);
     }else{
-        setStatus(plString::Format("Age Request Failed: (%s)", GetNetErrorString(result)));
+        setStatus(ST::format("Age Request Failed: ({})", GetNetErrorString(result)));
     }
 }

@@ -27,15 +27,15 @@ public:
     void onJoinAgeReply(uint32_t transId, ENetError result);
 
 public slots:
-    void sendAgeChat(plString message);
-    void sendBroadcast(plString message, QList<uint32_t> targets, int type);
-    void sendPrivate(plString message, uint32_t target);
+    void sendAgeChat(ST::string message);
+    void sendBroadcast(ST::string message, QList<uint32_t> targets, int type);
+    void sendPrivate(ST::string message, uint32_t target);
 
 signals:
     void receivedGameMsg(QString);
-    void setMeOnline(uint32_t player, plString ageFilename, plUuid ageUuid);
-    void addAgePlayer(uint32_t, plString);
-    void removeAgePlayer(uint32_t, plString);
+    void setMeOnline(uint32_t player, ST::string ageFilename, plUuid ageUuid);
+    void addAgePlayer(uint32_t, ST::string);
+    void removeAgePlayer(uint32_t, ST::string);
     void clearAgeList();
 };
 
