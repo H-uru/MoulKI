@@ -28,15 +28,15 @@ void qtGameClient::setAgeInfo(qtVaultNode* ageInfo) {
 void qtGameClient::joinAge(uint32_t serverAddr, uint32_t mcpId) {
     // I've seen a function that does this somewhere in zrax's code..
     // would be nice if I could find it, so I wouldn't have to roll my own here :P
-    plString serverString = plString::Format("%u.%u.%u.%u",
+    ST::string serverString = ST::format("{}.{}.{}.{}",
                                              (serverAddr & 0xFF000000) >> 24,
                                              (serverAddr & 0x00FF0000) >> 16,
                                              (serverAddr & 0x0000FF00) >> 8,
                                              (serverAddr & 0x000000FF) >> 0
                                              );
-    qWarning("Joining age server at: %s", serverString.cstr());
+    qWarning("Joining age server at: %s", serverString.c_str());
     uint32_t result;
-    if((result = pnGameClient::connect(serverString.cstr())) != kNetSuccess) {
+    if((result = pnGameClient::connect(serverString.c_str())) != kNetSuccess) {
         qWarning("Error Connecting to Game Server (%s)", GetNetErrorString(result));
         return;
     }else{
@@ -123,8 +123,8 @@ void qtGameClient::onPropagateMessage(plCreatable *msg) {
         plMessage* gameMsg = ((plNetMsgGameMessageDirected*)msg)->getMessage();
         if(gameMsg->ClassIndex() == kKIMsg) {
             pfKIMsg* kiMsg = (pfKIMsg*)gameMsg;
-            QString user = QString(kiMsg->getUser().cstr());
-            QString message = QString(kiMsg->getString().cstr());
+            QString user = QString(kiMsg->getUser().c_str());
+            QString message = QString(kiMsg->getString().c_str());
             if(kiMsg->getFlags() & pfKIMsg::kStatusMsg) { // 0x10 (/me action)
                 emit receivedGameMsg(message + "\n");
             }else if(kiMsg->getFlags() & pfKIMsg::kUNUSED1) { // sender is out-of-age (and sending us a location)
@@ -143,7 +143,7 @@ void qtGameClient::onPropagateMessage(plCreatable *msg) {
         for(unsigned int i = 0; i < membersList->getMembers().size(); i++) {
             const plNetMsgMemberInfoHelper* info = &membersList->getMembers()[i];
             const plClientGuid* guid = &info->getClientGuid();
-            qWarning("Age Player: %s", guid->getPlayerName().cstr());
+            qWarning("Age Player: %s", guid->getPlayerName().c_str());
             fAgePlayers.push_back(guid->getPlayerID());
             emit addAgePlayer(guid->getPlayerID(), guid->getPlayerName());
         }
@@ -153,13 +153,13 @@ void qtGameClient::onPropagateMessage(plCreatable *msg) {
         const plClientGuid* guid = &info->getClientGuid();
         if(memberUpdate->getAddMember()) {
             // add member
-            qWarning("Added Player: %s", guid->getPlayerName().cstr());
+            qWarning("Added Player: %s", guid->getPlayerName().c_str());
             fAgePlayers.push_back(guid->getPlayerID());
-            emit receivedGameMsg(plString::Format("* %s joined the age\n", guid->getPlayerName().cstr()).cstr());
+            emit receivedGameMsg(ST::format("* {} joined the age\n", guid->getPlayerName()).c_str());
             emit addAgePlayer(guid->getPlayerID(), guid->getPlayerName());
         }else{
             // remove member
-            qWarning("Removed Player: %s", guid->getPlayerName().cstr());
+            qWarning("Removed Player: %s", guid->getPlayerName().c_str());
             fAgePlayers.erase(std::find(fAgePlayers.begin(), fAgePlayers.end(), guid->getPlayerID()));
             emit receivedGameMsg("* Someone left the age\n");
             emit removeAgePlayer(guid->getPlayerID(), guid->getPlayerName());
@@ -167,7 +167,7 @@ void qtGameClient::onPropagateMessage(plCreatable *msg) {
     }
 }
 
-void qtGameClient::sendAgeChat(plString message) {
+void qtGameClient::sendAgeChat(ST::string message) {
     plNetMsgGameMessageDirected gameMsg;
     pfKIMsg* kiMsg = new pfKIMsg();
     gameMsg.setFlags(0x00049001);
@@ -176,7 +176,7 @@ void qtGameClient::sendAgeChat(plString message) {
     gameMsg.setReceivers(fAgePlayers);
     kiMsg->setBCastFlags(0x00000248);
     kiMsg->setCommand(0);
-    if(message.startsWith("/me")) {
+    if(message.starts_with("/me")) {
         kiMsg->setFlags(pfKIMsg::kStatusMsg);
     }else{
         kiMsg->setFlags(0x00); // standard age chat
@@ -186,7 +186,7 @@ void qtGameClient::sendAgeChat(plString message) {
     kiMsg->setString(message);
     gameMsg.setMessage(kiMsg);
     propagateMessage(&gameMsg);
-    qWarning("Sent Chat: %s", message.cstr());
+    qWarning("Sent Chat: %s", message.c_str());
     // debug
     /*hsRAMStream S(PlasmaVer::pvMoul);
     pfPrcHelper prc(&S);
@@ -197,7 +197,7 @@ void qtGameClient::sendAgeChat(plString message) {
     delete[] data;*/
 }
 
-void qtGameClient::sendPrivate(plString message, uint32_t target) {
+void qtGameClient::sendPrivate(ST::string message, uint32_t target) {
     std::vector<uint32_t> targets;
     targets.push_back(target);
     plNetMsgGameMessageDirected gameMsg;
@@ -212,16 +212,16 @@ void qtGameClient::sendPrivate(plString message, uint32_t target) {
     kiMsg->setPlayerID(fPlayerNode->getNodeIdx());
     kiMsg->setUser(fPlayerNode->getIString64(0));
     if(fAgeInfoNode != NULL) {
-        kiMsg->setString(plString::Format("<<%s>>%s", fAgeInfoNode->displayName().cstr(), message.cstr()));
+        kiMsg->setString(ST::format("<<{}>>{}", fAgeInfoNode->displayName(), message));
     }else{
-        kiMsg->setString(plString::Format("<<%s>>%s", "???", message.cstr()));
+        kiMsg->setString(ST::format("<<{}>>{}", "???", message));
     }
     gameMsg.setMessage(kiMsg);
     propagateMessage(&gameMsg);
-    qWarning("Sent Private Chat to %u: %s", target, message.cstr());
+    qWarning("Sent Private Chat to %u: %s", target, message.c_str());
 }
 
-void qtGameClient::sendBroadcast(plString message, QList<uint32_t> buddies, int type) {
+void qtGameClient::sendBroadcast(ST::string message, QList<uint32_t> buddies, int type) {
     std::vector<uint32_t> targets;
     foreach(uint32_t target, buddies) {
         targets.push_back(target);
@@ -242,11 +242,11 @@ void qtGameClient::sendBroadcast(plString message, QList<uint32_t> buddies, int 
     kiMsg->setPlayerID(fPlayerNode->getNodeIdx());
     kiMsg->setUser(fPlayerNode->getIString64(0));
     if(fAgeInfoNode != NULL) {
-        kiMsg->setString(plString::Format("<<%s>>%s", fAgeInfoNode->displayName().cstr(), message.cstr()));
+        kiMsg->setString(ST::format("<<{}>>{}", fAgeInfoNode->displayName(), message));
     }else{
-        kiMsg->setString(plString::Format("<<%s>>%s", "???", message.cstr()));
+        kiMsg->setString(ST::format("<<{}>>{}", "???", message));
     }
     gameMsg.setMessage(kiMsg);
     propagateMessage(&gameMsg);
-    qWarning("Sent Broadcast Chat: %s", message.cstr());
+    qWarning("Sent Broadcast Chat: %s", message.c_str());
 }

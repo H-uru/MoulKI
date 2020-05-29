@@ -33,7 +33,7 @@ public:
     uint32_t neighborListFolder;
     QList<uint32_t> neighborInfoIds;
 
-    plString currentAgeName;
+    ST::string currentAgeName;
     uint32_t currentAgeId;
 
     struct {
@@ -88,7 +88,7 @@ public:
 public slots:
     void showLoginDialog();
     void login(QString user, QString pass, QString iniFilename);
-    void setStatus(plString msg);
+    void setStatus(ST::string msg);
     void showPlayers();
     void addNode(uint32_t parent, uint32_t child);
     void removeNode(uint32_t parent, uint32_t child);
@@ -123,16 +123,16 @@ public slots:
     void nodeSaveComplete(uint32_t transId);
     // gameserver events
     void showJoinAgeDialog();
-    void joinAge(plString name, plUuid uuid);
+    void joinAge(ST::string name, plUuid uuid);
     void joinSelectedAge();
     void startGameServer(uint32_t serverAddr, plUuid ageId, uint32_t mcpId, uint32_t ageVaultId);
     void addChatLine(QString line);
-    void setOnline(uint32_t playerId, plString ageFilename, plUuid ageUuid);
+    void setOnline(uint32_t playerId, ST::string ageFilename, plUuid ageUuid);
     void sendGameChat();
     void checkCurrentAge();
     // target manipulation
-    void addAgePlayer(uint32_t, plString);
-    void removeAgePlayer(uint32_t, plString);
+    void addAgePlayer(uint32_t, ST::string);
+    void removeAgePlayer(uint32_t, ST::string);
     void clearAgeList();
     void clearChatTargetList(QTreeWidgetItem* item);
     void addRemoveChatTargetItem(QTreeWidgetItem* item, qtVaultNode* infoNode, bool remove=0);

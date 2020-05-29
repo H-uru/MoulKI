@@ -5,6 +5,10 @@ find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(HSPlasmaNet REQUIRED)
+find_package(string_theory REQUIRED)
+
+add_definitions(-DST_NO_2_0_DEPRECATION)
+include_directories(${STRING_THEORY_INCLUDE_DIRS})
 
 set(MoulKI_SOURCES
     main.cpp

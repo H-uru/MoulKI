@@ -35,7 +35,7 @@ void SetActiveDialog::setPlayers(QList<authPlayer> plyrs) {
         QVariant data;
         data.setValue(plyr);
         player->setData(Qt::UserRole, data);
-        player->setText(QString(plString::Format("%s %s (%u)", plyr.Name.cstr(), plyr.avatar.cstr(), plyr.ID).cstr()));
+        player->setText(QString(ST::format("{} {} ({})", plyr.Name, plyr.avatar, plyr.ID).c_str()));
         m_ui->playerList->addItem(player);
     }
     connect(this, SIGNAL(accepted()), this, SLOT(setActive()));
@@ -47,7 +47,7 @@ void SetActiveDialog::setFoundNodes(QList<uint32_t> nodes) {
         QVariant data;
         data.setValue(node);
         item->setData(Qt::UserRole, data);
-        item->setText(QString(plString::Format("%u", node).cstr()));
+        item->setText(QString::number(node));
         m_ui->playerList->addItem(item);
     }
     setWindowTitle("Fetch Found Nodes");
@@ -61,7 +61,7 @@ void SetActiveDialog::setAgeNodes(QList<qtVaultNode *>nodes) {
         QVariant data;
         data.setValue(node);
         item->setData(Qt::UserRole, data);
-        item->setText(QString(node->displayName().cstr()));
+        item->setText(QString(node->displayName().c_str()));
         m_ui->playerList->addItem(item);
     }
     setWindowTitle("Select Age to Join");

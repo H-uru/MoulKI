@@ -1,5 +1,7 @@
 #include "qtVault.h"
 
+#include <string_theory/format>
+
 const char* qtVaultNode::TypeNames[] = {
     "Invalid",
     "VMgrLow",
@@ -240,7 +242,7 @@ void qtVaultNode::copy(const qtVaultNode &init) {
     items = init.items;
 }
 
-plString qtVaultNode::displayName() {
+ST::string qtVaultNode::displayName() {
     switch(getNodeType()) {
         case 2: // Player
         case 23: // PlayerInfo
@@ -262,7 +264,7 @@ plString qtVaultNode::displayName() {
         case 30: // PlayerInfoList
         case 34: // AgeInfoList
             if(hasField(kInt32_1))
-                return plString(FolderTypes[getInt32(k_1)]);
+                return FolderTypes[getInt32(k_1)];
             break;
         case 33: // AgeInfo
             if (hasField(kString64_4) && hasField(kString64_3)) {
@@ -276,7 +278,7 @@ plString qtVaultNode::displayName() {
                 return getText(k_1);
             break;
     }
-    return plString(TypeNames[getNodeType()]);
+    return TypeNames[getNodeType()];
 }
 
 QIcon qtVaultNode::getIcon() {
@@ -294,7 +296,7 @@ QIcon qtVaultNode::getIcon() {
     QImage iconImage;
 
     if(shift) {
-        iconImage = QImage(plString::Format(":/%s_on", TypeNames[getNodeType()]).cstr());
+        iconImage = QImage(ST::format(":/{}_on", TypeNames[getNodeType()]).c_str());
         /* manipulate it to make it green
         for(int i = 0; i < iconImage.numColors(); i++) {
             if(iconImage.color(i) == 0xFFFF0000)
@@ -304,15 +306,15 @@ QIcon qtVaultNode::getIcon() {
         }
         */
     }else{
-        iconImage = QImage(plString::Format(":/%s", TypeNames[getNodeType()]).cstr());
+        iconImage = QImage(ST::format(":/{}", TypeNames[getNodeType()]).c_str());
     }
     return QIcon(QPixmap::fromImage(iconImage));
 }
 
 QTreeWidgetItem* qtVaultNode::newItem() {
     QTreeWidgetItem* item = new QTreeWidgetItem();
-    plString name = displayName();
-    item->setText(0, QString(name.cstr()));
+    ST::string name = displayName();
+    item->setText(0, QString(name.c_str()));
     item->setIcon(0, getIcon());
     QVariant data;
     data.setValue(this);
@@ -321,20 +323,20 @@ QTreeWidgetItem* qtVaultNode::newItem() {
     return item;
 }
 
-plString qtVaultNode::fieldName(size_t field) {
-    return plString(FieldNames[field]);
+ST::string qtVaultNode::fieldName(size_t field) {
+    return FieldNames[field];
 }
 
-plString qtVaultNode::getFieldAsString(size_t field) {
+ST::string qtVaultNode::getFieldAsString(size_t field) {
     if(!hasField(field))
-        return plString();
+        return ST::null;
     switch(field) {
         case kNodeIdx:
-            return plString::Format("%u", getNodeIdx());
+            return ST::string::from_uint(getNodeIdx());
         case kCreateTime:
-            return plString::Format("%u", getCreateTime());
+            return ST::string::from_uint(getCreateTime());
         case kModifyTime:
-            return plString::Format("%u", getModifyTime());
+            return ST::string::from_uint(getModifyTime());
         case kCreateAgeName:
             return getCreateAgeName();
         case kCreateAgeUuid:
@@ -342,19 +344,19 @@ plString qtVaultNode::getFieldAsString(size_t field) {
         case kCreatorUuid:
             return getCreatorUuid().toString();
         case kCreatorIdx:
-            return plString::Format("%u", getCreatorIdx());
+            return ST::string::from_uint(getCreatorIdx());
         case kNodeType:
-            return plString(TypeNames[getNodeType()]);
+            return TypeNames[getNodeType()];
         case kInt32_1:
         case kInt32_2:
         case kInt32_3:
         case kInt32_4:
-            return plString::Format("%d", getInt32(field - kInt32_1));
+            return ST::string::from_int(getInt32(field - kInt32_1));
         case kUint32_1:
         case kUint32_2:
         case kUint32_3:
         case kUint32_4:
-            return plString::Format("%u", getUint32(field - kUint32_1));
+            return ST::string::from_uint(getUint32(field - kUint32_1));
         case kUuid_1:
         case kUuid_2:
         case kUuid_3:
@@ -381,48 +383,48 @@ plString qtVaultNode::getFieldAsString(size_t field) {
                 size_t len = blob.getSize();
                 for(uint32_t i = 0; i < len; i++) {
                     if(data[i] < 32 || data[i] > 126) // Ascii range
-                        return plString("[Binary Data]");
+                        return ST_LITERAL("[Binary Data]");
                 }
-                return plString((const char*)data, len);
+                return ST::string::from_latin_1((const char*)data, len);
             }
         default:
-            return plString::Format("Bad Field Id (%u)", field);
+            return ST::format("Bad Field Id ({})", field);
     }
 }
 
-void qtVaultNode::setFieldFromString(size_t field, plString string) {
+void qtVaultNode::setFieldFromString(size_t field, ST::string string) {
     switch(field) {
         case kNodeIdx:
-            setNodeIdx(string.toUint(10));
+            setNodeIdx(string.to_uint(10));
             break;
         case kCreateTime:
-            setCreateTime(string.toUint(10));
+            setCreateTime(string.to_uint(10));
             break;
         case kModifyTime:
-            setModifyTime(string.toUint(10));
+            setModifyTime(string.to_uint(10));
             break;
         case kCreateAgeName:
             setCreateAgeName(string);
             break;
         case kCreateAgeUuid:
-            setCreateAgeUuid(plUuid(string.cstr()));
+            setCreateAgeUuid(plUuid(string));
             break;
         case kCreatorUuid:
             try {
-                plUuid uuid(string.cstr());
+                plUuid uuid(string);
                 setCreatorUuid(uuid);
-            } catch (hsException e) {
+            } catch (const hsException& e) {
                 qWarning("qtVaultNode::setFieldFromString(): Bad Uuid String (%s)", e.what());
             }
             break;
         case kCreatorIdx:
-            setCreatorIdx(string.toUint(10));
+            setCreatorIdx(string.to_uint(10));
             break;
         case kNodeType:
             if(string.empty())
                 break;
             for(unsigned int i = 0; i < sizeof(TypeNames) / sizeof(const char*); i++) {
-                if(string.compareTo(TypeNames[i], true) == 0) {
+                if(string.compare_i(TypeNames[i]) == 0) {
                     setNodeType(i);
                     break;
                 }
@@ -432,22 +434,22 @@ void qtVaultNode::setFieldFromString(size_t field, plString string) {
         case kInt32_2:
         case kInt32_3:
         case kInt32_4:
-            setInt32(field - kInt32_1, string.toInt(10));
+            setInt32(field - kInt32_1, string.to_int(10));
             break;
         case kUint32_1:
         case kUint32_2:
         case kUint32_3:
         case kUint32_4:
-            setUint32(field - kUint32_1, string.toUint(10));
+            setUint32(field - kUint32_1, string.to_uint(10));
             break;
         case kUuid_1:
         case kUuid_2:
         case kUuid_3:
         case kUuid_4:
             try {
-                plUuid uuid(string.cstr());
+                plUuid uuid(string);
                 setUuid(field - kUuid_1, uuid);
-            } catch (hsException e) {
+            } catch (const hsException& e) {
                 qWarning("qtVaultNode::setFieldFromString(): Bad Uuid String (%s)", e.what());
             }
             break;
@@ -471,8 +473,8 @@ void qtVaultNode::setFieldFromString(size_t field, plString string) {
         case kBlob_2:
             {
                 plVaultBlob blob;
-                if(string.len())
-                    blob.setData(string.len(), (const unsigned char*)string.cstr());
+                if(string.size())
+                    blob.setData(string.size(), (const unsigned char*)string.c_str());
                 setBlob(field - kBlob_1, blob);
             }
             break;
