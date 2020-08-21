@@ -82,3 +82,5 @@ add_executable(MoulKI ${all_SOURCES}
                     )
 
 target_link_libraries(MoulKI ${HSPlasmaNet_LIBRARIES} Qt5::Core Qt5::Widgets)
+
+install(TARGETS MoulKI DESTINATION bin)
