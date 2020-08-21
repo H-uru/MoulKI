@@ -1,6 +1,7 @@
 #ifndef MOULKI_H
 #define MOULKI_H
 
+#include <ResManager/plResManager.h>
 #include <SDL/plSDLMgr.h>
 #include <QMainWindow>
 #include "qtAuthClient.h"
