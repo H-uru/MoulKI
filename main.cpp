@@ -1,5 +1,6 @@
 #include <QApplication>
 #include <Debug/plDebug.h>
+#include <ResManager/plResManager.h>
 #include "MoulKI.h"
 
 int main(int argc, char *argv[])

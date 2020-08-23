@@ -12,6 +12,8 @@
 #include <QScrollBar>
 #include <QFileDialog>
 
+#include <Stream/plEncryptedStream.h>
+
 Q_DECLARE_METATYPE(plUuid)
 Q_DECLARE_METATYPE(ST::string)
 Q_DECLARE_METATYPE(uint32_t)

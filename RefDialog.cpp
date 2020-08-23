@@ -1,6 +1,8 @@
 #include "RefDialog.h"
 #include "ui_RefDialog.h"
 
+#include <QIntValidator>
+
 RefDialog::RefDialog(QWidget *parent) :
     QDialog(parent),
     m_ui(new Ui::RefDialog)
