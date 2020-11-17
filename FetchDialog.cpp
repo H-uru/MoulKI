@@ -1,5 +1,5 @@
 #include "FetchDialog.h"
-#include <QtGui/QIntValidator>
+#include <QIntValidator>
 #include "ui_FetchDialog.h"
 
 FetchDialog::FetchDialog(QWidget *parent) :
