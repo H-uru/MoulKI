@@ -8,6 +8,8 @@
 #include "MoulKI.h"
 #include "ui_MoulKI.h"
 
+#include <Stream/plEncryptedStream.h>
+
 #include <QLabel>
 #include <QScrollBar>
 #include <QFileDialog>
