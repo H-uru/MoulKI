@@ -1,4 +1,5 @@
 #include "FetchDialog.h"
+#include <QIntValidator>
 #include "ui_FetchDialog.h"
 
 #include <QIntValidator>

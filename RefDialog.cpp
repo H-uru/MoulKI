@@ -1,4 +1,5 @@
 #include "RefDialog.h"
+#include <QIntValidator>
 #include "ui_RefDialog.h"
 
 #include <QIntValidator>

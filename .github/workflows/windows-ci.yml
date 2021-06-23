@@ -1,0 +1,104 @@
+name: Windows-CI
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.cfg.os }}
+
+    strategy:
+      matrix:
+        cfg:
+          - { os: windows-2019, generator: Visual Studio 16 2019, cmake-arch: Win32, triplet: x86-windows-static-md, qt: 5.15.0, qt-arch: win32_msvc2019 }
+          - { os: windows-2019, generator: Visual Studio 16 2019, cmake-arch: x64, triplet: x64-windows-static-md, qt: 5.15.0, qt_arch: win64_msvc2019_64 }
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Bootstrap vcpkg
+        id: bootstrap-vcpkg
+        run: |
+          cd C:\vcpkg
+          git pull
+          Write-Host "::set-output name=vcpkg-rev::$(git rev-parse HEAD)"
+          ./bootstrap-vcpkg.bat
+
+      - name: Restore Dependency Cache
+        id: cache-vcpkg
+        uses: actions/cache@v1
+        with:
+          path: C:\vcpkg\installed
+          key: |
+            vcpkg-triplet=${{ matrix.cfg.triplet }} vcpkg-response=${{ hashFiles('vcpkg.txt') }} vcpkg-rev=${{ steps.bootstrap-vcpkg.outputs.vcpkg-rev }}
+          restore-keys: |
+            vcpkg-triplet=${{ matrix.cfg.triplet }} vcpkg-response=${{ hashFiles('vcpkg.txt') }}
+            vcpkg-triplet=${{ matrix.cfg.triplet }}
+
+      - name: Upgrade Dependencies
+        if: steps.cache-vcpkg.outputs.cache-hit == 'true'
+        run: |
+          vcpkg upgrade --no-dry-run --triplet ${{ matrix.cfg.triplet }}
+
+      - name: Build Dependencies
+        run: |
+          vcpkg install `@vcpkg.txt --triplet ${{ matrix.cfg.triplet }}
+          vcpkg list --x-full-desc
+
+      # Qt5 takes roughly a thousand years to build, so we download it from elsehwere...
+      - name: Restore Qt Cache
+        id: cache-qt
+        uses: actions/cache@v1
+        with:
+          path: ${{ github.workspace }}\qt
+          key: os=${{ runner.os }} qt=${{ matrix.cfg.qt }} arch=${{ matrix.cfg.qt-arch }}
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          arch: ${{ matrix.cfg.qt-arch }}
+          version: ${{ matrix.cfg.qt }}
+          dir: ${{ github.workspace }}\qt
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          aqtversion: ==0.9.*
+
+      - name: Checkout HSPlasma
+        uses: actions/checkout@v2
+        with:
+          repository: H-uru/libhsplasma
+          path: libhsplasma
+
+      - name: Build libHSPlasma
+        run: |
+          cd libhsplasma
+          mkdir build && cd build
+          cmake `
+            -G "${{ matrix.cfg.generator }}" -A "${{ matrix.cfg.cmake-arch }}" `
+            -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake `
+            -DVCPKG_TARGET_TRIPLET=${{ matrix.cfg.triplet }} `
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\install `
+            -DENABLE_PYTHON=OFF -DENABLE_TOOLS=OFF -DENABLE_NET=ON -DENABLE_PHYSX=OFF ..
+          cmake --build . --config Release -j 2
+          cmake --build . --config Release --target INSTALL
+
+      - name: Build MoulKI
+        run: |
+          mkdir build && cd build
+          cmake `
+            -G "${{ matrix.cfg.generator }}" -A "${{ matrix.cfg.cmake-arch }}" `
+            -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake `
+            -DVCPKG_TARGET_TRIPLET=${{ matrix.cfg.triplet }} `
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}\install `
+            ..
+          cmake --build . --config Release -j 2
+          cmake --build . --config Release --target INSTALL
+
+      - name: Deploy Qt
+        run: |
+          cd ${{ env.Qt5_Dir }}\bin
+          $ExeFile = Get-ChildItem "${{ github.workspace }}\install\bin" -Filter *.exe
+          ./windeployqt.exe --release $ExeFile.FullName
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ runner.os }}-${{ matrix.cfg.cmake-arch }}-qt${{ matrix.cfg.qt-arch }}
+          path: install\bin
